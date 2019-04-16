@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-23 23:26-0400\n"
+"PO-Revision-Date: 2018-05-31 09:35-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Swedish\n"
+"Language: sv_SE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: sv-SE\n"
+"X-Crowdin-File: /plugins/ofc_pi/po/ofc_pi.pot\n"
+
+#: src/chart.cpp:4139
+msgid "---<<< Warning:  Chart georef accuracy may be poor. >>>---"
+msgstr "---<<< Varning:  Sjökortets positionsreferens kan vara bristfällig. >>>---"
+
+#: src/chart.cpp:4222 src/chart.cpp:4286
+msgid "---<<< Warning:  Chart georef accuracy is poor. >>>---"
+msgstr "---<<< Varning:  Sjökortets referenssystem är bristfälligt. >>>---"
+
+#: src/ofc_pi.cpp:211 src/ofc_pi.cpp:237
+msgid "Fugawi Charts"
+msgstr "Fugawi sjökort"
+
+#: src/ofc_pi.cpp:217
+msgid "Fugawi.com Charts PlugIn for OpenCPN"
+msgstr "Fugawi.com sjökortsplugIn för OpenCPN"
+
+#: src/ofc_pi.cpp:223
+msgid "Fugawi Charts PlugIn for OpenCPN\n"
+"Provides support for Fugawi.com raster charts.\n\n"
+msgstr "Fugawi sjökortsplugIn för OpenCPN\n"
+"Stöd för rastersjökort från Fugawi.com\n\n"
+
+#: src/ofc_pi.cpp:317
+msgid "Cannot find the ofc server utility at \n"
+msgstr "Kan inte hitta ofc_pi supportprogram på\n"
+
+#: src/ofc_pi.cpp:321 src/ofc_pi.cpp:431 src/ofcShop.cpp:1125
+#: src/ofcShop.cpp:1144 src/ofcShop.cpp:1571 src/ofcShop.cpp:2772
+#: src/ofcShop.cpp:2968 src/ofcShop.cpp:3220
+msgid "ofc_pi Message"
+msgstr "ofc_pi meddelande"
+
+#: src/ofc_pi.cpp:426
+msgid "serverd utility at \n"
+msgstr "servive_pgm ofcserverd på\n"
+
+#: src/ofc_pi.cpp:430
+msgid " could not be started.\n\n"
+msgstr " kunde inte startas.\n\n"
+
+#: src/ofcShop.cpp:242 src/ofcShop.cpp:2009 src/ofcShop.cpp:2118
+#: src/ofcShop.cpp:3987
+msgid "Dialog"
+msgstr "Dialog"
+
+#: src/ofcShop.cpp:703 src/ofcShop.cpp:741
+msgid "Available."
+msgstr "Tillgängligt."
+
+#: src/ofcShop.cpp:707
+msgid "Installed, Up-to-date."
+msgstr "Senaste version Installerad."
+
+#: src/ofcShop.cpp:711
+msgid "Installed, Update available."
+msgstr "Installerat. Uppdatering är tillgänglig."
+
+#: src/ofcShop.cpp:716 src/ofcShop.cpp:754
+msgid "Expired."
+msgstr "Förfallen."
+
+#: src/ofcShop.cpp:720
+msgid "Ready for download/install."
+msgstr "Klart för nedladdning."
+
+#: src/ofcShop.cpp:724 src/ofcShop.cpp:762
+msgid "Please update Chart List."
+msgstr "Uppdatera sjökortslistan."
+
+#: src/ofcShop.cpp:728
+msgid "Ready for Activation Request."
+msgstr "Klar för registrering."
+
+#: src/ofcShop.cpp:745
+msgid "Installed"
+msgstr "Installerad"
+
+#: src/ofcShop.cpp:749
+msgid "Update available."
+msgstr "Uppdatering tillgänglig."
+
+#: src/ofcShop.cpp:758
+msgid "Ready to install."
+msgstr "Klar att installera."
+
+#: src/ofcShop.cpp:766
+msgid "Ready for Activation"
+msgstr "Klar för aktivering"
+
+#: src/ofcShop.cpp:1102
+msgid "Fugawi server error: "
+msgstr "Fugawi serverfel: "
+
+#: src/ofcShop.cpp:1112
+msgid "internet communications error."
+msgstr "fel på internetkommunikationen."
+
+#: src/ofcShop.cpp:1114
+msgid "Check your internet configuration."
+msgstr "Kontrollera din internetanslutning."
+
+#: src/ofcShop.cpp:1118
+msgid "Invalid email name or password."
+msgstr "Ogiltigt användarmejl eller lösenord."
+
+#: src/ofcShop.cpp:1121
+msgid "Check your configuration and try again."
+msgstr "Kontrollera dina uppgifter och försök igen."
+
+#: src/ofcShop.cpp:1139
+msgid "internet communications error code: "
+msgstr "internetkommunikation felkod: "
+
+#: src/ofcShop.cpp:1143
+msgid "Check your connection and try again."
+msgstr "Kontrollera din anslutning och försök igen."
+
+#: src/ofcShop.cpp:1166
+msgid "Invalid Login."
+msgstr "Ogiltig inloggning."
+
+#: src/ofcShop.cpp:1563
+msgid "This action will PERMANENTLY assign the chartset:"
+msgstr "Detta sjökortsset kommer permanent att kopplas till din enhet:"
+
+#: src/ofcShop.cpp:1567
+msgid "to this system."
+msgstr "till denna enhet."
+
+#: src/ofcShop.cpp:1569
+msgid "Proceed?"
+msgstr "Fortsätta?"
+
+#: src/ofcShop.cpp:1786
+msgid "Unzipping chart files..."
+msgstr "Packar upp kortfiler..."
+
+#: src/ofcShop.cpp:2312
+msgid "My Charts"
+msgstr "Mina sjökort"
+
+#: src/ofcShop.cpp:2315
+msgid "Refresh Chart List"
+msgstr "Uppdatera listan"
+
+#: src/ofcShop.cpp:2344
+msgid "Actions"
+msgstr "Åtgärder"
+
+#: src/ofcShop.cpp:2356
+msgid "Install Selected Chart"
+msgstr "Installera markerade sjökort"
+
+#: src/ofcShop.cpp:2359 src/ofcShop.cpp:3450
+msgid "Cancel Operation"
+msgstr "Avbryt åtgärden"
+
+#: src/ofcShop.cpp:2368
+msgid "Status: Chart List Refresh required."
+msgstr "Status: listan med sjökort behöver uppdateras."
+
+#: src/ofcShop.cpp:2486 src/ofcShop.cpp:3192
+msgid "Contacting Fugawi Charts server..."
+msgstr "Ansluter till Fugawi sjökortsserver..."
+
+#: src/ofcShop.cpp:2497 src/ofcShop.cpp:3203
+msgid "Status: Communications error."
+msgstr "Status: Kommunikationsfel."
+
+#: src/ofcShop.cpp:2504
+msgid "Status: Checking for updates."
+msgstr "Status: Söker uppdateringar."
+
+#: src/ofcShop.cpp:2511
+msgid "Status: Chartset index download failed."
+msgstr "Status: Hämtning av indexfil för kortsetet misslyckades."
+
+#: src/ofcShop.cpp:2515 src/ofcShop.cpp:2964 src/ofcShop.cpp:3210
+msgid "Status: Ready"
+msgstr "Status: Klart"
+
+#: src/ofcShop.cpp:2591 src/ofcShop.cpp:3540
+msgid "Downloading index file"
+msgstr "Laddar ner indexfil"
+
+#: src/ofcShop.cpp:2591 src/ofcShop.cpp:3540
+msgid "Reading Index: "
+msgstr "Läser index: "
+
+#: src/ofcShop.cpp:2701
+msgid "Status: Error parsing index.xml."
+msgstr "Status: Fel uttolkning av index.xml."
+
+#: src/ofcShop.cpp:2755
+msgid "Processing chart..."
+msgstr "Förbereder nästa kort..."
+
+#: src/ofcShop.cpp:2772
+msgid "Chart download cancelled."
+msgstr "Nedladdningen avbruten."
+
+#: src/ofcShop.cpp:2791
+msgid "Status: Server unavailable."
+msgstr "Status: Servern är inte tillgänglig."
+
+#: src/ofcShop.cpp:2819
+msgid "BZB Decrypt failed."
+msgstr "BZB dekryptering misslyckades."
+
+#: src/ofcShop.cpp:2868
+msgid "Status: BZB download FAILED after retry."
+msgstr "Status: BZB nedladdning misslyckades trots flera försök."
+
+#: src/ofcShop.cpp:2968
+msgid "Chart installation complete."
+msgstr "Installation är slutförd."
+
+#: src/ofcShop.cpp:3006
+msgid "Downloading chart:"
+msgstr "Laddar ner sjökort:"
+
+#: src/ofcShop.cpp:3083 src/ofcShop.cpp:3142
+msgid "Choose chart install location."
+msgstr "Välj var korten skall installeras."
+
+#: src/ofcShop.cpp:3092 src/ofcShop.cpp:3157
+msgid "Status:  Cancelled."
+msgstr "Status: Avbruten."
+
+#: src/ofcShop.cpp:3177
+msgid "Status:  Activation Cancelled."
+msgstr "Status: Aktivering avbruten."
+
+#: src/ofcShop.cpp:3179
+msgid "Status:  Activation FAILED."
+msgstr "Status: Aktivering misslyckades."
+
+#: src/ofcShop.cpp:3218
+msgid "Activation succeeded.\n"
+msgstr "Aktiveringen är genomförd.\n"
+
+#: src/ofcShop.cpp:3219
+msgid "You may now proceed to install the chartset"
+msgstr "Klart för att installera sjökorten"
+
+#: src/ofcShop.cpp:3235
+msgid "Status: Downloading..."
+msgstr "Status: Nedladdning..."
+
+#: src/ofcShop.cpp:3240
+msgid "Downloading..."
+msgstr "Laddar ner..."
+
+#: src/ofcShop.cpp:3270 src/ofcShop.cpp:3296 src/ofcShop.cpp:3744
+#: src/ofcShop.cpp:3892
+msgid "Status: OK"
+msgstr "Status: OK"
+
+#: src/ofcShop.cpp:3446
+msgid "Install Selected Chartset"
+msgstr "Installera markerade sjökort"
+
+#: src/ofcShop.cpp:3447
+msgid "Reinstall Selected Chartset"
+msgstr "Installera om markerade sjökort"
+
+#: src/ofcShop.cpp:3448
+msgid "Update Selected Chartset"
+msgstr "Uppdatera markerade sjökortset"
+
+#: src/ofcShop.cpp:3449
+msgid "Activate Selected Chartset"
+msgstr "Aktivera markerade sjökortset"
+
+#: src/ofcShop.cpp:3453
+msgid "Install Charts"
+msgstr "Installera sjökort"
+
+#: src/ofcShop.cpp:3454
+msgid "Reinstall Charts"
+msgstr "Installera om sjökort"
+
+#: src/ofcShop.cpp:3455
+msgid "Update Charts"
+msgstr "Uppdatera sjökort"
+
+#: src/ofcShop.cpp:3456
+msgid "Activate Charts"
+msgstr "Aktivera sjökort"
+
+#: src/ofcShop.cpp:3457 src/ofcShop.cpp:4091 src/ofcShop.cpp:4160
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: src/ofcShop.cpp:3792 src/ofcShop.cpp:3946
+msgid "Downloaded:  "
+msgstr "Hämtade:  "
+
+#: src/ofcShop.cpp:4057 src/ofcShop.cpp:4106
+msgid "Login to Fugawi.com shop"
+msgstr "Logga in till Fugawi.com"
+
+#: src/ofcShop.cpp:4074
+msgid "email address:"
+msgstr "E-postadress:"
+
+#: src/ofcShop.cpp:4081
+msgid "Password:"
+msgstr "Lösenord:"
+
+#: src/ofcShop.cpp:4094 src/ofcShop.cpp:4163
+msgid "OK"
+msgstr "OK"
+
+#: src/ofcShop.cpp:4139
+msgid "email:"
+msgstr "mejl:"
+
+#: src/ofcShop.cpp:4145
+msgid "pass:"
+msgstr "pass:"
+

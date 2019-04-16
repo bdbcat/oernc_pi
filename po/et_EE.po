@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-23 23:26-0400\n"
+"PO-Revision-Date: 2018-05-31 09:36-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Estonian\n"
+"Language: et_EE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: et\n"
+"X-Crowdin-File: /plugins/ofc_pi/po/ofc_pi.pot\n"
+
+#: src/chart.cpp:4139
+msgid "---<<< Warning:  Chart georef accuracy may be poor. >>>---"
+msgstr "---<<< Hoiatus: kaardi kalibreerimise täpsus võib olla madal. >>>---"
+
+#: src/chart.cpp:4222 src/chart.cpp:4286
+msgid "---<<< Warning:  Chart georef accuracy is poor. >>>---"
+msgstr "---<<< Hoiatus: kaardi kalibreerimise täpsus on madal. >>>---"
+
+#: src/ofc_pi.cpp:211 src/ofc_pi.cpp:237
+msgid "Fugawi Charts"
+msgstr "Fugawi kaardid"
+
+#: src/ofc_pi.cpp:217
+msgid "Fugawi.com Charts PlugIn for OpenCPN"
+msgstr "Fugawi.com kaartide plugIn OpenCPN'le"
+
+#: src/ofc_pi.cpp:223
+msgid "Fugawi Charts PlugIn for OpenCPN\n"
+"Provides support for Fugawi.com raster charts.\n\n"
+msgstr "Fugawi-kaartide plugIn OpenCPN'le\n"
+"Pakub toetust Fugawi-rasterkaartidele.\n\n"
+
+#: src/ofc_pi.cpp:317
+msgid "Cannot find the ofc server utility at \n"
+msgstr "Ei suuda leida ofc-serveri utiliiti asukohas\n"
+
+#: src/ofc_pi.cpp:321 src/ofc_pi.cpp:431 src/ofcShop.cpp:1125
+#: src/ofcShop.cpp:1144 src/ofcShop.cpp:1571 src/ofcShop.cpp:2772
+#: src/ofcShop.cpp:2968 src/ofcShop.cpp:3220
+msgid "ofc_pi Message"
+msgstr "ofc_pi teade"
+
+#: src/ofc_pi.cpp:426
+msgid "serverd utility at \n"
+msgstr "ofc-serveri utiliit asukohas \n"
+
+#: src/ofc_pi.cpp:430
+msgid " could not be started.\n\n"
+msgstr " ei saa käivitada.\n\n"
+
+#: src/ofcShop.cpp:242 src/ofcShop.cpp:2009 src/ofcShop.cpp:2118
+#: src/ofcShop.cpp:3987
+msgid "Dialog"
+msgstr "Dialoog"
+
+#: src/ofcShop.cpp:703 src/ofcShop.cpp:741
+msgid "Available."
+msgstr "Saadaval."
+
+#: src/ofcShop.cpp:707
+msgid "Installed, Up-to-date."
+msgstr "Paigaldatud, uuendatud."
+
+#: src/ofcShop.cpp:711
+msgid "Installed, Update available."
+msgstr "Paigaldatud, uuendus saadaval."
+
+#: src/ofcShop.cpp:716 src/ofcShop.cpp:754
+msgid "Expired."
+msgstr "Aegunud."
+
+#: src/ofcShop.cpp:720
+msgid "Ready for download/install."
+msgstr "Allalaadimiseks/paigalduseks valmis."
+
+#: src/ofcShop.cpp:724 src/ofcShop.cpp:762
+msgid "Please update Chart List."
+msgstr "Palun uuenda kaartide nimekiri."
+
+#: src/ofcShop.cpp:728
+msgid "Ready for Activation Request."
+msgstr "Valmis aktiveerimistaotluseks."
+
+#: src/ofcShop.cpp:745
+msgid "Installed"
+msgstr "paigaldatud"
+
+#: src/ofcShop.cpp:749
+msgid "Update available."
+msgstr "Uuendus saadaval."
+
+#: src/ofcShop.cpp:758
+msgid "Ready to install."
+msgstr "Paigalduseks valmis."
+
+#: src/ofcShop.cpp:766
+msgid "Ready for Activation"
+msgstr "Aktiveerimiseks valmis"
+
+#: src/ofcShop.cpp:1102
+msgid "Fugawi server error: "
+msgstr "Fugawi serveri viga: "
+
+#: src/ofcShop.cpp:1112
+msgid "internet communications error."
+msgstr "internetiühenduse viga."
+
+#: src/ofcShop.cpp:1114
+msgid "Check your internet configuration."
+msgstr "Kontrollige Internetiühenduse seadistust."
+
+#: src/ofcShop.cpp:1118
+msgid "Invalid email name or password."
+msgstr "Vale meilinimi või parool."
+
+#: src/ofcShop.cpp:1121
+msgid "Check your configuration and try again."
+msgstr "Kontrolli oma sätteid ja proovi uuesti."
+
+#: src/ofcShop.cpp:1139
+msgid "internet communications error code: "
+msgstr "internetiühenduse veakood: "
+
+#: src/ofcShop.cpp:1143
+msgid "Check your connection and try again."
+msgstr "Kontrolli oma ühendust ja proovi uuesti."
+
+#: src/ofcShop.cpp:1166
+msgid "Invalid Login."
+msgstr "Kehtetu sisselogimine."
+
+#: src/ofcShop.cpp:1563
+msgid "This action will PERMANENTLY assign the chartset:"
+msgstr "See toiming omistab PÜSIVALT kaardikomplekti:"
+
+#: src/ofcShop.cpp:1567
+msgid "to this system."
+msgstr "sellele süsteemile."
+
+#: src/ofcShop.cpp:1569
+msgid "Proceed?"
+msgstr "Jätka?"
+
+#: src/ofcShop.cpp:1786
+msgid "Unzipping chart files..."
+msgstr "Kaardifailide lahtipakkimine..."
+
+#: src/ofcShop.cpp:2312
+msgid "My Charts"
+msgstr "Mu kaardid"
+
+#: src/ofcShop.cpp:2315
+msgid "Refresh Chart List"
+msgstr "Uuenda kaartide nimekirja"
+
+#: src/ofcShop.cpp:2344
+msgid "Actions"
+msgstr "Tegevused"
+
+#: src/ofcShop.cpp:2356
+msgid "Install Selected Chart"
+msgstr "Paigalda valitud kaardid"
+
+#: src/ofcShop.cpp:2359 src/ofcShop.cpp:3450
+msgid "Cancel Operation"
+msgstr "Tühista toiming"
+
+#: src/ofcShop.cpp:2368
+msgid "Status: Chart List Refresh required."
+msgstr "Olek: kaartide nimekirja uuendamine on nõutav."
+
+#: src/ofcShop.cpp:2486 src/ofcShop.cpp:3192
+msgid "Contacting Fugawi Charts server..."
+msgstr "Fugawi kaartide serveriga ühenduse loomine..."
+
+#: src/ofcShop.cpp:2497 src/ofcShop.cpp:3203
+msgid "Status: Communications error."
+msgstr "Olek: ühenduse viga."
+
+#: src/ofcShop.cpp:2504
+msgid "Status: Checking for updates."
+msgstr "Olek: uuendusi kontrollimas."
+
+#: src/ofcShop.cpp:2511
+msgid "Status: Chartset index download failed."
+msgstr "Olek: kaardikomplekti indeksi allalaadimine nurjus."
+
+#: src/ofcShop.cpp:2515 src/ofcShop.cpp:2964 src/ofcShop.cpp:3210
+msgid "Status: Ready"
+msgstr "Olek: valmis"
+
+#: src/ofcShop.cpp:2591 src/ofcShop.cpp:3540
+msgid "Downloading index file"
+msgstr "Indeksfaili allalaadimine"
+
+#: src/ofcShop.cpp:2591 src/ofcShop.cpp:3540
+msgid "Reading Index: "
+msgstr "Indeksi lugemine: "
+
+#: src/ofcShop.cpp:2701
+msgid "Status: Error parsing index.xml."
+msgstr "Olek: Index.xml liigendmise viga."
+
+#: src/ofcShop.cpp:2755
+msgid "Processing chart..."
+msgstr "Kaardi ettevalmistamine..."
+
+#: src/ofcShop.cpp:2772
+msgid "Chart download cancelled."
+msgstr "Kaardi allalaadimine tühistatud."
+
+#: src/ofcShop.cpp:2791
+msgid "Status: Server unavailable."
+msgstr "Olek: server pole saadaval."
+
+#: src/ofcShop.cpp:2819
+msgid "BZB Decrypt failed."
+msgstr "BZB dekrüpteerimine luhtus."
+
+#: src/ofcShop.cpp:2868
+msgid "Status: BZB download FAILED after retry."
+msgstr "Olek: BZB allalaadimine NURJUS korduvkatse järel."
+
+#: src/ofcShop.cpp:2968
+msgid "Chart installation complete."
+msgstr "Kaardi paigaldus on lõpule viidud."
+
+#: src/ofcShop.cpp:3006
+msgid "Downloading chart:"
+msgstr "Kaardi allalaadimine:"
+
+#: src/ofcShop.cpp:3083 src/ofcShop.cpp:3142
+msgid "Choose chart install location."
+msgstr "Vali kaardi paigalduskoht."
+
+#: src/ofcShop.cpp:3092 src/ofcShop.cpp:3157
+msgid "Status:  Cancelled."
+msgstr "Olek: tühistatud."
+
+#: src/ofcShop.cpp:3177
+msgid "Status:  Activation Cancelled."
+msgstr "Olek: tühistatud aktiveerimine."
+
+#: src/ofcShop.cpp:3179
+msgid "Status:  Activation FAILED."
+msgstr "Olek: aktiveerimine NURJUS."
+
+#: src/ofcShop.cpp:3218
+msgid "Activation succeeded.\n"
+msgstr "Aktiveerimine õnnestus.\n"
+
+#: src/ofcShop.cpp:3219
+msgid "You may now proceed to install the chartset"
+msgstr "Sa võid nüüd kaardikomplekti paigaldusega jätkata"
+
+#: src/ofcShop.cpp:3235
+msgid "Status: Downloading..."
+msgstr "Olek: allalaadimine..."
+
+#: src/ofcShop.cpp:3240
+msgid "Downloading..."
+msgstr "Allalaadimas..."
+
+#: src/ofcShop.cpp:3270 src/ofcShop.cpp:3296 src/ofcShop.cpp:3744
+#: src/ofcShop.cpp:3892
+msgid "Status: OK"
+msgstr "Olek: OK"
+
+#: src/ofcShop.cpp:3446
+msgid "Install Selected Chartset"
+msgstr "Paigalda valitud kaardikomplekt"
+
+#: src/ofcShop.cpp:3447
+msgid "Reinstall Selected Chartset"
+msgstr "Paigalda valitud kaardikomplekt uuesti"
+
+#: src/ofcShop.cpp:3448
+msgid "Update Selected Chartset"
+msgstr "Uuenda valitud kaardikomplekt"
+
+#: src/ofcShop.cpp:3449
+msgid "Activate Selected Chartset"
+msgstr "Aktiveeri valitud kaardikomplekt"
+
+#: src/ofcShop.cpp:3453
+msgid "Install Charts"
+msgstr "Paigalda kaardid"
+
+#: src/ofcShop.cpp:3454
+msgid "Reinstall Charts"
+msgstr "Paigalda kaardid uuesti"
+
+#: src/ofcShop.cpp:3455
+msgid "Update Charts"
+msgstr "Uuenda kaardid"
+
+#: src/ofcShop.cpp:3456
+msgid "Activate Charts"
+msgstr "Aktiveeri kaardid"
+
+#: src/ofcShop.cpp:3457 src/ofcShop.cpp:4091 src/ofcShop.cpp:4160
+msgid "Cancel"
+msgstr "Tühista"
+
+#: src/ofcShop.cpp:3792 src/ofcShop.cpp:3946
+msgid "Downloaded:  "
+msgstr "Allalaetud:  "
+
+#: src/ofcShop.cpp:4057 src/ofcShop.cpp:4106
+msgid "Login to Fugawi.com shop"
+msgstr "Logi Fugawi.com'i poodi sisse"
+
+#: src/ofcShop.cpp:4074
+msgid "email address:"
+msgstr "meiliaadress:"
+
+#: src/ofcShop.cpp:4081
+msgid "Password:"
+msgstr "Salasõna:"
+
+#: src/ofcShop.cpp:4094 src/ofcShop.cpp:4163
+msgid "OK"
+msgstr "OK"
+
+#: src/ofcShop.cpp:4139
+msgid "email:"
+msgstr "e-post:"
+
+#: src/ofcShop.cpp:4145
+msgid "pass:"
+msgstr "sala:"
+

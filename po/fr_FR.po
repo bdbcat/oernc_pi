@@ -1,0 +1,339 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-23 23:26-0400\n"
+"PO-Revision-Date: 2018-05-31 09:32-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: fr\n"
+"X-Crowdin-File: /plugins/ofc_pi/po/ofc_pi.pot\n"
+
+#: src/chart.cpp:4139
+msgid "---<<< Warning:  Chart georef accuracy may be poor. >>>---"
+msgstr "---<<< Alerte :  La qualité du géo-référencement de la carte est peut-être insuffisante. >>>---"
+
+#: src/chart.cpp:4222 src/chart.cpp:4286
+msgid "---<<< Warning:  Chart georef accuracy is poor. >>>---"
+msgstr "---<<< Alerte :  La qualité du géo-référencement de la carte est insuffisante. >>>---"
+
+#: src/ofc_pi.cpp:211 src/ofc_pi.cpp:237
+msgid "Fugawi Charts"
+msgstr "Cartes Fugawi"
+
+#: src/ofc_pi.cpp:217
+msgid "Fugawi.com Charts PlugIn for OpenCPN"
+msgstr "Complément \"Cartes par Fugawi.com\" pour OpenCPN"
+
+#: src/ofc_pi.cpp:223
+msgid "Fugawi Charts PlugIn for OpenCPN\n"
+"Provides support for Fugawi.com raster charts.\n\n"
+msgstr "Le complément \"Cartes par Fugawi\" pour OpenCPN fournit un support pour les cartes raster éditées par Fugawi.com.\n\n"
+
+#: src/ofc_pi.cpp:317
+msgid "Cannot find the ofc server utility at \n"
+msgstr "Impossible de trouver le serveur ofc à \n"
+
+#: src/ofc_pi.cpp:321 src/ofc_pi.cpp:431 src/ofcShop.cpp:1125
+#: src/ofcShop.cpp:1144 src/ofcShop.cpp:1571 src/ofcShop.cpp:2772
+#: src/ofcShop.cpp:2968 src/ofcShop.cpp:3220
+msgid "ofc_pi Message"
+msgstr "Message de ofc_pi"
+
+#: src/ofc_pi.cpp:426
+msgid "serverd utility at \n"
+msgstr "serveur à \n"
+
+#: src/ofc_pi.cpp:430
+msgid " could not be started.\n\n"
+msgstr " ne peut pas être démarré.\n\n"
+
+#: src/ofcShop.cpp:242 src/ofcShop.cpp:2009 src/ofcShop.cpp:2118
+#: src/ofcShop.cpp:3987
+msgid "Dialog"
+msgstr "Dialogue"
+
+#: src/ofcShop.cpp:703 src/ofcShop.cpp:741
+msgid "Available."
+msgstr "Disponible."
+
+#: src/ofcShop.cpp:707
+msgid "Installed, Up-to-date."
+msgstr "Installé, et à jour."
+
+#: src/ofcShop.cpp:711
+msgid "Installed, Update available."
+msgstr "Installé, mise à jour disponible."
+
+#: src/ofcShop.cpp:716 src/ofcShop.cpp:754
+msgid "Expired."
+msgstr "Expiré."
+
+#: src/ofcShop.cpp:720
+msgid "Ready for download/install."
+msgstr "Prêt pour téléchargement/Installation."
+
+#: src/ofcShop.cpp:724 src/ofcShop.cpp:762
+msgid "Please update Chart List."
+msgstr "S'il vous plait, mettez à jour la liste des jeux de cartes."
+
+#: src/ofcShop.cpp:728
+msgid "Ready for Activation Request."
+msgstr "Prêt pour une requête d'activation."
+
+#: src/ofcShop.cpp:745
+msgid "Installed"
+msgstr "Installé"
+
+#: src/ofcShop.cpp:749
+msgid "Update available."
+msgstr "MàJ disponible."
+
+#: src/ofcShop.cpp:758
+msgid "Ready to install."
+msgstr "Prêt à installer."
+
+#: src/ofcShop.cpp:766
+msgid "Ready for Activation"
+msgstr "Prêt à activer"
+
+#: src/ofcShop.cpp:1102
+msgid "Fugawi server error: "
+msgstr "Erreur du serveur Fugawi : "
+
+#: src/ofcShop.cpp:1112
+msgid "internet communications error."
+msgstr "erreur de communication internet."
+
+#: src/ofcShop.cpp:1114
+msgid "Check your internet configuration."
+msgstr "Vérifiez la configuration internet."
+
+#: src/ofcShop.cpp:1118
+msgid "Invalid email name or password."
+msgstr "Adresse mail ou Mot de passe invalide."
+
+#: src/ofcShop.cpp:1121
+msgid "Check your configuration and try again."
+msgstr "Vérifiez votre configuration et essayez à nouveau."
+
+#: src/ofcShop.cpp:1139
+msgid "internet communications error code: "
+msgstr "code d'erreur de communication internet : "
+
+#: src/ofcShop.cpp:1143
+msgid "Check your connection and try again."
+msgstr "Vérifiez votre connexion internet et essayez à nouveau."
+
+#: src/ofcShop.cpp:1166
+msgid "Invalid Login."
+msgstr "Login invalide."
+
+#: src/ofcShop.cpp:1563
+msgid "This action will PERMANENTLY assign the chartset:"
+msgstr "Cette action va assigner de façon PERMANENTE ce jeu de cartes à ce terminal :"
+
+#: src/ofcShop.cpp:1567
+msgid "to this system."
+msgstr "pour ce terminal."
+
+#: src/ofcShop.cpp:1569
+msgid "Proceed?"
+msgstr "Procéder ?"
+
+#: src/ofcShop.cpp:1786
+msgid "Unzipping chart files..."
+msgstr "Décompression des fichiers de carte ..."
+
+#: src/ofcShop.cpp:2312
+msgid "My Charts"
+msgstr "Mes cartes"
+
+#: src/ofcShop.cpp:2315
+msgid "Refresh Chart List"
+msgstr "Jeux de cartes : Mise à jour"
+
+#: src/ofcShop.cpp:2344
+msgid "Actions"
+msgstr "Actions"
+
+#: src/ofcShop.cpp:2356
+msgid "Install Selected Chart"
+msgstr "Installer le jeu de cartes sélectionné"
+
+#: src/ofcShop.cpp:2359 src/ofcShop.cpp:3450
+msgid "Cancel Operation"
+msgstr "Operation annulée"
+
+#: src/ofcShop.cpp:2368
+msgid "Status: Chart List Refresh required."
+msgstr "Statut : Mise à jour de la liste des jeux de cartes requis."
+
+#: src/ofcShop.cpp:2486 src/ofcShop.cpp:3192
+msgid "Contacting Fugawi Charts server..."
+msgstr "Contact avec le serveur Fugawi en cours ..."
+
+#: src/ofcShop.cpp:2497 src/ofcShop.cpp:3203
+msgid "Status: Communications error."
+msgstr "Statut : Erreur de communication."
+
+#: src/ofcShop.cpp:2504
+msgid "Status: Checking for updates."
+msgstr "Statut : Recherches des mises à jour."
+
+#: src/ofcShop.cpp:2511
+msgid "Status: Chartset index download failed."
+msgstr "Statut : Echec du téléchargement de l'index."
+
+#: src/ofcShop.cpp:2515 src/ofcShop.cpp:2964 src/ofcShop.cpp:3210
+msgid "Status: Ready"
+msgstr "Statut : Prêt"
+
+#: src/ofcShop.cpp:2591 src/ofcShop.cpp:3540
+msgid "Downloading index file"
+msgstr "Téléchargement du fichier d'index"
+
+#: src/ofcShop.cpp:2591 src/ofcShop.cpp:3540
+msgid "Reading Index: "
+msgstr "Lecture de l'index : "
+
+#: src/ofcShop.cpp:2701
+msgid "Status: Error parsing index.xml."
+msgstr "Statut : Erreur analyse de index.xml."
+
+#: src/ofcShop.cpp:2755
+msgid "Processing chart..."
+msgstr "Cartes : Préparation ..."
+
+#: src/ofcShop.cpp:2772
+msgid "Chart download cancelled."
+msgstr "Téléchargement des cartes annulé."
+
+#: src/ofcShop.cpp:2791
+msgid "Status: Server unavailable."
+msgstr "Statut : Serveur non disponible."
+
+#: src/ofcShop.cpp:2819
+msgid "BZB Decrypt failed."
+msgstr "Echec de BZB decrypt."
+
+#: src/ofcShop.cpp:2868
+msgid "Status: BZB download FAILED after retry."
+msgstr "Statut : Echec du téléchargement de BZB après ré-essai."
+
+#: src/ofcShop.cpp:2968
+msgid "Chart installation complete."
+msgstr "Installation des cartes terminée."
+
+#: src/ofcShop.cpp:3006
+msgid "Downloading chart:"
+msgstr "Téléchargement du jeu de cartes :"
+
+#: src/ofcShop.cpp:3083 src/ofcShop.cpp:3142
+msgid "Choose chart install location."
+msgstr "Choisissez le lieu de stockage des cartes."
+
+#: src/ofcShop.cpp:3092 src/ofcShop.cpp:3157
+msgid "Status:  Cancelled."
+msgstr "Statut : annulé."
+
+#: src/ofcShop.cpp:3177
+msgid "Status:  Activation Cancelled."
+msgstr "Statut : Activation annulée."
+
+#: src/ofcShop.cpp:3179
+msgid "Status:  Activation FAILED."
+msgstr "Statut : Échec de l’Activation."
+
+#: src/ofcShop.cpp:3218
+msgid "Activation succeeded.\n"
+msgstr "Activation a réussi.\n"
+
+#: src/ofcShop.cpp:3219
+msgid "You may now proceed to install the chartset"
+msgstr "Vous pouvez maintenant installer le jeu de cartes"
+
+#: src/ofcShop.cpp:3235
+msgid "Status: Downloading..."
+msgstr "Statut : téléchargement ..."
+
+#: src/ofcShop.cpp:3240
+msgid "Downloading..."
+msgstr "Téléchargement en cours ..."
+
+#: src/ofcShop.cpp:3270 src/ofcShop.cpp:3296 src/ofcShop.cpp:3744
+#: src/ofcShop.cpp:3892
+msgid "Status: OK"
+msgstr "Statut : OK"
+
+#: src/ofcShop.cpp:3446
+msgid "Install Selected Chartset"
+msgstr "Installer le jeu de cartes sélectionné"
+
+#: src/ofcShop.cpp:3447
+msgid "Reinstall Selected Chartset"
+msgstr "Ré-Installer le jeu de cartes sélectionné"
+
+#: src/ofcShop.cpp:3448
+msgid "Update Selected Chartset"
+msgstr "Mettre à jour le jeu de cartes sélectionné"
+
+#: src/ofcShop.cpp:3449
+msgid "Activate Selected Chartset"
+msgstr "Activer le jeu de cartes sélectionné"
+
+#: src/ofcShop.cpp:3453
+msgid "Install Charts"
+msgstr "Cartes : Installer"
+
+#: src/ofcShop.cpp:3454
+msgid "Reinstall Charts"
+msgstr "Cartes : Ré-installer"
+
+#: src/ofcShop.cpp:3455
+msgid "Update Charts"
+msgstr "Cartes : Mettre à jour"
+
+#: src/ofcShop.cpp:3456
+msgid "Activate Charts"
+msgstr "Cartes : activer"
+
+#: src/ofcShop.cpp:3457 src/ofcShop.cpp:4091 src/ofcShop.cpp:4160
+msgid "Cancel"
+msgstr "Complément\\nnécessaire"
+
+#: src/ofcShop.cpp:3792 src/ofcShop.cpp:3946
+msgid "Downloaded:  "
+msgstr "Téléchargé :  "
+
+#: src/ofcShop.cpp:4057 src/ofcShop.cpp:4106
+msgid "Login to Fugawi.com shop"
+msgstr "Connexion à la boutique Fugawi.com"
+
+#: src/ofcShop.cpp:4074
+msgid "email address:"
+msgstr "adresse mail :"
+
+#: src/ofcShop.cpp:4081
+msgid "Password:"
+msgstr "Mot de passe :"
+
+#: src/ofcShop.cpp:4094 src/ofcShop.cpp:4163
+msgid "OK"
+msgstr "Ok"
+
+#: src/ofcShop.cpp:4139
+msgid "email:"
+msgstr "email :"
+
+#: src/ofcShop.cpp:4145
+msgid "pass:"
+msgstr "MdP :"
+

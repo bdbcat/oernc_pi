@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opencpn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-23 23:26-0400\n"
+"PO-Revision-Date: 2018-05-31 09:33-0400\n"
+"Last-Translator: nohal <pavel@kalian.cz>\n"
+"Language-Team: Catalan\n"
+"Language: ca_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: opencpn\n"
+"X-Crowdin-Language: ca\n"
+"X-Crowdin-File: /plugins/ofc_pi/po/ofc_pi.pot\n"
+
+#: src/chart.cpp:4139
+msgid "---<<< Warning:  Chart georef accuracy may be poor. >>>---"
+msgstr "---<<< Avís:  La precisió georef de la carta pot ser escassa. >>>---"
+
+#: src/chart.cpp:4222 src/chart.cpp:4286
+msgid "---<<< Warning:  Chart georef accuracy is poor. >>>---"
+msgstr "---<<< Avís:  Escassa precisió del georef de la carta. >>>---"
+
+#: src/ofc_pi.cpp:211 src/ofc_pi.cpp:237
+msgid "Fugawi Charts"
+msgstr "Cartes Fugawi"
+
+#: src/ofc_pi.cpp:217
+msgid "Fugawi.com Charts PlugIn for OpenCPN"
+msgstr "Extensió de cartes Fugawi per OpenCPN"
+
+#: src/ofc_pi.cpp:223
+msgid "Fugawi Charts PlugIn for OpenCPN\n"
+"Provides support for Fugawi.com raster charts.\n\n"
+msgstr "Extensió de cartes Fugawi per OpenCPN\n"
+" Afegeix suport per cartes RNC de Fugawi.\n\n"
+
+#: src/ofc_pi.cpp:317
+msgid "Cannot find the ofc server utility at \n"
+msgstr "No puc trobar l'aplicació ofc server a\n"
+
+#: src/ofc_pi.cpp:321 src/ofc_pi.cpp:431 src/ofcShop.cpp:1125
+#: src/ofcShop.cpp:1144 src/ofcShop.cpp:1571 src/ofcShop.cpp:2772
+#: src/ofcShop.cpp:2968 src/ofcShop.cpp:3220
+msgid "ofc_pi Message"
+msgstr "Missatge ofc_pi"
+
+#: src/ofc_pi.cpp:426
+msgid "serverd utility at \n"
+msgstr "aplicació served a \n"
+
+#: src/ofc_pi.cpp:430
+msgid " could not be started.\n\n"
+msgstr " podria no ser iniciada.\n\n"
+
+#: src/ofcShop.cpp:242 src/ofcShop.cpp:2009 src/ofcShop.cpp:2118
+#: src/ofcShop.cpp:3987
+msgid "Dialog"
+msgstr "Diàleg"
+
+#: src/ofcShop.cpp:703 src/ofcShop.cpp:741
+msgid "Available."
+msgstr "Disponible."
+
+#: src/ofcShop.cpp:707
+msgid "Installed, Up-to-date."
+msgstr "Instal·lada, actualitzada."
+
+#: src/ofcShop.cpp:711
+msgid "Installed, Update available."
+msgstr "Instal·lada, actualització disponible."
+
+#: src/ofcShop.cpp:716 src/ofcShop.cpp:754
+msgid "Expired."
+msgstr "Caducada."
+
+#: src/ofcShop.cpp:720
+msgid "Ready for download/install."
+msgstr "Llest per a descarregar/instal·lar."
+
+#: src/ofcShop.cpp:724 src/ofcShop.cpp:762
+msgid "Please update Chart List."
+msgstr "Si us plau, actualitza el llistat de cartes."
+
+#: src/ofcShop.cpp:728
+msgid "Ready for Activation Request."
+msgstr "Preparat per a la Sol·licitud d'Activació."
+
+#: src/ofcShop.cpp:745
+msgid "Installed"
+msgstr "Instal·lat"
+
+#: src/ofcShop.cpp:749
+msgid "Update available."
+msgstr "Actualització disponible."
+
+#: src/ofcShop.cpp:758
+msgid "Ready to install."
+msgstr "Preparat per instal·lar."
+
+#: src/ofcShop.cpp:766
+msgid "Ready for Activation"
+msgstr "Preparat per a activació"
+
+#: src/ofcShop.cpp:1102
+msgid "Fugawi server error: "
+msgstr "Error del servidor de Fugawi: "
+
+#: src/ofcShop.cpp:1112
+msgid "internet communications error."
+msgstr "error de comunicacions d'Internet."
+
+#: src/ofcShop.cpp:1114
+msgid "Check your internet configuration."
+msgstr "Comprova la teva connexió a Internet."
+
+#: src/ofcShop.cpp:1118
+msgid "Invalid email name or password."
+msgstr "Nom d'usuari/correu o contrasenya no vàlids."
+
+#: src/ofcShop.cpp:1121
+msgid "Check your configuration and try again."
+msgstr "Comproveu la configuració i torneu-ho a provar."
+
+#: src/ofcShop.cpp:1139
+msgid "internet communications error code: "
+msgstr "codi d'error de comunicacions Internet: "
+
+#: src/ofcShop.cpp:1143
+msgid "Check your connection and try again."
+msgstr "Comproveu la vostra connexió i torneu-ho a provar."
+
+#: src/ofcShop.cpp:1166
+msgid "Invalid Login."
+msgstr "Inici de sessió no vàlid."
+
+#: src/ofcShop.cpp:1563
+msgid "This action will PERMANENTLY assign the chartset:"
+msgstr "Aquesta acció li assignarà PERMANENTMENT la carta:"
+
+#: src/ofcShop.cpp:1567
+msgid "to this system."
+msgstr "a aquest sistema."
+
+#: src/ofcShop.cpp:1569
+msgid "Proceed?"
+msgstr "Vols continuar?"
+
+#: src/ofcShop.cpp:1786
+msgid "Unzipping chart files..."
+msgstr "Descomprimint arxiu de cartes..."
+
+#: src/ofcShop.cpp:2312
+msgid "My Charts"
+msgstr "Les Meves Cartes"
+
+#: src/ofcShop.cpp:2315
+msgid "Refresh Chart List"
+msgstr "Actualitza la llista de Cartes"
+
+#: src/ofcShop.cpp:2344
+msgid "Actions"
+msgstr "Accions"
+
+#: src/ofcShop.cpp:2356
+msgid "Install Selected Chart"
+msgstr "Instal·la les Cartes Seleccionades"
+
+#: src/ofcShop.cpp:2359 src/ofcShop.cpp:3450
+msgid "Cancel Operation"
+msgstr "Cancel·lar l'operació"
+
+#: src/ofcShop.cpp:2368
+msgid "Status: Chart List Refresh required."
+msgstr "Estat: Actualització del llistat de cartes requerida."
+
+#: src/ofcShop.cpp:2486 src/ofcShop.cpp:3192
+msgid "Contacting Fugawi Charts server..."
+msgstr "Contactant amb el servidor Fugawi..."
+
+#: src/ofcShop.cpp:2497 src/ofcShop.cpp:3203
+msgid "Status: Communications error."
+msgstr "Estat: Error de comunicació."
+
+#: src/ofcShop.cpp:2504
+msgid "Status: Checking for updates."
+msgstr "Estat: Buscant actualitzacions."
+
+#: src/ofcShop.cpp:2511
+msgid "Status: Chartset index download failed."
+msgstr "Estat: la descarrega de l'índex de cartes ha fallat."
+
+#: src/ofcShop.cpp:2515 src/ofcShop.cpp:2964 src/ofcShop.cpp:3210
+msgid "Status: Ready"
+msgstr "Estatus: Preparat"
+
+#: src/ofcShop.cpp:2591 src/ofcShop.cpp:3540
+msgid "Downloading index file"
+msgstr "Descarregant arxiu d'índex"
+
+#: src/ofcShop.cpp:2591 src/ofcShop.cpp:3540
+msgid "Reading Index: "
+msgstr "Llegint índex: "
+
+#: src/ofcShop.cpp:2701
+msgid "Status: Error parsing index.xml."
+msgstr "Estat: Error anàlisi arxiu index.xml."
+
+#: src/ofcShop.cpp:2755
+msgid "Processing chart..."
+msgstr "Preparant la carta..."
+
+#: src/ofcShop.cpp:2772
+msgid "Chart download cancelled."
+msgstr "Descàrrega de carta cancel·lada."
+
+#: src/ofcShop.cpp:2791
+msgid "Status: Server unavailable."
+msgstr "Estat: Servidor no disponible."
+
+#: src/ofcShop.cpp:2819
+msgid "BZB Decrypt failed."
+msgstr "BZB Decrypt ha fallat."
+
+#: src/ofcShop.cpp:2868
+msgid "Status: BZB download FAILED after retry."
+msgstr "Estat: descarrega BZB sense èxit després de tornar-ho a intentar."
+
+#: src/ofcShop.cpp:2968
+msgid "Chart installation complete."
+msgstr "Instal·lació de carta finalitzada."
+
+#: src/ofcShop.cpp:3006
+msgid "Downloading chart:"
+msgstr "Descarregant la carta:"
+
+#: src/ofcShop.cpp:3083 src/ofcShop.cpp:3142
+msgid "Choose chart install location."
+msgstr "Triar la ubicació d'instal·lació de la carta."
+
+#: src/ofcShop.cpp:3092 src/ofcShop.cpp:3157
+msgid "Status:  Cancelled."
+msgstr "Estat: Cancel·lat."
+
+#: src/ofcShop.cpp:3177
+msgid "Status:  Activation Cancelled."
+msgstr "Estat: Activació cancel·lada."
+
+#: src/ofcShop.cpp:3179
+msgid "Status:  Activation FAILED."
+msgstr "Estat: Activació ha fallat."
+
+#: src/ofcShop.cpp:3218
+msgid "Activation succeeded.\n"
+msgstr "Activació amb èxit.\n"
+
+#: src/ofcShop.cpp:3219
+msgid "You may now proceed to install the chartset"
+msgstr "Ara pot procedir a instal·lar les cartes"
+
+#: src/ofcShop.cpp:3235
+msgid "Status: Downloading..."
+msgstr "Estatus: Descarregant..."
+
+#: src/ofcShop.cpp:3240
+msgid "Downloading..."
+msgstr "Descarregant..."
+
+#: src/ofcShop.cpp:3270 src/ofcShop.cpp:3296 src/ofcShop.cpp:3744
+#: src/ofcShop.cpp:3892
+msgid "Status: OK"
+msgstr "Estatus: OK"
+
+#: src/ofcShop.cpp:3446
+msgid "Install Selected Chartset"
+msgstr "Instal·la les Cartes Seleccionades"
+
+#: src/ofcShop.cpp:3447
+msgid "Reinstall Selected Chartset"
+msgstr "Reinstal·lar la Carta Seleccionada"
+
+#: src/ofcShop.cpp:3448
+msgid "Update Selected Chartset"
+msgstr "Actualitza la Carta Seleccionada"
+
+#: src/ofcShop.cpp:3449
+msgid "Activate Selected Chartset"
+msgstr "Activar la Carta Seleccionada"
+
+#: src/ofcShop.cpp:3453
+msgid "Install Charts"
+msgstr "Instal·lar cartes"
+
+#: src/ofcShop.cpp:3454
+msgid "Reinstall Charts"
+msgstr "Re-Instal·lar cartes"
+
+#: src/ofcShop.cpp:3455
+msgid "Update Charts"
+msgstr "Actualitzar cartes"
+
+#: src/ofcShop.cpp:3456
+msgid "Activate Charts"
+msgstr "Activar cartes"
+
+#: src/ofcShop.cpp:3457 src/ofcShop.cpp:4091 src/ofcShop.cpp:4160
+msgid "Cancel"
+msgstr "Cancel·lar"
+
+#: src/ofcShop.cpp:3792 src/ofcShop.cpp:3946
+msgid "Downloaded:  "
+msgstr "Descarregat:  "
+
+#: src/ofcShop.cpp:4057 src/ofcShop.cpp:4106
+msgid "Login to Fugawi.com shop"
+msgstr "Entra a la botiga Fugawi.com"
+
+#: src/ofcShop.cpp:4074
+msgid "email address:"
+msgstr "adreça de correu:"
+
+#: src/ofcShop.cpp:4081
+msgid "Password:"
+msgstr "Contrasenya:"
+
+#: src/ofcShop.cpp:4094 src/ofcShop.cpp:4163
+msgid "OK"
+msgstr "Accepta"
+
+#: src/ofcShop.cpp:4139
+msgid "email:"
+msgstr "correu electrònic:"
+
+#: src/ofcShop.cpp:4145
+msgid "pass:"
+msgstr "contrasenya:"
+
