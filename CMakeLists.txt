@@ -33,6 +33,9 @@ SET(OCPN_MIN_VERSION "ov50")
 
 #SET(CMAKE_BUILD_TYPE Release)
 
+set (CMAKE_CXX_STANDARD 11)
+message(STATUS "Setting C++11 standard via cmake standard mechanism")
+
 IF( NOT CMAKE_BUILD_TYPE )
   SET( CMAKE_BUILD_TYPE Release CACHE STRING
        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
@@ -179,12 +182,13 @@ SET(SRC_OERNC
             src/oernc_inStream.h
             src/oernc_inStream.cpp
             src/ellipse.c
-            src/ofcShop.cpp
-            src/ofcShop.h
             src/base64.h
             src/base64.c
             src/lodepng/lodepng.cpp
             src/lodepng/lodepng.h
+            src/ochartShop.cpp
+            src/ochartShop.h
+            src/fpr.cpp
      )
 
 IF(QT_ANDROID)

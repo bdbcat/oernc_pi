@@ -93,7 +93,7 @@ struct fifo_msg {
     char cmd;
     char fifo_name[256];
     char file_name[256];
-    char crypto_key[256];
+    char crypto_key[512];
 };
 
 #define PUBLIC "/tmp/OCPN_PIPE"

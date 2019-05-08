@@ -899,6 +899,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         strncpy(msg.fifo_name, privatefifo_name, sizeof(privatefifo_name));
                 
         buf = m_cryptoKey.ToUTF8();
+        int lenc = strlen(buf.data());
         if(buf.data()) 
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
                 
@@ -910,9 +911,20 @@ bool oernc_inStream::Load( bool bHeaderOnly )
                 
                 // Open the private FIFO for reading to get output of command
                 // from the server.
-        if((privatefifo = open(privatefifo_name, O_RDONLY) ) == -1) {
+        if((privatefifo = open(privatefifo_name, O_RDONLY /*| O_NONBLOCK*/) ) == -1) {
               wxLogMessage(_T("oernc_pi: Could not open private pipe"));
               return false;
+        }
+
+        // Read the function return code
+        char frcbuf[4];
+        if(!Read(frcbuf, 1).IsOk()){
+            strncpy(err, "Load:  READ error PFC", sizeof(err));
+            return false;
+        }
+        if(frcbuf[0] == '1'){
+            strncpy(err, "Load:  READ error PFCDC", sizeof(err));
+            return false;
         }
 
         // Read response, by steps...

@@ -37,7 +37,10 @@
 #include "oernc_pi.h"
 #include "chart.h"
 #include "oernc_inStream.h"
-#include "ofcShop.h"
+#include "ochartShop.h"
+#include <map>
+#include <unordered_map>
+#include <tinyxml.h>
 
 #ifdef __OCPN__ANDROID__
 #include "androidSupport.h"
@@ -58,7 +61,6 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 
 
 wxString g_server_bin;
-//wxString g_UserKey;
 wxString g_pipeParm;
 bool g_serverDebug;
 long g_serverProc;
@@ -66,10 +68,14 @@ int g_debugLevel = 0;
 int g_admin;
 
 wxString  g_deviceInfo;
-wxString  g_loginUser;
-wxString  g_PrivateDataDir;
+extern wxString  g_loginUser;
+extern wxString  g_PrivateDataDir;
 wxString  g_versionString;
 bool g_bNoFindMessageShown;
+
+//std::unordered_map<std::string, std::string> keyMap;
+WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
+OKeyHash keyMap;
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -78,6 +84,111 @@ bool g_bNoFindMessageShown;
 //---------------------------------------------------------------------------------------------------------
 
 #include "default_pi.xpm"
+
+
+bool loadKeyMap( wxString file )
+{
+    wxFileName fn(file);
+
+    wxString kfile(fn.GetPath(wxPATH_GET_SEPARATOR) + _T("KeyList.XML"));
+    
+    FILE *iFile = fopen(kfile.mb_str(), "rb");
+   
+    if (iFile <= 0)
+        return false;            // file error
+        
+    // compute the file length    
+    fseek(iFile, 0, SEEK_END);
+    size_t iLength = ftell(iFile);
+    
+    char *iText = (char *)calloc(iLength + 1, sizeof(char));
+    
+    // Read the file
+    fseek(iFile, 0, SEEK_SET);
+    size_t nread = 0;
+    while (nread < iLength){
+        nread += fread(iText + nread, 1, iLength - nread, iFile);
+    }           
+    fclose(iFile);
+
+    
+    //  Parse the XML
+    TiXmlDocument * doc = new TiXmlDocument();
+    const char *rr = doc->Parse( iText);
+    
+    TiXmlElement * root = doc->RootElement();
+    if(!root)
+        return false;                              // undetermined error??
+
+    wxString RInstallKey, fileName;
+    wxString rootName = wxString::FromUTF8( root->Value() );
+    TiXmlNode *child;
+    for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
+        wxString s = wxString::FromUTF8(child->Value());  //chart
+        
+        TiXmlNode *childChart = child->FirstChild();
+        for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
+            const char *chartVal =  childChart->Value();
+                        
+            if(!strcmp(chartVal, "RInstallKey")){
+                TiXmlNode *childVal = childChart->FirstChild();
+                if(childVal){
+                    RInstallKey = childVal->Value();
+                    
+                }
+            }
+            if(!strcmp(chartVal, "FileName")){
+                TiXmlNode *childVal = childChart->FirstChild();
+                if(childVal){
+                    fileName = childVal->Value();
+                    
+                }
+            }
+
+        }
+        if(RInstallKey.Length() && fileName.Length()){
+            OKeyHash::iterator search = keyMap.find(fileName);
+            if (search == keyMap.end()) {
+                keyMap[fileName] = RInstallKey;
+            }
+        }
+    }
+
+        
+    
+
+    free( iText );
+    
+    return true;
+
+}
+
+
+wxString getKey(wxString file)
+{
+     wxFileName fn(file);
+//     char buf[400];
+//     strcpy( buf, (const char*)fn.GetName().mb_str(wxConvUTF8) ); // buf will now contain name, as UTF8
+// 
+//     std::string sKey(buf);
+    
+    OKeyHash::iterator search = keyMap.find(fn.GetName());
+    if (search != keyMap.end()) {
+        return search->second;
+    }
+
+    loadKeyMap(file);
+
+    search = keyMap.find(fn.GetName());
+    if (search != keyMap.end()) {
+        return search->second;
+    }
+    
+    return wxString();
+    
+    
+}
+
 
 
 //---------------------------------------------------------------------------------------------------------
@@ -234,10 +345,26 @@ wxArrayString oernc_pi::GetDynamicChartClassNameArray()
 
 void oernc_pi::OnSetupOptions( void )
 {
-    m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("Fugawi Charts") );
+#ifdef __OCPN__ANDROID__
+    m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeRNC Charts") );
     if( ! m_pOptionsPage )
     {
-        wxLogMessage( _T("Error: ofc_pi::OnSetupOptions AddOptionsPage failed!") );
+        wxLogMessage( _T("Error: oernc_pi::OnSetupOptions AddOptionsPage failed!") );
+        return;
+    }
+    wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
+    m_pOptionsPage->SetSizer( sizer );
+    
+    m_oesencpanel = new oesencPanel( this, m_pOptionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE );
+
+    m_pOptionsPage->InvalidateBestSize();
+    sizer->Add( m_oesencpanel, 1, wxALL | wxEXPAND );
+    m_oesencpanel->FitInside();
+#else
+    m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeRNC Charts") );
+    if( ! m_pOptionsPage )
+    {
+        wxLogMessage( _T("Error: oernc_pi::OnSetupOptions AddOptionsPage failed!") );
         return;
     }
     wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
@@ -246,18 +373,15 @@ void oernc_pi::OnSetupOptions( void )
     m_shoppanel = new shopPanel( m_pOptionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize );
     
     m_pOptionsPage->InvalidateBestSize();
-    m_shoppanel->InvalidateBestSize();
     sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
-    m_pOptionsPage->Layout();
-    
     m_shoppanel->FitInside();
 
+#endif
 }
-
 void oernc_pi::OnCloseToolboxPanel(int page_sel, int ok_apply_cancel)
 {
     if(m_shoppanel){
-        m_shoppanel->StopAllDownloads();
+        //m_shoppanel->StopAllDownloads();
     }
     
 }

@@ -72,8 +72,10 @@ float hex2float( std::string h)
 }
 
 
-//  Private version of PolyPt testing using floats instead of doubles
+wxString getKey(wxString file);
 
+
+//  Private version of PolyPt testing using floats instead of doubles
 bool Intersect(MyFlPoint p1, MyFlPoint p2, MyFlPoint p3, MyFlPoint p4) ;
 int CCW(MyFlPoint p0, MyFlPoint p1, MyFlPoint p2) ;
 
@@ -513,7 +515,8 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
       
       validate_server();
       
-      wxString key = _T("key");
+
+      wxString key = wxString(getKey(name));
 #if 0      
       key = getKeyAsciiHex(name);
       if(!key.Len()){
