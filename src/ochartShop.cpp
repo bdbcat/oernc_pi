@@ -80,6 +80,9 @@ wxString g_lastInstallDir;
 unsigned int    g_dongleSN;
 wxString        g_dongleName;
 
+itemSlot        *gtargetSlot;
+InProgressIndicator *g_ipGauge;
+
 #define ID_CMD_BUTTON_INSTALL 7783
 #define ID_CMD_BUTTON_INSTALL_CHAIN 7784
 
@@ -110,6 +113,18 @@ size_t wxcurl_string_write_UTF8(void* ptr, size_t size, size_t nmemb, void* pcha
     }
  
     return iRealSize;
+}
+
+static int xferinfo(void *p,
+                    curl_off_t dltotal, curl_off_t dlnow,
+                    curl_off_t ultotal, curl_off_t ulnow)
+{
+    if(g_ipGauge){
+        g_ipGauge->Pulse();
+        wxYieldIfNeeded();
+    }
+
+    return 0;
 }
 
 class wxCurlHTTPNoZIP : public wxCurlHTTP
@@ -190,6 +205,9 @@ bool wxCurlHTTPNoZIP::Post(wxInputStream& buffer, const wxString& szRemoteFile /
         SetOpt(CURLOPT_WRITEFUNCTION, wxcurl_string_write_UTF8);         // private function
         SetOpt(CURLOPT_WRITEDATA, (void*)&m_szResponseBody);
         
+        curl_easy_setopt(m_pCURL, CURLOPT_XFERINFOFUNCTION, xferinfo);
+        curl_easy_setopt(m_pCURL, CURLOPT_NOPROGRESS, 0L);
+        
         if(Perform())
         {
             ResetHeaders();
@@ -245,10 +263,10 @@ void itemChart::Update(itemChart *other)
         Qty.quantityId = other->quantityList[i].quantityId;
         
         for(unsigned int j = 0 ; j < other->quantityList[i].slotList.size() ; j++){
-            itemSlot slot;
-            slot.slotUuid = other->quantityList[i].slotList[j].slotUuid;
-            slot.assignedSystemName = other->quantityList[i].slotList[j].assignedSystemName;
-            slot.lastRequested = other->quantityList[i].slotList[j].lastRequested;
+            itemSlot *slot = new itemSlot;
+            slot->slotUuid = other->quantityList[i].slotList[j]->slotUuid;
+            slot->assignedSystemName = other->quantityList[i].slotList[j]->assignedSystemName;
+            slot->lastRequested = other->quantityList[i].slotList[j]->lastRequested;
             Qty.slotList.push_back(slot);
         }
         
@@ -315,8 +333,8 @@ bool itemChart::isChartsetAssignedToSystemKey(wxString key)
     for(unsigned int i=0 ; i < quantityList.size() ; i++){
         itemQuantity Qty = quantityList[i];
         for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
-            itemSlot slot = Qty.slotList[j];
-            if(!strcmp(key.mb_str(), slot.assignedSystemName.c_str())){
+            itemSlot *slot = Qty.slotList[j];
+            if(!strcmp(key.mb_str(), slot->assignedSystemName.c_str())){
                 return true;
             }
         }
@@ -333,14 +351,44 @@ int itemChart::getChartAssignmentCount()
     for(unsigned int i=0 ; i < quantityList.size() ; i++){
         itemQuantity Qty = quantityList[i];
         for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
-            itemSlot slot = Qty.slotList[j];
-            if(strlen(slot.slotUuid.c_str())){
+            itemSlot *slot = Qty.slotList[j];
+            if(strlen(slot->slotUuid.c_str())){
                 rv++;
             }
         }
     }
     return rv;
 }
+
+bool itemChart::isUUIDAssigned( wxString UUID)
+{
+    for(unsigned int i=0 ; i < quantityList.size() ; i++){
+        itemQuantity Qty = quantityList[i];
+        for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
+            itemSlot *slot = Qty.slotList[j];
+            if(!strcmp(slot->slotUuid.c_str(), UUID.mb_str())){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+itemSlot *itemChart::GetSlotPtr( wxString UUID )
+{
+    for(unsigned int i=0 ; i < quantityList.size() ; i++){
+        itemQuantity Qty = quantityList[i];
+        for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
+            itemSlot *slot = Qty.slotList[j];
+            if(!strcmp(slot->slotUuid.c_str(), UUID.mb_str())){
+                return slot;
+            }
+        }
+    }
+    return NULL;
+ 
+}
+
 
 bool itemChart::isChartsetFullyAssigned()
 {
@@ -405,8 +453,8 @@ int itemChart::GetSlotAssignedToInstalledDongle( int &qId )
     for(unsigned int i=0 ; i < quantityList.size() ; i++){
         itemQuantity Qty = quantityList[i];
         for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
-            itemSlot slot = Qty.slotList[j];
-            if(!strcmp(g_dongleName.mb_str(), slot.assignedSystemName.c_str())){
+            itemSlot *slot = Qty.slotList[j];
+            if(!strcmp(g_dongleName.mb_str(), slot->assignedSystemName.c_str())){
                 qId = Qty.quantityId;
                 return j;
             }
@@ -421,8 +469,8 @@ int itemChart::GetSlotAssignedToSystem( int &qId )
     for(unsigned int i=0 ; i < quantityList.size() ; i++){
         itemQuantity Qty = quantityList[i];
         for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
-            itemSlot slot = Qty.slotList[j];
-            if(!strcmp(g_systemName.mb_str(), slot.assignedSystemName.c_str())){
+            itemSlot *slot = Qty.slotList[j];
+            if(!strcmp(g_systemName.mb_str(), slot->assignedSystemName.c_str())){
                 qId = Qty.quantityId;
                 return j;
             }
@@ -441,7 +489,15 @@ int itemChart::FindQuantityIndex( int nqty){
     
     return -1;
 }
-     
+
+itemSlot *itemChart::GetActiveSlot(){
+    itemSlot *rv = NULL;
+    if((m_activeQty < 0) || (m_assignedSlot < 0))
+        return rv;
+    
+    int qtyIndex = FindQuantityIndex( m_activeQty );
+    return quantityList[qtyIndex].slotList[m_assignedSlot];
+}
                 
 //  Current status can be one of:
 /*
@@ -499,6 +555,14 @@ int itemChart::getChartStatus()
     if(m_assignedSlot < 0)
         return m_status;
 
+    // From here, chart may be:
+    // a.  Requestable
+    // b.  Preparing
+    // c.  Ready for download
+    // d.  Downloading now.
+    
+    m_status = STAT_REQUESTABLE;
+        return m_status;
     
     //  Now check for installation state
 #if 0    
@@ -614,9 +678,9 @@ wxString itemChart::getKeytypeString( std::string slotUUID ){
     for(unsigned int i=0 ; i < quantityList.size() ; i++){
         itemQuantity Qty = quantityList[i];
         for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
-            itemSlot slot = Qty.slotList[j];
-            if(!strcmp(slotUUID.c_str(), slot.slotUuid.c_str())){
-                wxString akey = wxString(slot.assignedSystemName.c_str());
+            itemSlot *slot = Qty.slotList[j];
+            if(!strcmp(slotUUID.c_str(), slot->slotUuid.c_str())){
+                wxString akey = wxString(slot->assignedSystemName.c_str());
                 if(akey.StartsWith("sgl"))
                     return _("USB Key Dongle");
                 else
@@ -1064,9 +1128,9 @@ void loadShopConfig()
             itemQuantity new_qty;
             if(qtyIndex < 0){
                 new_qty.quantityId = nqty;
-                itemSlot slot;
-                slot.installLocation = std::string(install.mb_str());
-                slot.installedFileDownloadPath = std::string(dl.mb_str());
+                itemSlot *slot = new itemSlot;
+                slot->installLocation = std::string(install.mb_str());
+                slot->baseFileDownloadPath = std::string(dl.mb_str());
 
                 new_qty.slotList.push_back(slot);
                 pItem->quantityList.push_back(new_qty);
@@ -1102,13 +1166,13 @@ void saveShopConfig()
               sqid.Printf(_T("%d"), qID);
               
               wxString key = chart->chartID + _T(";") + sqid + _T(";") + chart->orderRef;
-              itemSlot slot;
+              itemSlot *slot;
               for( unsigned int k = 0 ; k < chart->quantityList[j].slotList.size() ; k++){
                   slot = chart->quantityList[j].slotList[k];
-                  if( slot.assignedSystemName.size()){
+                  if( slot->assignedSystemName.size()){
                     wxString val = chart->chartName + _T(";");
-                    val += slot.installLocation + _T(";");
-                    val += slot.installedFileDownloadPath + _T(";");
+                    val += slot->installLocation + _T(";");
+                    val += slot->baseFileDownloadPath + _T(";");
                     pConf->Write( key, val );
                   }
               }
@@ -1121,7 +1185,7 @@ void saveShopConfig()
 int checkResult(wxString &result, bool bShowErrorDialog = true)
 {
     if(g_shopPanel){
-        g_shopPanel->getInProcessGuage()->Stop();
+        g_ipGauge->Stop();
     }
     
     long dresult;
@@ -1262,12 +1326,33 @@ int doLogin()
     
 }
 
+itemChart *FindChartForSlotUUID(wxString UUID)
+{
+    itemChart *rv = NULL;
+    for(unsigned int i=0 ; i < ChartVector.size() ; i++){
+        itemChart *chart = ChartVector[i];
+        if(chart->isUUIDAssigned(UUID))
+            return chart;
+    }
+ 
+    return rv;
+}
 
-wxString ProcessResponse(std::string body)
+wxString ProcessResponse(std::string body, bool bsubAmpersand)
 {
 //    std::string db("<?xml version=\"1.0\" encoding=\"utf-8\"?><response><result>1</result><chart> <quantity> <quantityId>1</quantityId> <slot> <slotUuid>123e4567-e89b-12d3-a456-426655440000</slotUuid> <assignedSystemName>mylaptop</assignedSystemName> <lastRequested>2-1</lastRequested>     </slot> <slot> </slot> </quantity> </chart></response>");
 //    body = db;
         TiXmlDocument * doc = new TiXmlDocument();
+        if(bsubAmpersand){
+            std::string oldStr("&");
+            std::string newStr("&amp;");
+            std::string::size_type pos = 0u;
+            while((pos = body.find(oldStr, pos)) != std::string::npos){
+                body.replace(pos, oldStr.length(), newStr);
+                pos += newStr.length();
+            }
+        }
+
         const char *rr = doc->Parse( body.c_str());
     
         //doc->Print();
@@ -1292,12 +1377,14 @@ wxString ProcessResponse(std::string body)
         wxString chartLink;
         wxString chartSize;
         wxString chartThumbURL;
-
+        itemSlot *activeSlot = NULL;
 
          wxString p = wxString(body.c_str(), wxConvUTF8);
+         //  wxMSW does not like trying to format this string containing "%" characters
+#ifdef __WXGTK__         
          wxLogMessage(_T("ProcessResponse results:"));
          wxLogMessage(p);
-
+#endif
         
             TiXmlElement * root = doc->RootElement();
             if(!root){
@@ -1339,8 +1426,55 @@ wxString ProcessResponse(std::string body)
                     g_lastSlotUUID =  wxString::FromUTF8(childslotuuid->Value());
                 }
                 
-                else if(!strcmp(child->Value(), "chart")){
+                else if(!strcmp(child->Value(), "file")){
+                    // Get a pointer to slot referenced by last UUID seen
+                    itemChart *pChart = FindChartForSlotUUID(g_lastSlotUUID);
+                    if(pChart){
+                        itemSlot *pslot = pChart->GetSlotPtr(g_lastSlotUUID);
+                        activeSlot = pslot;
+                        if(activeSlot){
+                        
+                            TiXmlNode *childFile = child->FirstChild();
+                            for ( childFile = child->FirstChild(); childFile!= 0; childFile = childFile->NextSibling()){
+                                const char *fileVal =  childFile->Value();
+                            
+                                if(!strcmp(fileVal, "link")){
+                                    TiXmlNode *childVal = childFile->FirstChild();
+                                    if(childVal) 
+                                        activeSlot->baseFileDownloadPath = childVal->Value();
+                                }
+                                
+                                else if(!strcmp(fileVal, "size")){
+                                    TiXmlNode *childVal = childFile->FirstChild();
+                                    if(childVal) 
+                                        activeSlot->baseFileSize = childVal->Value();
+                                }
+
+                                else if(!strcmp(fileVal, "sha256")){
+                                    TiXmlNode *childVal = childFile->FirstChild();
+                                    if(childVal) 
+                                        activeSlot->baseFileSHA256 = childVal->Value();
+                                }
+
+                                else if(!strcmp(fileVal, "chartKeysLink")){
+                                    TiXmlNode *childVal = childFile->FirstChild();
+                                    if(childVal) 
+                                        activeSlot->chartKeysDownloadPath = childVal->Value();
+                                }
+                                
+                                else if(!strcmp(fileVal, "chartKeysSha256")){
+                                    TiXmlNode *childVal = childFile->FirstChild();
+                                    if(childVal) 
+                                        activeSlot->chartKeysSHA256 = childVal->Value();
+                                }
+
+                            }
+                        }
+                    }
+                }
                     
+                else if(!strcmp(child->Value(), "chart")){
+                                    
                     pChart = new itemChart();
                     
                     
@@ -1446,22 +1580,22 @@ wxString ProcessResponse(std::string body)
                                     }
                                 }
                                 else if(!strcmp(quantityVal, "slot")){
-                                     itemSlot Slot;
+                                     itemSlot *Slot = new itemSlot;
                                      TiXmlNode *childSlotChild;
                                      for ( childSlotChild = childQuantityChild->FirstChild(); childSlotChild!= 0; childSlotChild = childSlotChild->NextSibling()){
                                          const char *slotVal =  childSlotChild->Value();
  
                                          if(!strcmp(slotVal, "slotUuid")){
                                              TiXmlNode *childVal = childSlotChild->FirstChild();
-                                             if(childVal) Slot.slotUuid = childVal->Value();
+                                             if(childVal) Slot->slotUuid = childVal->Value();
                                          }
                                          else if(!strcmp(slotVal, "assignedSystemName")){
                                              TiXmlNode *childVal = childSlotChild->FirstChild();
-                                             if(childVal) Slot.assignedSystemName = childVal->Value();
+                                             if(childVal) Slot->assignedSystemName = childVal->Value();
                                          }
                                          else if(!strcmp(slotVal, "lastRequested")){
                                              TiXmlNode *childVal = childSlotChild->FirstChild();
-                                             if(childVal) Slot.lastRequested = childVal->Value();
+                                             if(childVal) Slot->lastRequested = childVal->Value();
                                          }
                                      }
                                      Qty.slotList.push_back(Slot);
@@ -1597,9 +1731,9 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
 
         if(result.IsSameAs(_T("1"))){                    // Good result
             // Create a new slot and record the assigned slotUUID, etc
-            itemSlot slot;
-            slot.assignedSystemName = systemName.mb_str();
-            slot.slotUuid = g_lastSlotUUID.mb_str();
+            itemSlot *slot = new itemSlot;
+            slot->assignedSystemName = systemName.mb_str();
+            slot->slotUuid = g_lastSlotUUID.mb_str();
             chart->quantityList[qtyIndex].slotList.push_back(slot);
             return 0;
         }
@@ -1723,7 +1857,7 @@ int doUploadXFPR(bool bDongle)
 }
 
 
-int doPrepare(oeSencChartPanel *chartPrepare, int slot)
+int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
 {
     // Request a chart preparation
     wxString url = userURL;
@@ -1732,16 +1866,21 @@ int doPrepare(oeSencChartPanel *chartPrepare, int slot)
     
     url +=_T("?fc=module&module=occharts&controller=apioernc");
     
-    wxString sSlot;
-    sSlot.Printf(_T("%1d"), slot);
+   
+    itemChart *chart = chartPrepare->m_pChart;
     
-    oitemChart *chart = chartPrepare->m_pChart;
     
-    wxString aSysName = chart->sysID0;
-    if(slot == 1)
-        aSysName = chart->sysID1;
-    
-        
+/*
+                        a. taskId: request
+                        b. username
+                        c. key
+                        d. assignedSystemName: The current systemName assigned to the machine or connected dongle.
+                        e. slotUuid: got after request 4
+                        f. requestedFile: base|update (all files or just updated files from previous versions)
+                        g. requestedEdition: E-U
+                        h. currentEdition: E-U (it could be void if requestedFile = base but it can not if requestedFile = update)
+                        i. debug
+*/       
     wxString loginParms;
     loginParms += _T("taskId=request");
     loginParms += _T("&username=") + g_loginUser;
@@ -1749,11 +1888,11 @@ int doPrepare(oeSencChartPanel *chartPrepare, int slot)
     if(g_debugShop.Len())
         loginParms += _T("&debug=") + g_debugShop;
 
-    loginParms += _T("&assignedSystemName=") + aSysName;
-    loginParms += _T("&chartid=") + chart->chartID;
-    loginParms += _T("&order=") + chart->orderRef;
-    loginParms += _T("&quantityId=") + chart->quantityId;
-    loginParms += _T("&slot=") + sSlot;
+    loginParms += _T("&assignedSystemName=") + wxString(slot->assignedSystemName.c_str());
+    loginParms += _T("&slotUuid=") + wxString(slot->slotUuid.c_str());
+    loginParms += _T("&requestedFile=") + wxString(_T("base"));
+    loginParms += _T("&requestedEdition=") + wxString(chart->chartEdition.c_str());
+    loginParms += _T("&currentEdition=") + wxString(chart->chartEdition.c_str());
     
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
@@ -1764,7 +1903,8 @@ int doPrepare(oeSencChartPanel *chartPrepare, int slot)
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
     
     if(iResponseCode == 200){
-        wxString result = ProcessResponse(post.GetResponseBody());
+        // Expecting complex links with embedded entities, so process the "&" correctly
+        wxString result = ProcessResponse(post.GetResponseBody(), true);
         
         if(result.IsSameAs(_T("50"))){                  // General network error
             return 0;                                   // OK
@@ -1779,49 +1919,49 @@ int doPrepare(oeSencChartPanel *chartPrepare, int slot)
     return 0;
 }
 
-int doDownload(oeSencChartPanel *chartDownload, int slot)
+int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 {
-    oitemChart *chart = chartDownload->m_pChart;
+    //  Create the download queue for two files.
 
-    //  Create a destination file name for the download.
+    targetSlot->dlQueue.clear();
+    
+    // First, the shorter Key file
+    itemDLTask task1;
     wxURI uri;
-    
-    wxString downloadURL = chart->fileDownloadURL0;
-    if(slot == 1)
-        downloadURL = chart->fileDownloadURL1;
-
+    wxString downloadURL = wxString(targetSlot->chartKeysDownloadPath.c_str());
     uri.Create(downloadURL);
-    
     wxString serverFilename = uri.GetPath();
-    wxString b = uri.GetServer();
-    
     wxFileName fn(serverFilename);
     wxString fileTarget = fn.GetFullName();
+
+    task1.url = downloadURL;
+    task1.localFile = wxString(g_PrivateDataDir + fileTarget).mb_str();
+    targetSlot->dlQueue.push_back(task1);
     
-    wxString downloadFile = g_PrivateDataDir + fileTarget;
-    chart->downloadingFile = downloadFile;
+    // Next, the chart payload file
+    itemDLTask task2;
+    wxURI uri2;
+    downloadURL = wxString(targetSlot->baseFileDownloadPath.c_str());
+    uri2.Create(downloadURL);
+    serverFilename = uri2.GetPath();
+    wxFileName fn2(serverFilename);
+    fileTarget = fn2.GetFullName();
+
+    task2.url = downloadURL;
+    task2.localFile = wxString(g_PrivateDataDir + fileTarget).mb_str();
+    targetSlot->dlQueue.push_back(task2);
     
-    //wxLogMessage(_T("downloadURL0 ") + chart->fileDownloadURL0);
-    //wxLogMessage(_T("downloadURL1 ") + chart->fileDownloadURL1);
-    //wxLogMessage(_T("downloadURL: ") + downloadURL);
-    //wxLogMessage(_T("serverFilename: ") + serverFilename);
-    //wxLogMessage(_T("fileTarget: ") + fileTarget);
-    //wxLogMessage(_T("downloadFile: ") + downloadFile);
+    // Store the targetSlot pointer globally for general access
+    gtargetSlot = targetSlot;
+    gtargetSlot->idlQueue = 0;
     
-    if(fileTarget.IsEmpty()){
-        wxLogMessage(_T("fileTarget is empty, download aborted"));
-        return 0;
-    }
-        
-    
-    downloadOutStream = new wxFFileOutputStream(downloadFile);
-    
+    // Kick off the first file
     g_curlDownloadThread = new wxCurlDownloadThread(g_CurlEventHandler);
-    g_curlDownloadThread->SetURL(downloadURL);
+    downloadOutStream = new wxFFileOutputStream(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
+    g_curlDownloadThread->SetURL(gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
     g_curlDownloadThread->SetOutputStream(downloadOutStream);
     g_curlDownloadThread->Download();
  
-
     return 0;
 }
 
@@ -1930,69 +2070,83 @@ bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool
 }
 
 
-int doUnzip(oitemChart *chart, int slot)
+int doUnzip(itemSlot *slot)
 {
-    wxString installDir;
+    if(!slot)
+        return 1;
+    
     wxString downloadFile;
     
-    if(slot == 0){
-        downloadFile = chart->fileDownloadPath0;
-        if(chart->installLocation0.Length()){
-            installDir = chart->installLocation0;
-        }
-    }
-    else if(slot == 1){
-        downloadFile = chart->fileDownloadPath1;
-        if(chart->installLocation1.Length()){
-            installDir = chart->installLocation1;
-        }
-    }
+    // Is there an install directory known for this chart, say from config file?
+    wxString installDir;
+    
     
     wxString chosenInstallDir;
-    if(1/*!installDir.Length()*/){
         
-        wxString installLocn = g_PrivateDataDir;
-        if(installDir.Length())
-            installLocn = installDir;
-        else if(g_lastInstallDir.Length())
-            installLocn = g_lastInstallDir;
+    wxString installLocn = g_PrivateDataDir;
+    if(installDir.Length())
+        installLocn = installDir;
+    else if(g_lastInstallDir.Length())
+        installLocn = g_lastInstallDir;
         
-        wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
-        int result = dirSelector.ShowModal();
+    wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
+    int result = dirSelector.ShowModal();
         
-        if(result == wxID_OK){
-            chosenInstallDir = dirSelector.GetPath();
-        }
-        else{
-            return 1;
-        }
+    if(result == wxID_OK){
+        chosenInstallDir = dirSelector.GetPath();
     }
     else{
-        chosenInstallDir = installDir;
+        return 1;
     }
-    
+
     g_shopPanel->setStatusText( _("Ready for unzipping chart files."));
     g_shopPanel->Refresh(true);
     wxYield();
     
     // Ready for unzip
-    if( downloadFile.Lower().EndsWith(_T("zip")) ) //Zip compressed
-    {
-        g_shopPanel->setStatusText( _("Unzipping chart files..."));
-        wxYield();
+    // Walk the download queue, unzipping any ZIP files
+    for(unsigned int i = 0 ; i < slot->dlQueue.size() ; i++){
+        downloadFile = wxString(slot->dlQueue[i].localFile);
+        if( downloadFile.Lower().EndsWith(_T("zip")) ){ //Zip compressed
+            g_shopPanel->setStatusText( _("Unzipping chart files..."));
+            wxYield();
         
-        ::wxBeginBusyCursor();
-        bool ret = ExtractZipFiles( downloadFile, chosenInstallDir, false, wxDateTime::Now(), false);
-        ::wxEndBusyCursor();
+            ::wxBeginBusyCursor();
+            bool ret = ExtractZipFiles( downloadFile, chosenInstallDir, false, wxDateTime::Now(), false);
+            ::wxEndBusyCursor();
         
-        if(!ret){
-            wxLogError(_T("oesenc_pi: Unable to extract: ") + downloadFile );
-            OCPNMessageBox_PlugIn(NULL, _("Error extracting zip file"), _("oeSENC_pi Message"), wxOK);
-            return 2;
+            if(!ret){
+                wxLogError(_T("oernc_pi: Unable to extract: ") + downloadFile );
+                OCPNMessageBox_PlugIn(NULL, _("Error extracting zip file"), _("oeRNC_pi Message"), wxOK);
+                return 2;
+            }
         }
     }
     
-    //  We know that the unzip process puts all charts in a subdir whose name in the "downloadFile", without extension
+    //  Any extra, unzipped files present in the queue (e.g. keyList.XML) should be simply copied to the root
+    // directory of the zip set, or, in other words, to the directory containing the .oernc files.
+    // Find that directory...
+    wxFileName fnz(downloadFile);
+    wxString containerDir = fnz.GetName();
+    
+     // Walk the download queueagain, copying any plain files to containerDir
+    for(unsigned int i = 0 ; i < slot->dlQueue.size() ; i++){
+        downloadFile = wxString(slot->dlQueue[i].localFile);
+        if( downloadFile.Lower().EndsWith(_T("zip")) ){ //Zip compressed
+            continue;
+        }
+        else{                   // Not a ZIP file, just needs copy
+            wxFileName fn(downloadFile);
+            if(!::wxCopyFile( downloadFile, chosenInstallDir +  wxFileName::GetPathSeparator() + containerDir + wxFileName::GetPathSeparator() + fn.GetFullName())){
+                wxLogError(_T("oernc_pi: Unable to copy: ") + downloadFile );
+                OCPNMessageBox_PlugIn(NULL, _("Error copying file"), _("oeRNC_pi Message"), wxOK);
+                return 3;
+            }
+        }
+    }
+   
+    
+    //  We know that the unzip process puts all charts in a subdir whose name is the "downloadFile", without extension
     //  This is the dir that we want to add to database.
     wxFileName fn(downloadFile);
     wxString chartDir = fn.GetName();
@@ -2012,6 +2166,8 @@ int doUnzip(oitemChart *chart, int slot)
     {
         AddChartDirectory( targetAddDir );
     }
+
+#if 0
     
     //  Is this an update?
     wxString lastInstalledZip;
@@ -2064,18 +2220,19 @@ int doUnzip(oitemChart *chart, int slot)
             }
         }
     }
+#endif    
     
     // Update the config persistence
-    if(slot == 0){
-        chart->installLocation0 = chosenInstallDir;
-        chart->installedEdition0 = chart->lastRequestEdition0;
-        chart->installedFileDownloadPath0 = chart->fileDownloadPath0;
-    }
-    else if(slot == 1){
-        chart->installLocation1 = chosenInstallDir;
-        chart->installedEdition1 = chart->lastRequestEdition1;
-        chart->installedFileDownloadPath1 = chart->fileDownloadPath1;
-    }
+//     if(slot == 0){
+//         chart->installLocation0 = chosenInstallDir;
+//         chart->installedEdition0 = chart->lastRequestEdition0;
+//         chart->installedFileDownloadPath0 = chart->fileDownloadPath0;
+//     }
+//     else if(slot == 1){
+//         chart->installLocation1 = chosenInstallDir;
+//         chart->installedEdition1 = chart->lastRequestEdition1;
+//         chart->installedFileDownloadPath1 = chart->fileDownloadPath1;
+//     }
     
     g_lastInstallDir = chosenInstallDir;
     
@@ -2642,11 +2799,11 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         for(unsigned int i=0 ; i < m_pChart->quantityList.size() ; i++){
             itemQuantity Qty = m_pChart->quantityList[i];
             for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
-                itemSlot slot = Qty.slotList[j];
-                tx = m_pChart->getKeytypeString(slot.slotUuid);
+                itemSlot *slot = Qty.slotList[j];
+                tx = m_pChart->getKeytypeString(slot->slotUuid);
                 id.Printf(_("%d) "), nid);
                 tx.Prepend(id);
-                tx += _T("    ") + wxString(slot.assignedSystemName.c_str());
+                tx += _T("    ") + wxString(slot->assignedSystemName.c_str());
                 dc.DrawText( tx, text_x_val, yPos);
                 yPos += yPitch;
                 nid++;
@@ -2967,8 +3124,8 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_staticTextStatus = new wxStaticText(this, wxID_ANY, _("Status: Chart List Refresh required."), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     staticBoxSizerAction->Add(m_staticTextStatus, 0, wxALL|wxALIGN_LEFT, WXC_FROM_DIP(5));
 
-    m_ipGauge = new InProgressIndicator(this, wxID_ANY, 100, wxDefaultPosition, wxSize(ref_len * 12, ref_len));
-    staticBoxSizerAction->Add(m_ipGauge, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, WXC_FROM_DIP(5));
+    g_ipGauge = new InProgressIndicator(this, wxID_ANY, 100, wxDefaultPosition, wxSize(ref_len * 12, ref_len));
+    staticBoxSizerAction->Add(g_ipGauge, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, WXC_FROM_DIP(5));
 
     wxString sn = _("System Name:");
     sn += _T(" ");
@@ -3032,15 +3189,13 @@ void shopPanel::SelectChart( oeXChartPanel *chart )
 
 void shopPanel::SelectChartByID( std::string id, std::string order)
 {
-#if 0    
-    for(unsigned int i = 0 ; i < m_panelArray.GetCount() ; i++){
-        oitemChart *chart = m_panelArray.Item(i)->m_pChart;
-        if(id.IsSameAs(chart->chartID) && order.IsSameAs(chart->orderRef) && qty.IsSameAs(chart->quantityId)){
-            SelectChart(m_panelArray.Item(i));
+    for(unsigned int i = 0 ; i < panelVector.size() ; i++){
+        itemChart *chart = panelVector[i]->m_pChart;
+        if(wxString(id).IsSameAs(chart->chartID) && wxString(order).IsSameAs(chart->orderRef)){
+            SelectChart(panelVector[i]);
             MakeChartVisible(m_ChartSelected);
         }
     }
-#endif    
 }
 
 
@@ -3101,7 +3256,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     }
     
      setStatusText( _("Contacting o-charts server..."));
-     m_ipGauge->Start();
+     g_ipGauge->Start();
      wxYield();
 
     ::wxBeginBusyCursor();
@@ -3112,7 +3267,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     // if so, force a full (no_key) login, and retry
     if((err_code == 4) || (err_code == 5) || (err_code == 6)){
         setStatusText( _("Status: Login error."));
-        m_ipGauge->Stop();
+        g_ipGauge->Stop();
         wxYield();
         if(doLogin() != 1)      // if the second login attempt fails, return to GUI
             return;
@@ -3132,7 +3287,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
                 ec.Printf(_T(" { %d }"), err_code_2);
                 setStatusText( _("Status: Communications error.") + ec);
             }
-            m_ipGauge->Stop();
+            g_ipGauge->Stop();
             wxYield();
             return;
         }
@@ -3142,7 +3297,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
         wxString ec;
         ec.Printf(_T(" { %d }"), err_code);
         setStatusText( _("Status: Communications error.") + ec);
-        m_ipGauge->Stop();
+        g_ipGauge->Stop();
         wxYield();
         return;
     }
@@ -3191,7 +3346,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 //     m_staticTextSystemName->Refresh();
     
     setStatusText( _("Status: Ready"));
-    m_ipGauge->Stop();
+    g_ipGauge->Stop();
     
     UpdateChartList();
     
@@ -3200,23 +3355,33 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 
 void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 {
-#if 0    
-    oitemChart *chart = m_ChartSelected->m_pChart;
-    if(!chart)
+    // Chained through from download end event
+
+    if(m_bAbortingDownload){
+        m_bAbortingDownload = false;
+        OCPNMessageBox_PlugIn(NULL, _("Chart download cancelled."), _("oeRNC_PI Message"), wxOK);
+        m_buttonInstall->Enable();
         return;
-    
+    }
+
+    //  Is the queue done?
+    if((gtargetSlot->idlQueue + 1) < gtargetSlot->dlQueue.size()){
+        gtargetSlot->idlQueue++;
+        
+        // Kick off the next file
+        g_curlDownloadThread = new wxCurlDownloadThread(g_CurlEventHandler);
+        downloadOutStream = new wxFFileOutputStream(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
+        g_curlDownloadThread->SetURL(gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
+        g_curlDownloadThread->SetOutputStream(downloadOutStream);
+        g_curlDownloadThread->Download();
+        
+        return;
+    }
+
+
     // Chained through from download end event
         if(m_binstallChain){
-            
-            
             m_binstallChain = false;
-            
-            if(m_bAbortingDownload){
-                m_bAbortingDownload = false;
-                OCPNMessageBox_PlugIn(NULL, _("Chart download cancelled."), _("oeSENC_PI Message"), wxOK);
-                m_buttonInstall->Enable();
-                return;
-            }
             
             //  Download is apparently done.
             g_statusOverride.Clear();
@@ -3224,12 +3389,11 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             //We can check some data to be sure.
             
             // Does the download destination file exist?
-            
-            if(!::wxFileExists( chart->downloadingFile )){
-                OCPNMessageBox_PlugIn(NULL, _("Chart download error, missing file."), _("oeSENC_PI Message"), wxOK);
-                m_buttonInstall->Enable();
-                return;
-            }
+//             if(!::wxFileExists( chart->downloadingFile )){
+//                 OCPNMessageBox_PlugIn(NULL, _("Chart download error, missing file."), _("oeRNC_PI Message"), wxOK);
+//                 m_buttonInstall->Enable();
+//                 return;
+//             }
             
             /*        
              *        long dlFileLength = 0;
@@ -3254,12 +3418,6 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             // Download exists
 
             // Update the records
-            if(m_activeSlot == 0){
-                chart->fileDownloadPath0 = chart->downloadingFile;
-            }
-            else if(m_activeSlot == 1){
-                chart->fileDownloadPath1 = chart->downloadingFile;
-            }
              
             wxString msg = _("Chart download complete.");
             msg +=_T("\n\n");
@@ -3268,30 +3426,31 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             int ret = -1;
             
             while(ret != wxID_YES){
-                ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_PI Message"), wxYES_NO);
+                ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_PI Message"), wxYES_NO);
             
                 if(ret == wxID_YES){
                     g_statusOverride = _("Installing charts");
                 
-                    int rv = doUnzip(chart, m_activeSlot);
+                    int rv = doUnzip(gtargetSlot);
                 
                     g_statusOverride.Clear();
                     setStatusText( _("Status: Ready"));
                 
                     if(0 == rv)
-                        OCPNMessageBox_PlugIn(NULL, _("Chart installation complete."), _("oeSENC_pi Message"), wxOK);
+                        OCPNMessageBox_PlugIn(NULL, _("Chart installation complete."), _("oeRNC_PI Message"), wxOK);
                 
-                    UpdateChartList();
+//                    UpdateChartList();
                 }
                 else if(ret == wxID_NO)
                     break;
 
             }
-            
+
+            UpdateChartList();
+
             m_buttonInstall->Enable();
             return;
         }
-#endif        
 }
 
 void shopPanel::OnButtonInstall( wxCommandEvent& event )
@@ -3300,6 +3459,11 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     if(!chart)
         return;
 
+    g_statusOverride = _T("Downloading...");
+    setStatusText( _("Checking dongle..."));
+
+    wxYield();
+    
     // Check the dongle
     g_dongleName.Clear();
     if(IsDongleAvailable()){
@@ -3314,41 +3478,6 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     m_buttonCancelOp->Show();
     
 
-#if 0    
-    // Is chart already in "download" state for me?
-    int dlSlot = -1;
-    if(chart->isChartsetAssignedToAnyDongle()){
-        if(chart->isSlotAssignedToMyDongle( 0 )){
-            if(chart->statusID0.IsSameAs(_T("download"))){
-                dlSlot = 0;
-            }
-        }
-
-        else if(chart->isSlotAssignedToMyDongle( 1 )){
-            if(chart->statusID1.IsSameAs(_T("download"))){
-                dlSlot = 1;
-            }
-        }            
-    }
-    
-    else{
-        if(chart->statusID0.IsSameAs(_T("download"))){
-            if(chart->sysID0.IsSameAs(g_systemName))
-                dlSlot = 0;
-        }
-        if(chart->statusID1.IsSameAs(_T("download"))){
-            if(chart->sysID1.IsSameAs(g_systemName))
-                dlSlot = 1;
-        }
-    }
-    
-    if(dlSlot >= 0){
-        m_activeSlot = dlSlot;
-        m_startedDownload = false;
-        doDownloadGui();
-        return;
-    }
-#endif
 
     // Is this systemName known to the server?
     // If not, need to upload XFPR first
@@ -3412,77 +3541,42 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
 
     }
     
-    // Known assigned to me, so Ready for download
+    // Known assigned to me, so maybe Ready for download
     
-#if 0    
+    // Get the slot target
+    itemSlot *activeSlot = chart->GetActiveSlot();
 
-//     if(chart->statusID0.IsSameAs(_T("requestable"))){
-//         if( chart->sysID0.IsSameAs(g_systemName) || (g_dongleName.Len() && chart->sysID0.IsSameAs(g_dongleName)))
-//             slot = 0;
-//     }
-//     if(chart->statusID1.IsSameAs(_T("requestable"))){
-//         if( chart->sysID1.IsSameAs(g_systemName) || (g_dongleName.Len() && chart->sysID1.IsSameAs(g_dongleName)))
-//             slot = 1;
-//     }
-        
-    if(slot < 0){                       // need assigment
-        bNeedAssign = true;
-            // Choose the first available slot
-        
-//         if(chart->statusID0.IsSameAs(_T("unassigned"))){
-//             slot = 0;
-//         }
-//         else if(chart->statusID1.IsSameAs(_T("unassigned"))){
-//             slot = 1;
-//         }
-    }
-        
-    int assignResult;
-    if(bNeedAssign){
-        if(g_dongleName.Len())
-            assignResult = doAssign(chart, slot, g_dongleName);
-        else
-            assignResult = doAssign(chart, slot, g_systemName);
-            
-        if(assignResult != 0){
-            m_buttonInstall->Enable();
-            return;
-        }
-    }
     
-    if(1){
-//         m_ChartSelectedID = chart->chartID;           // save a copy of the selected chart
-//         m_ChartSelectedOrder = chart->orderRef;
-//         m_ChartSelectedQty = chart->quantityId;
-        
-        m_activeSlot = slot;
-        
-        if(m_activeSlot < 0)
-            return;
-#endif        
-        // Is the selected chart ready for download?
-            // If not, we do the "Request/Prepare" step
-        bool bNeedRequestWait = false;    
-//         if(m_activeSlot == 0){
-//                 if(!chart->statusID0.IsSameAs(_T("download")))
-//                     bNeedRequestWait = true;
-//         }
-//         else if(m_activeSlot == 1){
-//                 if(!chart->statusID1.IsSameAs(_T("download")))
-//                     bNeedRequestWait = true;
-//         }
-        
-        int request_return;
-        if(bNeedRequestWait){
-            request_return = doPrepareGUI();
-            return;
-        }
-        else{
-            m_startedDownload = false;
-            doDownloadGui();
-        }
+    // Is the selected chart ready for download?
+    // If not, we do the "Request/Prepare" step
+
+    // We can determine state based on the contents of activeSlot.baseFileDownloadPath 
+    bool bNeedRequestWait = false;
+    //if(!activeSlot->baseFileDownloadPath.size())
+        bNeedRequestWait = true;
+    
+    int request_return;
+    if(bNeedRequestWait){
+
+        ::wxBeginBusyCursor();
+        request_return = doPrepareGUI(activeSlot);
+        ::wxEndBusyCursor();
+
+        if(request_return != 0){
+            wxString ec;
+            ec.Printf(_T(" { %d }"), request_return);     
+            setStatusText( _("Status: Communications error.") + ec);
+            if(g_ipGauge)
+                g_ipGauge->SetValue(0);
+            m_buttonCancelOp->Hide();
             
-    //}
+            return;
+        }
+    }
+
+    doDownloadGui(chart, activeSlot);
+    
+            
 
     return;
 }
@@ -3529,60 +3623,37 @@ void shopPanel::OnButtonDownload( wxCommandEvent& event )
 #endif    
 }
 
-int shopPanel::doPrepareGUI()
+int shopPanel::doPrepareGUI(itemSlot *targetSlot)
 {
-#if 0    
     m_buttonCancelOp->Show();
     
-    setStatusText( _("Preparing your charts..."));
+    setStatusText( _("Requesting License Keys..."));
     
     m_prepareTimerCount = 8;            // First status query happens in 2 seconds
     m_prepareProgress = 0;
     m_prepareTimeout = 60;
     
-    m_prepareTimer.SetOwner( this, 4357 );
+//    m_prepareTimer.SetOwner( this, 4357 );
+
+    wxYield();
     
-    // Might be processing, in which case we don't need request.
-    
-    oitemChart *chart = m_ChartSelected->m_pChart;
-    bool bNeedRequest = false;    
-    if(m_activeSlot == 0){
-        if(!chart->statusID0.IsSameAs(_T("download")))
-            bNeedRequest = true;
-    }
-    else if(m_activeSlot == 1){
-        if(!chart->statusID1.IsSameAs(_T("download")))
-            bNeedRequest = true;
-    }
-    
-    if(!bNeedRequest){
-        m_prepareTimer.Start( 1000 );
-        return 0;
-    }
-    
-    
-    int err_code = doPrepare(m_ChartSelected, m_activeSlot);
+    int err_code = doPrepare(m_ChartSelected, targetSlot);
     if(err_code != 0){                  // Some error
             wxString ec;
             ec.Printf(_T(" { %d }"), err_code);     
             setStatusText( _("Status: Communications error.") + ec);
-            if(m_ipGauge)
-                m_ipGauge->SetValue(0);
+            if(g_ipGauge)
+                g_ipGauge->SetValue(0);
             m_buttonCancelOp->Hide();
             m_prepareTimer.Stop();
             
             return err_code;
     }
-    else{
-        m_prepareTimer.Start( 1000 );
-    }
-#endif    
-    return 0;
+     return 0;
 }
 
-int shopPanel::doDownloadGui()
+int shopPanel::doDownloadGui(itemChart *targetChart, itemSlot* targetSlot)
 {
-#if 0    
     setStatusText( _("Status: Downloading..."));
     //m_staticTextStatusProgress->Show();
     m_buttonCancelOp->Show();
@@ -3596,8 +3667,7 @@ int shopPanel::doDownloadGui()
     m_binstallChain = true;
     m_bAbortingDownload = false;
     
-    int err_code = doDownload(m_ChartSelected, m_activeSlot);
-#endif    
+    int err_code = doDownload(targetChart, targetSlot);
     return 0;
     
 }
@@ -3606,13 +3676,13 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
 {
     if(m_prepareTimer.IsRunning()){
         m_prepareTimer.Stop();
-        m_ipGauge->SetValue(0);
+        g_ipGauge->SetValue(0);
     }
     
     if(g_curlDownloadThread){
         m_bAbortingDownload = true;
         g_curlDownloadThread->Abort();
-        m_ipGauge->SetValue(0);
+        g_ipGauge->SetValue(0);
         setStatusTextProgress(_T(""));
         m_binstallChain = true;
     }
@@ -3802,8 +3872,12 @@ void shopPanel::UpdateActionControls()
     
     itemChart *chart = m_ChartSelected->m_pChart;
 
+    if(chart->getChartStatus() == STAT_REQUESTABLE){
+        m_buttonInstall->SetLabel(_("Download Selected Chart"));
+        m_buttonInstall->Show();
+    }
 
-    if(chart->getChartStatus() == STAT_PURCHASED){
+    else if(chart->getChartStatus() == STAT_PURCHASED){
         m_buttonInstall->SetLabel(_("Install Selected Chart"));
         m_buttonInstall->Show();
     }
@@ -4286,13 +4360,15 @@ void OESENC_CURL_EvtHandler::onBeginEvent(wxCurlBeginPerformEvent &evt)
 {
  //   OCPNMessageBox_PlugIn(NULL, _("DLSTART."), _("oeSENC_PI Message"), wxOK);
     g_shopPanel->m_startedDownload = true;
+    g_shopPanel->m_buttonCancelOp->Show();
+
 }
 
 void OESENC_CURL_EvtHandler::onEndEvent(wxCurlEndPerformEvent &evt)
 {
  //   OCPNMessageBox_PlugIn(NULL, _("DLEnd."), _("oeSENC_PI Message"), wxOK);
     
-    g_shopPanel->getInProcessGuage()->SetValue(0);
+    g_ipGauge->SetValue(0);
     g_shopPanel->setStatusTextProgress(_T(""));
     g_shopPanel->setStatusText( _("Status: OK"));
     g_shopPanel->m_buttonCancelOp->Hide();
@@ -4334,7 +4410,7 @@ void OESENC_CURL_EvtHandler::onProgressEvent(wxCurlDownloadEvent &evt)
     // Calculate the gauge value
     if(evt.GetTotalBytes() > 0){
         float progress = evt.GetDownloadedBytes()/evt.GetTotalBytes();
-        g_shopPanel->getInProcessGuage()->SetValue(progress * 100);
+        g_ipGauge->SetValue(progress * 100);
     }
     
     wxDateTime now = wxDateTime::Now();

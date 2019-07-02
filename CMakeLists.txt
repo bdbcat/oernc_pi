@@ -268,7 +268,6 @@ ELSE(TINYXML_FOUND)
 ENDIF(TINYXML_FOUND)
 ADD_DEFINITIONS(-DTIXML_USE_STL)
 
-
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_OERNC} ${SRC_WXCURL} ${SRC_LTINYXML})
 
 IF (QT_ANDROID )
@@ -301,30 +300,58 @@ SET(PREFIX_PARENTDATA ${PREFIX_DATA}/${PARENT})
 
 
 IF (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
-INSTALL(FILES "buildlinux64/ofcserverd/ofcserverd"
+    INSTALL(FILES "buildlinux64/oeaserverd/oeaserverd"
        PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
        DESTINATION ${PREFIX_PARENTBIN})
+    INSTALL(FILES "buildlinux64/oeaserverd/libsgllnx64-2.29.02.so"
+       PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+       DESTINATION ${PREFIX_PLUGINS})
 ELSE (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
 
     IF (ARCH MATCHES "arm*" )
-        INSTALL(FILES "buildlinuxarm/ofcserverd/ofcserverd"
+        INSTALL(FILES "buildlinuxarm/oeaserverd/oeaserverd"
           PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
           DESTINATION ${PREFIX_PARENTBIN})
+        INSTALL(FILES "buildlinuxarm/oeaserverd/libsglarmhf32-2.30.0.0.so"
+          PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+          DESTINATION ${PREFIX_PLUGINS})
+
     ELSE (ARCH MATCHES "arm*" )
-        INSTALL(FILES "buildlinux/ofcserverd/ofcserverd"
+        INSTALL(FILES "buildlinux/oeaserverd/oeaserverd"
           PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
           DESTINATION ${PREFIX_PARENTBIN})
-    ENDIF (ARCH MATCHES "arm*" )
+        INSTALL(FILES "buildlinux/oeaserverd/libsgllnx-2.29.0.1.so"
+          PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+          DESTINATION ${PREFIX_PLUGINS})
+
+     ENDIF (ARCH MATCHES "arm*" )
 
 ENDIF (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
+
+IF(PACKAGE_FORMAT MATCHES "DEB")
+        
+        INSTALL(FILES "buildlinux/oeaserverd/98-sglock.rules"
+          PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ 
+          DESTINATION "/etc/udev/rules.d")
+
+ENDIF(PACKAGE_FORMAT MATCHES "DEB")
 
 ENDIF(UNIX AND NOT APPLE)
 
 IF(WIN32)
 
-   INSTALL(FILES "buildwin/ofcserverd/ofcserverd.exe"
+   INSTALL(FILES "buildwin/oeaserverd/oeaserverd.exe"
       PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ WORLD_EXECUTE
       DESTINATION "plugins\\\\${PACKAGE_NAME}")
+
+    FILE(GLOB vcdll_files "${CMAKE_CURRENT_SOURCE_DIR}/buildwin/oeaserverd/*.dll")
+    INSTALL(FILES ${vcdll_files}
+       PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ WORLD_EXECUTE
+       DESTINATION "plugins\\\\${PACKAGE_NAME}")
+
+    #INSTALL(FILES "buildwin/oeaserverd/SglW32.dll"
+    #   PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ WORLD_EXECUTE
+    #   DESTINATION "plugins\\\\${PACKAGE_NAME}")
 
     INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "plugins")
     SET(INSTALL_DIRECTORY "plugins\\\\${PACKAGE_NAME}")
@@ -334,7 +361,7 @@ ENDIF(WIN32)
 IF(APPLE)
 SET(CMAKE_INSTALL_PREFIX "/tmp")
 
-INSTALL(FILES "buildosx/ofcserverd/ofcserverd"
+INSTALL(FILES "buildosx/oeaserverd/oeaserverd"
        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ WORLD_EXECUTE
        DESTINATION "ofc_pi/ofc_pi")
 
@@ -344,8 +371,8 @@ INSTALL(FILES "buildosx/ofcserverd/ofcserverd"
 
   # We also need to copy the helper utility to the binary build directory so that the PACKAGES scripts will find it.
   
-configure_file(${PROJECT_SOURCE_DIR}/buildosx/ofcserverd/ofcserverd
-            ${CMAKE_CURRENT_BINARY_DIR}/ofcserverd COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/buildosx/oeaserverd/oeaserverd
+            ${CMAKE_CURRENT_BINARY_DIR}/oeaserverd COPYONLY)
 
 #configure_file(${PROJECT_SOURCE_DIR}/data/TD-CHS-RM-ATL05.jpg
 #            ${CMAKE_CURRENT_BINARY_DIR}/TD-CHS-RM-ATL05.jpg COPYONLY)

@@ -45,24 +45,6 @@ extern wxString g_pipeParm;
 //      WARNING:  NOT THREAD-SAFE
 //--------------------------------------------------------------------------
 
-#if 0
-char err[100];
-int bufferFILE = -1;
-unsigned char *readBuffer = NULL;
-size_t charReadPoint = 0;
-size_t bufferSize = 0;
-size_t fileReadPoint = 0;
-
-compressedHeader *phdr = 0;
-char *pPalleteBlock = 0;
-char *pRefBlock = 0;
-char *pPlyBlock = 0;
-int *pline_table = NULL;           // pointer to Line offset table
-
-char BAPfileName[256];
-
-int nFileOffsetDataStart = 0;
-#endif
 
 //--------------------------------------------------------------------------
 //      Utility functions
@@ -506,79 +488,6 @@ wxString oernc_inStream::getHK()
 }
 
 
-
-bool oernc_inStream::decryptBZB(wxString &inFile, wxString outFile)
-{
-    {
-        if(!Open()){
-            if(g_debugLevel)printf("decryptBZB Open FAILED\n");
-                            return false;
-        }
- 
-        qDebug() << "decryptBZB Open OK";
- 
-        //  Create the server command
-        fifo_msg msg;
-        
-        strncpy(msg.fifo_name, privatefifo_name, sizeof(msg.fifo_name));
-        
-        wxCharBuffer buf = inFile.ToUTF8();
-        if(buf.data()) 
-            strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
-        else
-            strncpy(msg.file_name, "?", sizeof(msg.file_name));
-        
-        
-        // Using the crypto_key field in the msg structure to send output file name
-            buf = outFile.ToUTF8();
-            if(buf.data()) 
-                strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
-            else
-                strncpy(msg.crypto_key, "??", sizeof(msg.crypto_key));
-
-            msg.cmd = CMD_DECRYPT_BZB;
-            
-            qDebug() << msg.file_name;
-            qDebug() << msg.crypto_key;
-            
-            write(publicSocket, (char*) &msg, sizeof(msg));
-            
-            if(1){
-                if(g_debugLevel)printf("decryptBZB Open OK\n");
-                char response[8];
-                memset( response, 0, 8);
-                int nTry = 5;
-                do{
-                    if( Read(response, 2).IsOk() ){
-                        if(g_debugLevel)printf("decryptBZB Response OK\n");
-                        wxString resp = wxString(response, wxConvUTF8);
-                        if( !resp.IsSameAs(_T("KO")))
-                            wxLogMessage( _T("decryptBZB Response: ") + resp);
-                            
-                        qDebug() << "decryptBZB Response OK: " << response;
-                        return( !strncmp(response, "KO", 2) );
-                    }
-                    
-                    if(g_debugLevel)printf("Sleep on decryptBZB: %d\n", nTry);
-                    wxMilliSleep(100);
-                    nTry--;
-                    qDebug() << "decryptBZB nTry:" << nTry;
-                    
-                }while(nTry);
-                qDebug() << "decryptBZB nTry expire";
-                
-                
-                return false;
-            }
-            else{
-                if(g_debugLevel)printf("decryptBZB SendServerCommand Error\n");
-                return false;
-            }
-    }
-    
-    return false;
-}
-
 void oernc_inStream::Shutdown()
 {
     if(!Open()){
@@ -767,19 +676,6 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
     
 #endif
     
-    // testing
-//     resetBSBHeaderBuffer();
-//     char line[400];
-//     char *t = &line[0];
-//     while(readBSBHeaderBufferedLine( file_name.mb_str(), line, sizeof(line))){
-//         printf("%s\n", line);
-//     }
-//     resetBSBHeaderBuffer();
-
-//     resetBSBHeaderBuffer();
-//     compressedHeader *pheader = (compressedHeader *) calloc(1, sizeof(compressedHeader));
-//     getCompressedHeaderBase( file_name.mb_str(), pheader);
-//     resetBSBHeaderBuffer();
     
 }
 
@@ -798,12 +694,7 @@ void oernc_inStream::Init()
     m_lenIDat = 0;
     m_uncrypt_stream = 0;
     
-    phdr = 0;
-     pPalleteBlock = 0;
-     pRefBlock = 0;
-     pPlyBlock = 0;
-    pline_table = NULL;           // pointer to Line offset table
-    
+   
 }
 
 
@@ -823,18 +714,7 @@ void oernc_inStream::Close()
         delete m_uncrypt_stream;
     }
 
-    free(phdr);
-    free(pPalleteBlock);
-    free(pRefBlock);
-    free(pPlyBlock);
-    free(pline_table);
-    
-    phdr = 0;
-    pPalleteBlock = 0;
-    pRefBlock = 0;
-    pPlyBlock = 0;
-    pline_table = NULL;           // pointer to Line offset table
-    
+   
     Init();             // In case it want to be used again
     
 }
@@ -1186,71 +1066,6 @@ wxString oernc_inStream::getHK()
 
 
 
-bool oernc_inStream::decryptBZB(wxString &inFile, wxString outFile)
-{
-   {
-        if(!Open()){
-            if(g_debugLevel)printf("decryptBZB Open FAILED\n");
-            return false;
-        }
-        
-        //  Create the server command
-        fifo_msg msg;
-        
-        strncpy(msg.fifo_name, privatefifo_name, sizeof(msg.fifo_name));
-        
-        wxCharBuffer buf = inFile.ToUTF8();
-        if(buf.data()) 
-            strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
-        else
-            strncpy(msg.file_name, "?", sizeof(msg.file_name));
-        
-        
-        // Using the crypto_key field in the msg structure to send output file name
-        buf = outFile.ToUTF8();
-        if(buf.data()) 
-            strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
-        else
-            strncpy(msg.crypto_key, "??", sizeof(msg.crypto_key));
-        
-        ///msg.cmd = CMD_DECRYPT_BZB;
-        
-        write(publicfifo, (char*) &msg, sizeof(msg));
-        
-        // Open the private FIFO for reading to get output of command
-        // from the server.
-        if((privatefifo = open(privatefifo_name, O_RDONLY) ) == -1) {
-            wxLogMessage(_T("ofc_pi decryptBZB: Could not open private pipe"));
-            return false;
-        }
-        
-        if(1){
-            if(g_debugLevel)printf("decryptBZB Open OK\n");
-            char response[8];
-            memset( response, 0, 8);
-            int nTry = 5;
-            do{
-                if( Read(response, 2).IsOk() ){
-                    if(g_debugLevel)printf("decryptBZB Response OK\n");
-                    return( !strncmp(response, "KO", 2) );
-                }
-                
-                if(g_debugLevel)printf("Sleep on decryptBZB: %d\n", nTry);
-                wxMilliSleep(100);
-                nTry--;
-            }while(nTry);
-            
-            return false;
-        }
-        else{
-            if(g_debugLevel)printf("decryptBZB SendServerCommand Error\n");
-            return false;
-        }
-    }
-    
-    return false;
-}
-
 void oernc_inStream::Shutdown()
 {
     if(!Open()){
@@ -1265,30 +1080,6 @@ void oernc_inStream::Shutdown()
     }
 }
 
-compressedHeader *oernc_inStream::GetCompressedHeader()
-{
-    return phdr;
-}
-
-char *oernc_inStream::GetPalleteBlock()
-{ 
-    return pPalleteBlock;
-}
-
-char *oernc_inStream::GetRefBlock()
-{ 
-    return pRefBlock;
-}
-
-char *oernc_inStream::GetPlyBlock()
-{ 
-    return pPlyBlock;
-}
-
-off_t oernc_inStream::GetBitmapOffset( unsigned int y )
-{
-    return pline_table[y];
-}
 
 oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 {
@@ -1355,7 +1146,7 @@ oernc_inStream::oernc_inStream()
     
 }
 
-oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypto_key )
+oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypto_key, bool bHeaderOnly )
 {
     Init();
     
@@ -1364,7 +1155,7 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
     
     m_OK = Open( );
     if(m_OK){
-        if(!Load()){
+        if(!Load( bHeaderOnly )){
             printf("%s\n", err);
             m_OK = false;
         }
@@ -1384,33 +1175,12 @@ void oernc_inStream::Init()
     m_lastBytesRead = 0;
     m_lastBytesReq = 0;
     m_uncrypt_stream = 0;
-    
-    phdr = 0;
-    pPalleteBlock = 0;
-    pRefBlock = 0;
-    pPlyBlock = 0;
-    pline_table = NULL;           // pointer to Line offset table
-    
 }
 
 
 void oernc_inStream::Close()
 {
-    free(phdr);
-    free(pPalleteBlock);
-    free(pRefBlock);
-    free(pPlyBlock);
-    free(pline_table);
-    
-    phdr = 0;
-    pPalleteBlock = 0;
-    pRefBlock = 0;
-    pPlyBlock = 0;
-    pline_table = NULL;           // pointer to Line offset table
-    
-
     Init();             // In case it want to be used again
-    
 }
 
 bool oernc_inStream::Open( )
@@ -1496,14 +1266,22 @@ bool oernc_inStream::Open( )
     return true;
 }
 
-bool oernc_inStream::Load( )
+bool oernc_inStream::readPayload( unsigned char *p )
+{
+    if(!Read(p, m_lenIDat).IsOk()){
+        strncpy(err, "Load:  READ error Payload1", sizeof(err));
+        return false;
+    }
+    return true;
+}
+
+bool oernc_inStream::Load( bool bHeaderOnly )
 { 
     //printf("LOAD()\n");
     //wxLogMessage(_T("ofc_pi: LOAD"));
     
-#if 0    
     if(m_cryptoKey.Length() && m_fileName.length()){
-        
+     
         fifo_msg msg;
         //  Build a message for the public pipe
         
@@ -1512,89 +1290,104 @@ bool oernc_inStream::Load( )
             strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
         
         strncpy(msg.fifo_name, privatefifo_name, sizeof(privatefifo_name));
-        
+                
         buf = m_cryptoKey.ToUTF8();
+        int lenc = strlen(buf.data());
         if(buf.data()) 
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
+                
+        msg.cmd = CMD_OPEN_RNC_FULL;
+        if(bHeaderOnly)
+            msg.cmd =CMD_OPEN_RNC;
         
-        msg.cmd = CMD_OPEN;
-        
-        write(publicfifo, (char*) &msg, sizeof(msg));
-        
-        // Open the private FIFO for reading to get output of command
-        // from the server.
-        if((privatefifo = open(privatefifo_name, O_RDONLY) ) == -1) {
-            wxLogMessage(_T("xtr1_pi: Could not open private pipe"));
+        SendServerCommand(&msg);
+
+        // Read the function return code
+        char frcbuf[4];
+        if(!Read(frcbuf, 1).IsOk()){
+            strncpy(err, "Load:  READ error PFC", sizeof(err));
             return false;
         }
-        
+        if(frcbuf[0] == '1'){
+            strncpy(err, "Load:  READ error PFCDC", sizeof(err));
+            return false;
+        }
+
         // Read response, by steps...
+        // 1.  The composite length string
+        char lbuf[100];
         
-        // 1.  Compressed Header
-        if(NULL == phdr){
-            phdr = (compressedHeader *)calloc(1, sizeof(compressedHeader));
-            if(NULL == phdr){
-                strncpy(err, "Load:  cannot allocate memory", sizeof(err));
-                return false;
-            }
-        }
-        if(!Read(phdr, sizeof(compressedHeader)).IsOk()){
-            strncpy(err, "Load:  READ error chdr", sizeof(err));
+        if(!Read(lbuf, 41).IsOk()){
+            strncpy(err, "Load:  READ error PL", sizeof(err));
             return false;
         }
+        int lp1, lp2, lp3, lp4, lp5, lpl;
+        sscanf(lbuf, "%d;%d;%d;%d;%d;%d;", &lp1, &lp2, &lp3, &lp4, &lp5, &lpl);
+        m_lenIDat = lpl;
         
-        // 2.  Palette Block
-        if(phdr->nPalleteLines){
-            pPalleteBlock = (char *)calloc( phdr->nPalleteLines,  PALLETE_LINE_SIZE);
-            if(!Read(pPalleteBlock, phdr->nPalleteLines * PALLETE_LINE_SIZE).IsOk()){
-                strncpy(err, "Load:  READ error pal", sizeof(err));
-                return false;
-            }
-        }
+        int maxLen = wxMax(lp1, lp2); 
+        maxLen = wxMax(maxLen, lp3);
+        maxLen = wxMax(maxLen, lp4);
+        maxLen = wxMax(maxLen, lp5);
+        char *work = (char *)calloc(maxLen+1, sizeof(char));
         
-        for(int i=0 ; i < phdr->nPalleteLines ; i++){
-            char *pl = &pPalleteBlock[i * PALLETE_LINE_SIZE];
-            int yyp = 4;
-            //              printf("Offset %d:   %d\n", i, pline_table[i]);
-        }
-        
-        // 3.  Ref Block
-        if(phdr->nRefLines){
-            pRefBlock = (char *)calloc( phdr->nRefLines,  REF_LINE_SIZE);
-            if(!Read(pRefBlock, phdr->nRefLines * REF_LINE_SIZE).IsOk()){
-                strncpy(err, "Load:  READ error ref", sizeof(err));
-                return false;
-            }
-        }
-        
-        // 4.  Ply Block
-        if(phdr->nPlyLines){
-            pPlyBlock = (char *)calloc( phdr->nPlyLines,  PLY_LINE_SIZE);
-            if(!Read(pPlyBlock, phdr->nPlyLines * PLY_LINE_SIZE).IsOk()){
-                strncpy(err, "Load:  READ error ply", sizeof(err));
-                return false;
-            }
-        }
-        
-        // 5.  Line offset Block
-        pline_table = NULL;
-        pline_table = (int *)malloc((phdr->Size_Y+1) * sizeof(int) );               
-        if(!pline_table){
-            strncpy(err, "Load:  cannot allocate memory, pline", sizeof(err));
+        // 5 strings
+        // 1
+        if(!Read(work, lp1).IsOk()){
+            strncpy(err, "Load:  READ error P1", sizeof(err));
             return false;
         }
-        if(!Read(pline_table, (phdr->Size_Y+1) * sizeof(int)).IsOk()){
-            strncpy(err, "Load:  READ error off", sizeof(err));
+        work[lp1] = 0;
+        m_ep1 =std::string(work);
+        
+        // 2
+        if(!Read(work, lp2).IsOk()){
+            strncpy(err, "Load:  READ error P2", sizeof(err));
             return false;
         }
+        work[lp2] = 0;
+        m_ep2 =std::string(work);
         
-        //          for(int i=0 ; i < phdr->Size_Y+1 ; i++)
-        //              printf("Offset %d:   %d\n", i, pline_table[i]);
+        // 3
+        if(!Read(work, lp3).IsOk()){
+            strncpy(err, "Load:  READ error P3", sizeof(err));
+            return false;
+        }
+        work[lp3] = 0;
+        m_ep3 =std::string(work);
         
+        // 4
+        if(!Read(work, lp4).IsOk()){
+            strncpy(err, "Load:  READ error P4", sizeof(err));
+            return false;
+        }
+        work[lp4] = 0;
+        m_ep4 =std::string(work);
+        
+        // 5
+        if(!Read(work, lp5).IsOk()){
+            strncpy(err, "Load:  READ error P5", sizeof(err));
+            return false;
+        }
+        work[lp5] = 0;
+        m_ep5 =std::string(work);
+        
+        free(work);
         
         return true;
     }
-#endif    
+    
+    return false;
+}
+
+
+
+#if 0
+bool oernc_inStream::Load( bool bHeaderOnly )
+{ 
+    //printf("LOAD()\n");
+    //wxLogMessage(_T("ofc_pi: LOAD"));
+    
 
         //  Build a message 
         fifo_msg msg;
@@ -1609,12 +1402,13 @@ bool oernc_inStream::Load( )
         if(buf.data()) 
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
         
-        msg.cmd = CMD_OPEN;
+        //msg.cmd = CMD_OPEN;
 
         SendServerCommand(&msg);
         
         // Read response, by steps...
-        
+ 
+#if 0        
         // 1.  Compressed Header
         if(NULL == phdr){
             phdr = (compressedHeader *)calloc(1, sizeof(compressedHeader));
@@ -1676,10 +1470,10 @@ bool oernc_inStream::Load( )
         //          for(int i=0 ; i < phdr->Size_Y+1 ; i++)
         //              printf("Offset %d:   %d\n", i, pline_table[i]);
         
-        
+#endif        
         return true;
 }
-
+#endif
 
 bool oernc_inStream::SendServerCommand( unsigned char cmd )
 {
@@ -1911,125 +1705,6 @@ wxString oernc_inStream::getHK()
 
 
 
-bool oernc_inStream::decryptBZB(wxString &inFile, wxString outFile)
-{
-#if 0    
-        if(!Open()){
-            if(g_debugLevel)printf("decryptBZB Open FAILED\n");
-                             return false;
-        }
-        
-        //  Create the server command
-        fifo_msg msg;
-        
-        strncpy(msg.fifo_name, privatefifo_name, sizeof(msg.fifo_name));
-        
-        wxCharBuffer buf = inFile.ToUTF8();
-        if(buf.data()) 
-            strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
-        else
-            strncpy(msg.file_name, "?", sizeof(msg.file_name));
-        
-        
-        // Using the crypto_key field in the msg structure to send output file name
-            buf = outFile.ToUTF8();
-            if(buf.data()) 
-                strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
-            else
-                strncpy(msg.crypto_key, "??", sizeof(msg.crypto_key));
-            
-            msg.cmd = CMD_DECRYPT_BZB;
-            
-            write(publicfifo, (char*) &msg, sizeof(msg));
-            
-            // Open the private FIFO for reading to get output of command
-            // from the server.
-            if((privatefifo = open(privatefifo_name, O_RDONLY) ) == -1) {
-                wxLogMessage(_T("xtr1_pi decryptBZB: Could not open private pipe"));
-        return false;
-            }
-            
-            if(1){
-                if(g_debugLevel)printf("decryptBZB Open OK\n");
-                        char response[8];
-                memset( response, 0, 8);
-                int nTry = 5;
-                do{
-                    if( Read(response, 2).IsOk() ){
-                        if(g_debugLevel)printf("decryptBZB Response OK\n");
-                     return( !strncmp(response, "KO", 2) );
-                    }
-                    
-                    if(g_debugLevel)printf("Sleep on decryptBZB: %d\n", nTry);
-                            wxMilliSleep(100);
-                    nTry--;
-                }while(nTry);
-                
-                return false;
-            }
-            else{
-                if(g_debugLevel)printf("decryptBZB SendServerCommand Error\n");
-                         return false;
-            }
-            
-#endif    
-
-        if(!Open()){
-            if(g_debugLevel)printf("decryptBZB Open FAILED\n");
-                             return false;
-        }
-        
-        //  Create the server command
-        fifo_msg msg;
-        
-        strncpy(msg.fifo_name, privatefifo_name, sizeof(msg.fifo_name));
-        
-        wxCharBuffer buf = inFile.ToUTF8();
-        if(buf.data()) 
-            strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
-        else
-            strncpy(msg.file_name, "?", sizeof(msg.file_name));
-        
-        
-        // Using the crypto_key field in the msg structure to send output file name
-        buf = outFile.ToUTF8();
-        if(buf.data()) 
-            strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
-        else
-            strncpy(msg.crypto_key, "??", sizeof(msg.crypto_key));
-            
-        msg.cmd = CMD_DECRYPT_BZB;
-        
- 
-        if( SendServerCommand(&msg) ){
-            char response[9];
-            memset( response, 0, 9);
-            int nTry = 5;
-            do{
-                if( Read(response, 2).IsOk() ){
-                    return true;
-                }
-                
-                if(g_debugLevel)printf("Sleep on BZB: %d\n", nTry);
-                //wxLogMessage(_T("bzb2"));
-                
-                wxMilliSleep(100);
-                nTry--;
-            }while(nTry);
-            
-            if(g_debugLevel)printf("BZB Response Timeout nTry\n");
-            //wxLogMessage(_T("bzb3"));
-            
-            return false;
-        }
-        else{
-            if(g_debugLevel)printf("BZBHK SendServer Error\n");
-                           //wxLogMessage(_T("bzb4"));
-        }
-
-    return false;
-}
-
 void oernc_inStream::Shutdown()
 {
     if(!Open()){
@@ -2044,30 +1719,6 @@ void oernc_inStream::Shutdown()
     }
 }
 
-compressedHeader *oernc_inStream::GetCompressedHeader()
-{
-    return phdr;
-}
-
-char *oernc_inStream::GetPalleteBlock()
-{ 
-    return pPalleteBlock;
-}
-
-char *oernc_inStream::GetRefBlock()
-{ 
-    return pRefBlock;
-}
-
-char *oernc_inStream::GetPlyBlock()
-{ 
-    return pPlyBlock;
-}
-
-off_t oernc_inStream::GetBitmapOffset( unsigned int y )
-{
-    return pline_table[y];
-}
 
 oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 {

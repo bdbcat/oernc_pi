@@ -96,7 +96,7 @@ struct fifo_msg {
     char crypto_key[512];
 };
 
-#define PUBLIC "/tmp/OCPN_PIPE"
+#define PUBLIC "/tmp/OCPN_PIPER"
 
 #define CMD_READ_ESENC          0
 #define CMD_TEST_AVAIL          1
@@ -139,7 +139,6 @@ public:
     bool readPayload( unsigned char *p );
     bool SendServerCommand( unsigned char cmd );
     bool SendServerCommand( fifo_msg *pmsg );
-    bool decryptBZB(wxString &inFile, wxString outFile);
     
     oernc_inStream &Read(void *buffer, size_t size);
     bool IsOk();
@@ -149,12 +148,12 @@ public:
     void Shutdown();
     wxString getHK();
     
-    compressedHeader *GetCompressedHeader();
-    char *GetPalleteBlock();
-    char *GetRefBlock();
-    char *GetPlyBlock();
-    
-    off_t GetBitmapOffset( unsigned int y );
+//     compressedHeader *GetCompressedHeader();
+//     char *GetPalleteBlock();
+//     char *GetRefBlock();
+//     char *GetPlyBlock();
+//     
+//     off_t GetBitmapOffset( unsigned int y );
 
     std::string m_ep1, m_ep2, m_ep3, m_ep4, m_ep5;
     int m_lenIDat;
@@ -186,11 +185,11 @@ private:
     wxFileInputStream *m_uncrypt_stream;                // for LOCAL_FILE test only
     
     char err[100];
-    compressedHeader *phdr;
-    char *pPalleteBlock;
-    char *pRefBlock;
-    char *pPlyBlock;
-    int *pline_table;           // pointer to Line offset table
+//     compressedHeader *phdr;
+//     char *pPalleteBlock;
+//     char *pRefBlock;
+//     char *pPlyBlock;
+//     int *pline_table;           // pointer to Line offset table
     
     
 };

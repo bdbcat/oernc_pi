@@ -32,6 +32,11 @@
 #endif //precompiled headers
 #include "wx/filename.h"
 
+#ifdef __MSVC__
+#include <windows.h>
+#include <Shlobj.h>
+#endif
+
 
 #include "ocpn_plugin.h"
 
@@ -78,7 +83,7 @@ bool IsDongleAvailable()
     }
 
     // Show error in log
-    wxLogMessage(_T("oeserverd execution error:"));
+    wxLogMessage(_T("oeaserverd execution error:"));
     for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
         wxString line = err_array[i];
         wxLogMessage(line);
@@ -298,7 +303,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
                     bCopyOK = true;
         }
         else if(berr){
-            wxLogMessage(_T("oesenc_pi: oeserverd results:"));
+            wxLogMessage(_T("oesenc_pi: oeaserverd results:"));
             for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
                 wxString line = ret_array[i];
                 wxLogMessage( line );

@@ -74,6 +74,23 @@ float hex2float( std::string h)
 
 wxString getKey(wxString file);
 
+#ifdef __WXGTK__
+class OCPNStopWatch
+{
+public:
+    OCPNStopWatch() { Reset(); }
+    void Reset() { clock_gettime(CLOCK_REALTIME, &tp); }
+    
+    double GetTime() {
+        timespec tp_end;
+        clock_gettime(CLOCK_REALTIME, &tp_end);
+        return (tp_end.tv_sec - tp.tv_sec) * 1.e3 + (tp_end.tv_nsec - tp.tv_nsec) / 1.e6;
+    }
+    
+private:
+    timespec tp;
+};
+#endif
 
 //  Private version of PolyPt testing using floats instead of doubles
 bool Intersect(MyFlPoint p1, MyFlPoint p2, MyFlPoint p3, MyFlPoint p4) ;
@@ -517,16 +534,13 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
       
 
       wxString key = wxString(getKey(name));
-#if 0      
-      key = getKeyAsciiHex(name);
       if(!key.Len()){
-          wxString msg(_T("   OERNC_PI: chartInfo or productKey not found: "));
+          wxString msg(_T("   OERNC_PI: chart RInstallKey not found: "));
           msg.Append(m_FullPath);
           wxLogMessage(msg);
           
           return INIT_FAIL_REMOVE;
       }
-#endif      
 
       bool bHeaderOnly = false;
       if(init_flags == HEADER_ONLY)
@@ -701,6 +715,7 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
       
       // Palettes
       wxString pals(ifs_hdr->m_ep5.c_str());
+      ///wxLogMessage(pals);
       wxStringTokenizer tkpz(pals, _T(";"));
       long ptmp;
 
@@ -724,6 +739,9 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
         for(int j=0 ; j < m_nColors ; j++){
             token = tkpz.GetNextToken();      
             token.ToLong(&ptmp, 16);            //  a color
+            //wxString msg;
+            //msg.Printf(_T("Pallette %d: nColors %d: Color %d: "), i, m_nColors, j);
+            //if(i == 0) wxLogMessage(msg + token);
             pp->RevPalette[j] = ptmp;
             pp->FwdPalette[j] = ptmp;
         }
@@ -826,10 +844,16 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
       if(init_flags == HEADER_ONLY)
             return INIT_OK;
 
+#ifdef __WXGTK__
+      OCPNStopWatch sw;
+#endif
       // Get the image payload
       if(ifs_hdr->m_lenIDat){
         m_imageComp = (unsigned char *)malloc(ifs_hdr->m_lenIDat);
         ifs_hdr->readPayload(m_imageComp);
+#ifdef __WXGTK__
+        printf("\nRead: %g\n", sw.GetTime());
+#endif        
         if(!ifs_hdr->Ok()){
             wxString msg(_T("   OERNC_PI: chart local server payload error, final: "));
             msg.Append(m_FullPath);
@@ -844,6 +868,9 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
         unsigned inflate_err = lodepng_inflate( &m_imageMap, &m_lenImageMap,
                         m_imageComp + 2, ifs_hdr->m_lenIDat- 2, &lodepng_default_decompress_settings);
         
+#ifdef __WXGTK__
+        printf("Inflate: %g\n", sw.GetTime());
+#endif
         if(inflate_err){
             wxString msg(_T("   OERNC_PI: chart local server inflate error, final: "));
             msg.Append(m_FullPath);

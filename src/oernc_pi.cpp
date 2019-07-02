@@ -1,5 +1,5 @@
 /******************************************************************************
- * $Id: ofc_pi.cpp,v 1.8 2010/06/21 01:54:37 bdbcat Exp $
+ * $Id: oernc_pi.cpp,v 1.8 2010/06/21 01:54:37 bdbcat Exp $
  *
  * Project:  OpenCPN
  * Purpose:  XTR1 PlugIn
@@ -33,6 +33,7 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 #include <wx/filename.h>
+#include <wx/dir.h>
 
 #include "oernc_pi.h"
 #include "chart.h"
@@ -85,13 +86,8 @@ OKeyHash keyMap;
 
 #include "default_pi.xpm"
 
-
-bool loadKeyMap( wxString file )
+bool parseKeyFile( wxString kfile )
 {
-    wxFileName fn(file);
-
-    wxString kfile(fn.GetPath(wxPATH_GET_SEPARATOR) + _T("KeyList.XML"));
-    
     FILE *iFile = fopen(kfile.mb_str(), "rb");
    
     if (iFile <= 0)
@@ -122,45 +118,67 @@ bool loadKeyMap( wxString file )
 
     wxString RInstallKey, fileName;
     wxString rootName = wxString::FromUTF8( root->Value() );
-    TiXmlNode *child;
-    for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
-        wxString s = wxString::FromUTF8(child->Value());  //chart
-        
-        TiXmlNode *childChart = child->FirstChild();
-        for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
-            const char *chartVal =  childChart->Value();
+    if(rootName.IsSameAs(_T("keyList"))){
+            
+        TiXmlNode *child;
+        for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
+            wxString s = wxString::FromUTF8(child->Value());  //chart
+            
+            TiXmlNode *childChart = child->FirstChild();
+            for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
+                const char *chartVal =  childChart->Value();
+                            
+                if(!strcmp(chartVal, "RInstallKey")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal){
+                        RInstallKey = childVal->Value();
                         
-            if(!strcmp(chartVal, "RInstallKey")){
-                TiXmlNode *childVal = childChart->FirstChild();
-                if(childVal){
-                    RInstallKey = childVal->Value();
-                    
+                    }
+                }
+                if(!strcmp(chartVal, "FileName")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal){
+                        fileName = childVal->Value();
+                        
+                    }
+                }
+
+            }
+            if(RInstallKey.Length() && fileName.Length()){
+                OKeyHash::iterator search = keyMap.find(fileName);
+                if (search == keyMap.end()) {
+                    keyMap[fileName] = RInstallKey;
                 }
             }
-            if(!strcmp(chartVal, "FileName")){
-                TiXmlNode *childVal = childChart->FirstChild();
-                if(childVal){
-                    fileName = childVal->Value();
-                    
-                }
-            }
-
         }
-        if(RInstallKey.Length() && fileName.Length()){
-            OKeyHash::iterator search = keyMap.find(fileName);
-            if (search == keyMap.end()) {
-                keyMap[fileName] = RInstallKey;
-            }
-        }
-    }
-
         
-    
+        free( iText );
+        return true;
+    }           
 
     free( iText );
-    
-    return true;
+    return false;
 
+}
+    
+
+bool loadKeyMap( wxString file )
+{
+    // Make a list of all XML or xml files found in the parent directory of the chart itself.
+    wxFileName fn(file);
+
+    wxArrayString xmlFiles;
+    int nFiles = wxDir::GetAllFiles(fn.GetPath(), &xmlFiles, _T("*.XML"));
+    nFiles += wxDir::GetAllFiles(fn.GetPath(), &xmlFiles, _T("*.xml"));
+        
+    //  Read and parse them all
+    for(unsigned int i=0; i < xmlFiles.GetCount(); i++){
+        wxString xmlFile = xmlFiles.Item(i);
+        parseKeyFile(xmlFile);
+    }
+    
+ 
+    return true;
 }
 
 
@@ -169,7 +187,6 @@ wxString getKey(wxString file)
      wxFileName fn(file);
 //     char buf[400];
 //     strcpy( buf, (const char*)fn.GetName().mb_str(wxConvUTF8) ); // buf will now contain name, as UTF8
-// 
 //     std::string sKey(buf);
     
     OKeyHash::iterator search = keyMap.find(fn.GetName());
@@ -225,24 +242,24 @@ int oernc_pi::Init(void)
 
       // Specify the location of the xxserverd helper.
       wxFileName fn_exe(GetOCPN_ExePath());
-      g_server_bin = fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("oeserverd");
+      g_server_bin = fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("oeaserverd");
       
       
       #ifdef __WXMSW__
       g_server_bin = _T("\"") + fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) +
-      _T("plugins\\oernc_pi\\oeserverd.exe\"");
+      _T("plugins\\oernc_pi\\oeaserverd.exe\"");
       #endif
       
       #ifdef __WXOSX__
       fn_exe.RemoveLastDir();
       g_server_bin = _T("\"") + fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) +
-      _T("PlugIns/oernc_pi/oeserverd\"");
+      _T("PlugIns/oernc_pi/oeaserverd\"");
       #endif
       
       #ifdef __OCPN__ANDROID__
       wxString piLocn = GetPlugInPath(this); //*GetpSharedDataLocation();
       wxFileName fnl(piLocn);
-      g_server_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oeserverda");
+      g_server_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oeaserverda");
       g_serverProc = 0;
       #endif
       
@@ -254,11 +271,6 @@ int oernc_pi::Init(void)
       g_PrivateDataDir += wxFileName::GetPathSeparator();
       if(!::wxDirExists( g_PrivateDataDir ))
           ::wxMkdir( g_PrivateDataDir );
-      
-      ///Testing
-// #ifdef __WXGTK__          
-//       g_server_bin = _T("/home/dsr/Projects/ofcserverd/build/ofcserverd");
-// #endif
       
       wxLogMessage(_T("Path to serverd is: ") + g_server_bin);
       
@@ -433,17 +445,17 @@ bool validate_server(void)
     msg += _T("{");
     msg += bin_test;
     msg += _T("}");
-    wxLogMessage(_T("ofc_pi: ") + msg);
+    wxLogMessage(_T("oernc_pi: ") + msg);
     
     
     if(!::wxFileExists(bin_test)){
         if(!g_bNoFindMessageShown){
-            wxString msg = _("Cannot find the ofc server utility at \n");
+            wxString msg = _("Cannot find the oernc_pi server utility at \n");
             msg += _T("{");
             msg += bin_test;
             msg += _T("}");
-            OCPNMessageBox_PlugIn(NULL, msg, _("ofc_pi Message"),  wxOK, -1, -1);
-            wxLogMessage(_T("ofc_pi: ") + msg);
+            OCPNMessageBox_PlugIn(NULL, msg, _("oernc_pi Message"),  wxOK, -1, -1);
+            wxLogMessage(_T("oernc_pi: ") + msg);
         
             g_bNoFindMessageShown = true;
         }
@@ -461,7 +473,7 @@ bool validate_server(void)
 #ifdef __WXMSW__    
     flags |= wxEXEC_HIDE_CONSOLE;
     long pid = ::wxGetProcessId();
-    pipeParm.Printf(_T("OCPN_OFC%04d"), pid % 10000);
+    pipeParm.Printf(_T("OCPN_PIPER%04d"), pid % 10000);
     g_pipeParm = pipeParm;
 #endif
     
@@ -492,11 +504,11 @@ bool validate_server(void)
     wxFileName fnl(cmd);
     wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
     
-    wxLogMessage(_T("ofc_pi: Starting: ") + cmd );
+    wxLogMessage(_T("oernc_pi: Starting: ") + cmd );
     
     wxString result = callActivityMethod_s4s("createProc", cmd, _T("-q"), dataDir, libDir);
     
-    wxLogMessage(_T("ofc_pi: Start Result: ") + result);
+    wxLogMessage(_T("oernc_pi: Start Result: ") + result);
     
     long pid;
     if(result.ToLong(&pid))
@@ -523,13 +535,13 @@ bool validate_server(void)
         }
         
         if(!bAvail){
-            wxString msg = _T("serverd utility at \n");
+            wxString msg = _T("oeaserverd utility at \n");
             msg += _T("{");
             msg += bin_test;
             msg += _T("}\n");
             msg += _T(" reports Unavailable.\n\n");
             //            OCPNMessageBox_PlugIn(NULL, msg, _("oesenc_pi Message"),  wxOK, -1, -1);
-            wxLogMessage(_T("ofc_pi: ") + msg);
+            wxLogMessage(_T("oernc_pi: ") + msg);
             
             g_server_bin.Clear();
             return false;
@@ -539,11 +551,8 @@ bool validate_server(void)
             wxString nc;
             nc.Printf(_T("LoopCount: %d"), nLoop);
             
-            //  Get the decrypt type into the logfile
-//             xtr1_inStream testAvail_type;
-//             testAvail_type.isAvailable( g_UserKey );
-            
-            wxLogMessage(_T("ofc_pi: serverd Check OK...") + nc);
+            wxLogMessage(_T("oernc_pi: serverd Check OK...") + nc);
+
         }
     }
     else{
@@ -552,8 +561,8 @@ bool validate_server(void)
         msg += bin_test;
         msg += _T("}\n");
         msg += _(" could not be started.\n\n");
-        OCPNMessageBox_PlugIn(NULL, msg, _("ofc_pi Message"),  wxOK, -1, -1);
-        wxLogMessage(_T("ofc_pi: ") + msg);
+        OCPNMessageBox_PlugIn(NULL, msg, _("oernc_pi Message"),  wxOK, -1, -1);
+        wxLogMessage(_T("oernc_pi: ") + msg);
         
         g_server_bin.Clear();
         return false;
@@ -564,7 +573,7 @@ bool validate_server(void)
 
 bool shutdown_server( void )
 {
-    wxLogMessage(_T("ofc_pi: Shutdown_server"));
+    wxLogMessage(_T("oernc_pi: Shutdown_server"));
     
     // Check to see if the server is already running, and available
     oernc_inStream testAvail;

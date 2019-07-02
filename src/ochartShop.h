@@ -48,7 +48,7 @@
 
 #include <vector>
 
-wxString ProcessResponse(std::string);
+wxString ProcessResponse(std::string, bool bsubAmpersand = false);
 
 
 class shopPanel;
@@ -67,6 +67,25 @@ enum{
         STAT_NEED_REFRESH
 };
 
+class itemDLTask
+{
+public:
+    itemDLTask(){}
+    ~itemDLTask(){}
+    
+    std::string uuidParentSlot;
+    std::string url;
+    std::string localFile;
+    long        currentOffset;
+    long        totalSize;
+};
+    
+    
+
+
+
+
+
 class itemSlot
 {
 public:
@@ -78,7 +97,14 @@ public:
     std::string assignedSystemName;
     std::string lastRequested;
     std::string installLocation;
-    std::string installedFileDownloadPath;
+    std::string baseFileDownloadPath;
+    std::string baseFileSize;
+    std::string baseFileSHA256;
+    std::string chartKeysDownloadPath;
+    std::string chartKeysSHA256;
+    
+    std::vector<itemDLTask> dlQueue;
+    unsigned int idlQueue;
 
 };
                                                 
@@ -90,7 +116,7 @@ public:
     ~itemQuantity(){}
     
     int quantityId;
-    std::vector<itemSlot> slotList;
+    std::vector<itemSlot *> slotList;
 };
 
 
@@ -115,6 +141,9 @@ public:
     int GetSlotAssignedToSystem( int &qId );
     int FindQuantityIndex( int nqty);
     int getChartAssignmentCount();
+    itemSlot *GetActiveSlot();
+    bool isUUIDAssigned( wxString UUID);
+    itemSlot *GetSlotPtr( wxString UUID );
 
     void Update(itemChart *other);
     
@@ -368,7 +397,6 @@ protected:
     wxButton* m_buttonNewSystemName;
     wxTextCtrl*  m_sysName;
     wxButton* m_buttonChangeSystemName;
-    InProgressIndicator *m_ipGauge;
     wxStaticText *m_staticTextStatus;
     wxStaticText *m_staticTextStatusProgress;
     
@@ -413,8 +441,8 @@ public:
     void OnButtonInstallChain( wxCommandEvent& event );
     
     void OnPrepareTimer(wxTimerEvent &evt);
-    int doPrepareGUI();
-    int doDownloadGui();
+    int doPrepareGUI(itemSlot *activeSlot);
+    int doDownloadGui( itemChart *targetChart, itemSlot *targetSlot);
     
     void UpdateChartList();
     void OnGetNewSystemName( wxCommandEvent& event );
@@ -424,7 +452,6 @@ public:
     void UpdateActionControls();
     void setStatusText( const wxString &text ){ m_staticTextStatus->SetLabel( text );  m_staticTextStatus->Refresh(); }
     void setStatusTextProgress( const wxString &text ){ m_staticTextStatus/*m_staticTextStatusProgress*/->SetLabel( text );  /*m_staticTextStatusProgress->Refresh();*/ }
-    InProgressIndicator *getInProcessGuage() {return m_ipGauge; }
     void MakeChartVisible(oeXChartPanel *chart);
     
     int m_prepareTimerCount;

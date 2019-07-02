@@ -218,6 +218,7 @@ bool wxCurlHTTP::Post(const wxString& szRemoteFile /*= wxEmptyString*/)
         SetOpt(CURLOPT_HTTPPOST, m_pPostHead);
         SetStringWriteFunction(m_szResponseBody);
 
+        
         if(Perform())
         {
             return IsResponseOk();
