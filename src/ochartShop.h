@@ -399,7 +399,7 @@ protected:
     wxButton* m_buttonChangeSystemName;
     wxStaticText *m_staticTextStatus;
     wxStaticText *m_staticTextStatusProgress;
-    
+    wxStaticText *m_staticTextLEM;
     
 protected:
     
@@ -423,7 +423,7 @@ public:
     wxButton* GetButtonInstall() { return m_buttonInstall; }
     wxButton* GetButtonUpdate() { return m_buttonUpdate; }
     void RefreshSystemName();
-    
+    void SetErrorMessage();
     
     shopPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(500,600), long style = wxTAB_TRAVERSAL);
     virtual ~shopPanel();

@@ -76,6 +76,7 @@ wxFFileOutputStream *downloadOutStream;
 bool g_chartListUpdatedOK;
 wxString g_statusOverride;
 wxString g_lastInstallDir;
+wxString g_LastErrorMessage;
 
 unsigned int    g_dongleSN;
 wxString        g_dongleName;
@@ -1190,8 +1191,10 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
     
     long dresult;
     if(result.ToLong(&dresult)){
-        if(dresult == 1)
+        if(dresult == 1){
+            g_LastErrorMessage.Clear();
             return 0;
+        }
         else{
             if(bShowErrorDialog){
                 wxString msg = _("o-charts API error code: ");
@@ -1213,6 +1216,12 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
             return dresult;
         }
     }
+    else{
+        OCPNMessageBox_PlugIn(NULL, result, _("oeRNC_pi Message"), wxOK);
+    }
+     
+    g_LastErrorMessage = result;
+     
     return 98;
 }
 
@@ -1894,6 +1903,8 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     loginParms += _T("&requestedEdition=") + wxString(chart->chartEdition.c_str());
     loginParms += _T("&currentEdition=") + wxString(chart->chartEdition.c_str());
     
+    wxLogMessage(loginParms);
+    
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
     size_t res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
@@ -2319,6 +2330,7 @@ void oeSencChartPanel::OnChartSelected( wxMouseEvent &event )
     if(!m_bSelected){
         SetSelected( true );
         //m_pContainer->SelectChart( this );
+        
     }
     else{
         SetSelected( false );
@@ -2336,7 +2348,7 @@ void oeSencChartPanel::SetSelected( bool selected )
     {
         GetGlobalColor(_T("UIBCK"), &colour);
         m_boxColour = colour;
-        SetMinSize(wxSize(-1, 9 * refHeight));
+        SetMinSize(wxSize(-1, 10 * refHeight));
     }
     else
     {
@@ -2668,7 +2680,18 @@ void oeXChartPanel::SetSelected( bool selected )
     {
         GetGlobalColor(_T("UIBCK"), &colour);
         m_boxColour = colour;
-        SetMinSize(wxSize(-1, 9 * refHeight));
+
+        // Calculate minimum size required
+        if(m_pChart){
+        int nAssign = 0;
+            for(unsigned int i=0 ; i < m_pChart->quantityList.size() ; i++){
+                itemQuantity Qty = m_pChart->quantityList[i];
+                nAssign += Qty.slotList.size();
+            }
+            SetMinSize(wxSize(-1, (9 + nAssign) * refHeight));
+        }
+        else
+            SetMinSize(wxSize(-1, 5 * refHeight));
     }
     else
     {
@@ -2803,7 +2826,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
                 tx = m_pChart->getKeytypeString(slot->slotUuid);
                 id.Printf(_("%d) "), nid);
                 tx.Prepend(id);
-                tx += _T("    ") + wxString(slot->assignedSystemName.c_str());
+                tx += _T("    ") + wxString(slot->assignedSystemName.c_str()) + _T(" ") + wxString(slot->slotUuid.c_str());
                 dc.DrawText( tx, text_x_val, yPos);
                 yPos += yPitch;
                 nid++;
@@ -3062,7 +3085,7 @@ END_EVENT_TABLE()
 shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
 : wxPanel(parent, id, pos, size, style)
 {
-    loadShopConfig();
+        loadShopConfig();
     
     g_CurlEventHandler = new OESENC_CURL_EvtHandler;
     
@@ -3077,13 +3100,22 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     wxBoxSizer* boxSizerTop = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(boxSizerTop);
     
-    wxStaticBoxSizer* staticBoxSizerChartList = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("My Charts")), wxVERTICAL);
-    boxSizerTop->Add(staticBoxSizerChartList, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    wxGridSizer *sysBox = new wxGridSizer(2);
+    boxSizerTop->Add(sysBox, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    wxString sn = _("System Name:");
+    sn += _T(" ");
+    sn += g_systemName;
+    
+    m_staticTextSystemName = new wxStaticText(this, wxID_ANY, sn, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    sysBox->Add(m_staticTextSystemName, 0, wxALL | wxALIGN_LEFT, WXC_FROM_DIP(5));
 
     m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
-    staticBoxSizerChartList->Add(m_buttonUpdate, 1, wxBOTTOM | wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+    sysBox->Add(m_buttonUpdate, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
     
+    wxStaticBoxSizer* staticBoxSizerChartList = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("My Chart Sets")), wxVERTICAL);
+    boxSizerTop->Add(staticBoxSizerChartList, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+
     wxPanel *cPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
     staticBoxSizerChartList->Add(cPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
@@ -3109,7 +3141,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     wxGridSizer* gridSizerActionButtons = new wxGridSizer(1, 2, 0, 0);
     staticBoxSizerAction->Add(gridSizerActionButtons, 1, wxALL|wxEXPAND, WXC_FROM_DIP(2));
     
-    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Install Selected Chart"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Install Selected Chart Set"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     gridSizerActionButtons->Add(m_buttonInstall, 1, wxTOP | wxBOTTOM, WXC_FROM_DIP(2));
     
     m_buttonCancelOp = new wxButton(this, wxID_ANY, _("Cancel Operation"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
@@ -3127,13 +3159,9 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     g_ipGauge = new InProgressIndicator(this, wxID_ANY, 100, wxDefaultPosition, wxSize(ref_len * 12, ref_len));
     staticBoxSizerAction->Add(g_ipGauge, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, WXC_FROM_DIP(5));
 
-    wxString sn = _("System Name:");
-    sn += _T(" ");
-    sn += g_systemName;
-    
-    m_staticTextSystemName = new wxStaticText(this, wxID_ANY, sn, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
-    staticBoxSizerAction->Add(m_staticTextSystemName, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
-    
+    ///Last Error Message
+    m_staticTextLEM = new wxStaticText(this, wxID_ANY, _("Last Error Message: "), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    staticBoxSizerAction->Add(m_staticTextLEM, 0, wxALL|wxALIGN_LEFT, WXC_FROM_DIP(5));
     
     SetName(wxT("shopPanel"));
     //SetSize(500,600);
@@ -3144,6 +3172,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     //  Turn off all buttons initially.
     m_buttonInstall->Hide();
     m_buttonCancelOp->Hide();
+    m_staticTextLEM->Hide();
     
     UpdateChartList();
     
@@ -3151,6 +3180,21 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 
 shopPanel::~shopPanel()
 {
+}
+
+void shopPanel::SetErrorMessage()
+{
+    if(g_LastErrorMessage.Length()){
+        wxString head = _("Last Error Message: ");
+        head += g_LastErrorMessage;
+        m_staticTextLEM->SetLabel( head );
+        m_staticTextLEM->Show();
+    }
+    else
+        m_staticTextLEM->Hide();
+    
+    g_statusOverride.Clear();
+    setStatusText( _("Status: Ready"));
 }
 
 void shopPanel::RefreshSystemName()
@@ -3223,6 +3267,9 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
     loadShopConfig();
     
+    g_LastErrorMessage.Clear();
+    SetErrorMessage();
+
     // Check the dongle
     g_dongleName.Clear();
     if(IsDongleAvailable()){
@@ -3459,6 +3506,9 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     if(!chart)
         return;
 
+    g_LastErrorMessage.Clear();
+    SetErrorMessage();
+    
     g_statusOverride = _T("Downloading...");
     setStatusText( _("Checking dongle..."));
 
@@ -3563,12 +3613,19 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         ::wxEndBusyCursor();
 
         if(request_return != 0){
-            wxString ec;
-            ec.Printf(_T(" { %d }"), request_return);     
-            setStatusText( _("Status: Communications error.") + ec);
+//             wxString ec;
+//             ec.Printf(_T(" { %d }"), request_return);     
+//             setStatusText( _("Status: Communications error.") + ec);
             if(g_ipGauge)
                 g_ipGauge->SetValue(0);
             m_buttonCancelOp->Hide();
+            g_statusOverride.Clear();
+            m_buttonInstall->Show();
+            m_buttonInstall->Enable();
+            
+            SetErrorMessage();
+            UpdateChartList();
+
             
             return;
         }
@@ -3639,14 +3696,18 @@ int shopPanel::doPrepareGUI(itemSlot *targetSlot)
     
     int err_code = doPrepare(m_ChartSelected, targetSlot);
     if(err_code != 0){                  // Some error
-            wxString ec;
-            ec.Printf(_T(" { %d }"), err_code);     
-            setStatusText( _("Status: Communications error.") + ec);
+//             wxString ec;
+//             ec.Printf(_T(" { %d }"), err_code);     
+//             setStatusText( _("Status: Communications error.") + ec);
             if(g_ipGauge)
                 g_ipGauge->SetValue(0);
             m_buttonCancelOp->Hide();
             m_prepareTimer.Stop();
-            
+            g_statusOverride.Clear();
+            m_buttonInstall->Show();
+
+            SetErrorMessage();
+
             return err_code;
     }
      return 0;
@@ -3693,6 +3754,8 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
     g_statusOverride.Clear();
     m_buttonInstall->Enable();
     
+    SetErrorMessage();
+
     UpdateChartList();
     
 }
