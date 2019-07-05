@@ -160,7 +160,8 @@ public:
     std::string expDate;
     std::string chartName;
     std::string chartID;
-    std::string chartEdition;
+    std::string installedChartEdition;
+    std::string serverChartEdition;
     std::string editionDate;
     std::string thumbLink;
 
