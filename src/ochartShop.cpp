@@ -82,6 +82,8 @@ unsigned int    g_dongleSN;
 wxString        g_dongleName;
 
 itemSlot        *gtargetSlot;
+itemChart       *gtargetChart;
+
 InProgressIndicator *g_ipGauge;
 
 #define ID_CMD_BUTTON_INSTALL 7783
@@ -257,22 +259,40 @@ void itemChart::Update(itemChart *other)
     for(unsigned int i = 0 ; i < other->updateChartListArray.GetCount() ; i++)
         updateChartListArray.Add(other->baseChartListArray.Item(i));
     
-    quantityList.clear();
+    std::vector<itemQuantity> quantityListTemp;
+
     for(unsigned int i = 0 ; i < other->quantityList.size() ; i++){
         
         itemQuantity Qty;
         Qty.quantityId = other->quantityList[i].quantityId;
         
         for(unsigned int j = 0 ; j < other->quantityList[i].slotList.size() ; j++){
-            itemSlot *slot = new itemSlot;
+            itemSlot *slot = GetSlotPtr( wxString(other->quantityList[i].slotList[j]->slotUuid.c_str()) );
+            if(!slot)
+                slot = new itemSlot;
+            
             slot->slotUuid = other->quantityList[i].slotList[j]->slotUuid;
             slot->assignedSystemName = other->quantityList[i].slotList[j]->assignedSystemName;
-            slot->lastRequested = other->quantityList[i].slotList[j]->lastRequested;
+            if(!slot->lastRequested.size())
+                slot->lastRequested = other->quantityList[i].slotList[j]->lastRequested;
+            if(!slot->installLocation.size())
+                slot->installLocation = other->quantityList[i].slotList[j]->installLocation;
+            
             Qty.slotList.push_back(slot);
         }
         
+        quantityListTemp.push_back(Qty);
+    }
+
+    
+    quantityList.clear();
+    for(unsigned int i = 0 ; i < quantityListTemp.size() ; i++){
+        itemQuantity Qty = quantityListTemp[i];
         quantityList.push_back(Qty);
     }
+        
+
+    
 }
 
 
@@ -563,9 +583,20 @@ int itemChart::getChartStatus()
     // d.  Downloading now.
     
     m_status = STAT_REQUESTABLE;
-        return m_status;
+
     
     //  Now check for installation state
+
+    // Check for update
+    if(installedChartEdition.size()){
+        if(GetServerEditionInt() > GetInstalledEditionInt())
+            m_status = STAT_STALE;
+        else
+            m_status = STAT_CURRENT;
+    }
+    
+    return m_status;
+
 #if 0    
     
     wxString cStat = statusID0;
@@ -694,7 +725,33 @@ wxString itemChart::getKeytypeString( std::string slotUUID ){
 }
 
 
+int GetEditionInt(std::string edition)
+{
+    if(!edition.size())
+        return 0;
+    
+    wxString sed(edition.c_str());
+    wxString smaj = sed.BeforeFirst('-');
+    wxString smin = sed.AfterFirst('-');
 
+        
+    long major = 0;
+    smaj.ToLong(&major);
+    long minor = 0;
+    smin.ToLong(&minor);
+    
+    return (major * 100) + minor;
+}
+
+int itemChart::GetInstalledEditionInt()
+{
+    return GetEditionInt(installedChartEdition);
+}
+
+int itemChart::GetServerEditionInt()
+{
+    return GetEditionInt(serverChartEdition);
+}
 
 
 
@@ -1141,7 +1198,6 @@ void loadShopConfig()
                         wxString slotUUID = tkz.GetNextToken();
                         wxString assignedSystemName = tkz.GetNextToken();
                         wxString installLocation = tkz.GetNextToken();
-                        wxString baseFileDownloadPath = tkz.GetNextToken();
                         
                         // Make a new "quantity" clause if necessary
                         long nqid = -1;
@@ -1153,7 +1209,6 @@ void loadShopConfig()
                                 new_qty.quantityId = nqid;
                                 itemSlot *slot = new itemSlot;
                                 slot->installLocation = std::string(installLocation.mb_str());
-                                slot->baseFileDownloadPath = std::string(baseFileDownloadPath.mb_str());
                                 slot->assignedSystemName = std::string(assignedSystemName.mb_str());
                                 slot->slotUuid = std::string(slotUUID.mb_str());
 
@@ -1167,7 +1222,6 @@ void loadShopConfig()
                                     slot = new itemSlot;
                                 
                                 slot->installLocation = std::string(installLocation.mb_str());
-                                slot->baseFileDownloadPath = std::string(baseFileDownloadPath.mb_str());
                                 slot->assignedSystemName = std::string(assignedSystemName.mb_str());
                                 slot->slotUuid = std::string(slotUUID.mb_str());
 
@@ -1187,59 +1241,6 @@ void loadShopConfig()
         }
             
             
-#if 0        
-        pConf->SetPath ( _T ( "/PlugIns/oernc/charts" ) );
-        wxString strk;
-        wxString kval;
-        long dummyval;
-        bool bContk = pConf->GetFirstEntry( strk, dummyval );
-        while( bContk ) {
-            pConf->Read( strk, &kval );
-            
-            // Parse the key
-            wxStringTokenizer tkzs( strk, _T(";") );
-            wxString sid = tkzs.GetNextToken();
-            wxString sqty = tkzs.GetNextToken();
-            long nqty;
-            sqty.ToLong( &nqty );
-            wxString order = tkzs.GetNextToken();
-            
-            // Add a chart if necessary
-            int index = findOrderRefChartId((const char *)order.mb_str(), (const char *)sid.mb_str());
-            itemChart *pItem;
-            if(index < 0){
-                pItem = new itemChart;
-                pItem->orderRef = order;
-                pItem->chartID = sid;
-                ChartVector.push_back(pItem);
-            }
-            else
-                pItem = ChartVector[index];
-
-            // Parse the value
-            wxStringTokenizer tkz( kval, _T(";") );
-            wxString name = tkz.GetNextToken();
-            wxString install = tkz.GetNextToken();
-            wxString dl = tkz.GetNextToken();
-            
-            pItem->chartName = name;
-            
-            // Make a new "quantity" clause if necessary
-            int qtyIndex = pItem->FindQuantityIndex(nqty);
-            itemQuantity new_qty;
-            if(qtyIndex < 0){
-                new_qty.quantityId = nqty;
-                itemSlot *slot = new itemSlot;
-                slot->installLocation = std::string(install.mb_str());
-                slot->baseFileDownloadPath = std::string(dl.mb_str());
-
-                new_qty.slotList.push_back(slot);
-                pItem->quantityList.push_back(new_qty);
-            }
-            
-            bContk = pConf->GetNextEntry( strk, dummyval );
-        }
-#endif        
     }
 }
 
@@ -1299,7 +1300,6 @@ void saveShopConfig()
                     val += slot->slotUuid + _T(";");
                     val += slot->assignedSystemName + _T(";");
                     val += slot->installLocation + _T(";");
-                    val += slot->baseFileDownloadPath + _T(";");
                   }
               }
               if(val.Length())
@@ -1560,6 +1560,16 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                 else if(!strcmp(child->Value(), "slotUuid")){
                     TiXmlNode *childslotuuid = child->FirstChild();
                     g_lastSlotUUID =  wxString::FromUTF8(childslotuuid->Value());
+ 
+                    // This is a response from ChartRequest
+                    // Find the slot, and clear out the array of itemTaskFileInfo
+                    itemChart *pChart = FindChartForSlotUUID(g_lastSlotUUID);
+                    if(pChart){
+                        itemSlot *pslot = pChart->GetSlotPtr(g_lastSlotUUID);
+                        if(pslot){
+                            pslot->taskFileList.clear();
+                        }
+                    }
                 }
                 
                 else if(!strcmp(child->Value(), "file")){
@@ -1569,6 +1579,10 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                         itemSlot *pslot = pChart->GetSlotPtr(g_lastSlotUUID);
                         activeSlot = pslot;
                         if(activeSlot){
+                            
+                            // Create a new set of task files definitions
+                            itemTaskFileInfo *ptfi = new itemTaskFileInfo;
+                            activeSlot->taskFileList.push_back(ptfi);
                         
                             TiXmlNode *childFile = child->FirstChild();
                             for ( childFile = child->FirstChild(); childFile!= 0; childFile = childFile->NextSibling()){
@@ -1577,33 +1591,44 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                                 if(!strcmp(fileVal, "link")){
                                     TiXmlNode *childVal = childFile->FirstChild();
                                     if(childVal) 
-                                        activeSlot->baseFileDownloadPath = childVal->Value();
+                                        ptfi->link = childVal->Value();
                                 }
                                 
                                 else if(!strcmp(fileVal, "size")){
                                     TiXmlNode *childVal = childFile->FirstChild();
                                     if(childVal) 
-                                        activeSlot->baseFileSize = childVal->Value();
+                                        ptfi->size = childVal->Value();
                                 }
 
                                 else if(!strcmp(fileVal, "sha256")){
                                     TiXmlNode *childVal = childFile->FirstChild();
                                     if(childVal) 
-                                        activeSlot->baseFileSHA256 = childVal->Value();
+                                        ptfi->sha256 = childVal->Value();
                                 }
 
                                 else if(!strcmp(fileVal, "chartKeysLink")){
                                     TiXmlNode *childVal = childFile->FirstChild();
                                     if(childVal) 
-                                        activeSlot->chartKeysDownloadPath = childVal->Value();
+                                        ptfi->linkKeys = childVal->Value();
                                 }
                                 
                                 else if(!strcmp(fileVal, "chartKeysSha256")){
                                     TiXmlNode *childVal = childFile->FirstChild();
                                     if(childVal) 
-                                        activeSlot->chartKeysSHA256 = childVal->Value();
+                                        ptfi->sha256Keys = childVal->Value();
                                 }
 
+                                else if(!strcmp(fileVal, "editionTarget")){
+                                    TiXmlNode *childVal = childFile->FirstChild();
+                                    if(childVal) 
+                                        ptfi->target = childVal->Value();
+                                }
+
+                                else if(!strcmp(fileVal, "editionResult")){
+                                    TiXmlNode *childVal = childFile->FirstChild();
+                                    if(childVal) 
+                                        ptfi->result = childVal->Value();
+                                }
                             }
                         }
                     }
@@ -2026,9 +2051,9 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
 
     loginParms += _T("&assignedSystemName=") + wxString(slot->assignedSystemName.c_str());
     loginParms += _T("&slotUuid=") + wxString(slot->slotUuid.c_str());
-    loginParms += _T("&requestedFile=") + wxString(_T("base"));
-    loginParms += _T("&requestedEdition=") + wxString(chart->serverChartEdition.c_str());
-    loginParms += _T("&currentEdition=") + wxString(chart->installedChartEdition.c_str());
+    loginParms += _T("&requestedFile=") + chart->taskRequestedFile;
+    loginParms += _T("&requestedEdition=") + chart->taskRequestedEdition;
+    loginParms += _T("&currentEdition=") + chart->taskCurrentEdition;
     
     wxLogMessage(loginParms);
     
@@ -2059,47 +2084,51 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
 
 int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 {
-    //  Create the download queue for two files.
+    //  Create the download queue for all files necessary.
 
     targetSlot->dlQueue.clear();
     
-    // First, the shorter Key file
-    itemDLTask task1;
-    wxURI uri;
-    wxString downloadURL = wxString(targetSlot->chartKeysDownloadPath.c_str());
-    uri.Create(downloadURL);
-    wxString serverFilename = uri.GetPath();
-    wxFileName fn(serverFilename);
-    wxString fileTarget = fn.GetFullName();
-
-    task1.url = downloadURL;
-    task1.localFile = wxString(g_PrivateDataDir + fileTarget).mb_str();
-    targetSlot->dlQueue.push_back(task1);
+    for(unsigned int i=0 ; i < targetSlot->taskFileList.size() ; i++){
     
-    // Next, the chart payload file
-    itemDLTask task2;
-    wxURI uri2;
-    downloadURL = wxString(targetSlot->baseFileDownloadPath.c_str());
-    uri2.Create(downloadURL);
-    serverFilename = uri2.GetPath();
-    wxFileName fn2(serverFilename);
-    fileTarget = fn2.GetFullName();
+        // First, the shorter Key file
+        itemDLTask task1;
+        wxURI uri;
+        wxString downloadURL = wxString(targetSlot->taskFileList[i]->linkKeys.c_str());
+        uri.Create(downloadURL);
+        wxString serverFilename = uri.GetPath();
+        wxFileName fn(serverFilename);
+        wxString fileTarget = fn.GetFullName();
 
-    task2.url = downloadURL;
-    task2.localFile = wxString(g_PrivateDataDir + fileTarget).mb_str();
-    targetSlot->dlQueue.push_back(task2);
+        task1.url = downloadURL;
+        task1.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
+        targetSlot->taskFileList[i]->cacheKeysLocn = task1.localFile;
+        targetSlot->dlQueue.push_back(task1);
+        
+        // Next, the chart payload file
+        itemDLTask task2;
+        wxURI uri2;
+        downloadURL = wxString(targetSlot->taskFileList[i]->link.c_str());
+        uri2.Create(downloadURL);
+        serverFilename = uri2.GetPath();
+        wxFileName fn2(serverFilename);
+        fileTarget = fn2.GetFullName();
+
+        task2.url = downloadURL;
+        task2.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
+        targetSlot->taskFileList[i]->cacheLinkLocn = task2.localFile;
+        targetSlot->dlQueue.push_back(task2);
+    }
     
     // Store the targetSlot pointer globally for general access
     gtargetSlot = targetSlot;
     gtargetSlot->idlQueue = 0;
+    gtargetChart = targetChart;
     
-    // Kick off the first file
-    g_curlDownloadThread = new wxCurlDownloadThread(g_CurlEventHandler);
-    downloadOutStream = new wxFFileOutputStream(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
-    g_curlDownloadThread->SetURL(gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
-    g_curlDownloadThread->SetOutputStream(downloadOutStream);
-    g_curlDownloadThread->Download();
- 
+    //Send an event to kick off the download chain
+    wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED);
+    event.SetId( ID_CMD_BUTTON_INSTALL_CHAIN );
+    g_shopPanel->GetEventHandler()->AddPendingEvent(event);
+
     return 0;
 }
 
@@ -3485,6 +3514,8 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     
     
     if(bNeedSystemName ){
+        GetNewSystemName();
+/*
         bool sname_ok = false;
         int itry = 0;
         while(!sname_ok && itry < 4){
@@ -3511,13 +3542,10 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
             }
                 
         }
+*/        
     }
-    
-//     wxString sn = _("System Name:");
-//     sn += _T(" ");
-//     sn += g_systemName;
-//     m_staticTextSystemName->SetLabel( sn );
-//     m_staticTextSystemName->Refresh();
+ 
+    RefreshSystemName();
     
     setStatusText( _("Status: Ready"));
     g_ipGauge->Stop();
@@ -3526,6 +3554,169 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     
     saveShopConfig();
 }
+
+bool shopPanel::GetNewSystemName()
+{
+        bool sname_ok = false;
+        int itry = 0;
+        while(!sname_ok && itry < 4){
+            bool bcont = doSystemNameWizard();
+        
+            if( !bcont ){                // user "Cancel"
+                g_systemName.Clear();
+                break;
+            }
+            
+            if(!g_systemName.Len()){
+                wxString msg = _("Invalid System Name");
+                OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_pi Message"), wxOK);
+                itry++;
+            }
+            
+            else if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
+                wxString msg = _("This System Name has been disabled\nPlease choose another SystemName");
+                OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_pi Message"), wxOK);
+                itry++;
+            }
+            else{
+                sname_ok = true;
+            }
+                
+        }
+
+    return sname_ok;
+}
+
+
+int shopPanel::ComputeUpdates(itemChart *chart)
+{
+    int installedEdition = chart->GetInstalledEditionInt();
+    int serverEdition = chart->GetServerEditionInt();
+ 
+    // Is this a base edition update?
+    //  If so, we need to simply download the latest new edition available
+    if(serverEdition/100 > installedEdition / 100){
+        chart->taskRequestedFile = _T("base");
+        chart->taskRequestedEdition = chart->serverChartEdition;
+        chart->taskCurrentEdition = chart->installedChartEdition;
+        chart->taskAction = TASK_REPLACE;
+        
+        return 0;               // no error
+    }
+        
+    int ypp = 4;
+    
+    return 1;           // General error
+}
+
+
+
+int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task)
+{
+    if(chart->taskAction == TASK_REPLACE){
+        
+        if(!slot->installLocation.size())
+            return false;
+
+        // Remove all .oernc and .XML files from the current installation directory
+        
+        if(chart->taskCurrentEdition.size()){
+            // Craft the name of the previous chartset's top level directory
+            wxString tlDirFull;
+            wxFileName fnInstall(task->cacheLinkLocn);      // /home/dsr/.opencpn/oernc_pi/DownloadCache/oeRNC-IMR-GR-2-0-base.zip
+            wxString tlDir = fnInstall.GetName();           // oeRNC-IMR-GR-2-0-base
+            
+            int nl = tlDir.Find( chart->taskRequestedEdition + _T("-base"));      // "2-0"
+            if(nl != wxNOT_FOUND){                  // result is a base set
+                wxString tlDirTest = tlDir;
+                tlDirTest.Replace(chart->taskRequestedEdition + _T("-base"), chart->taskCurrentEdition +_T("-base"), false);
+                tlDirTest.Prepend( wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator());
+                if(::wxDirExists(tlDirTest)){
+                    tlDirFull = tlDirTest;
+                }
+                else{
+                    wxString tlDirTest = tlDir;
+                    tlDirTest.Replace(chart->taskRequestedEdition + _T("-base"), chart->taskCurrentEdition +_T("-update"), false);
+                    tlDirTest.Prepend( wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator());
+                    if(::wxDirExists(tlDirTest)){
+                        tlDirFull = tlDirTest;
+                    }
+                }
+            }
+            else{
+                nl = tlDir.Find( chart->taskRequestedEdition + _T("-update"));      // "2-0"
+                if(nl != wxNOT_FOUND){                  // result is an update set
+                    wxString tlDirTest = tlDir;
+                    tlDirTest.Replace(chart->taskRequestedEdition + _T("-update"), chart->taskCurrentEdition +_T("-base"), false);
+                    tlDirTest.Prepend( wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator());
+                    if(::wxDirExists(tlDirTest)){
+                        tlDirFull = tlDirTest;
+                    }
+                }
+                else{
+                    wxString tlDirTest = tlDir;
+                    tlDirTest.Replace(chart->taskRequestedEdition + _T("-update"), chart->taskCurrentEdition +_T("-update"), false);
+                    tlDirTest.Prepend( wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator());
+                    if(::wxDirExists(tlDirTest)){
+                        tlDirFull = tlDirTest;
+                    }
+                }
+            }
+            
+            if(tlDirFull.Length()){
+                wxArrayString fileArray;
+                size_t nFiles = wxDir::GetAllFiles( tlDirFull, &fileArray, _T("*.oernc"));
+                nFiles += wxDir::GetAllFiles( slot->installLocation.c_str(), &fileArray, _T("*.XML"));
+                for(unsigned int i=0 ; i < nFiles ;i++)
+                    ::wxRemoveFile(fileArray.Item(i));
+                
+                // Remove the directory itself, if empty.
+                wxDir oldDir(tlDirFull);
+                if(!oldDir.HasFiles() && !oldDir.HasSubDirs())
+                    wxRmdir(tlDirFull);
+
+            }
+        }
+        
+        
+        int yyp = 4;
+            
+        
+        // We can unzip the downloaded files directly to their final location
+        g_shopPanel->setStatusText( _("Unzipping chart files..."));
+        wxYield();
+        
+        ::wxBeginBusyCursor();
+        bool ret = ExtractZipFiles( task->cacheLinkLocn, slot->installLocation, false, wxDateTime::Now(), false);
+        ::wxEndBusyCursor();
+        
+        if(!ret){
+            wxLogError(_T("oernc_pi: Unable to extract: ") + task->cacheLinkLocn );
+            OCPNMessageBox_PlugIn(NULL, _("Error extracting zip file"), _("oeRNC_pi Message"), wxOK);
+            return 2;
+        }
+    
+    //  keyList.XML should be simply copied to the root
+    // directory of the zip set, or, in other words, to the directory containing the .oernc files.
+    // Find that directory...
+        wxFileName fnz(task->cacheLinkLocn);
+        wxString containerDir = fnz.GetName();
+    
+        wxFileName fn(task->cacheKeysLocn);
+        if(!::wxCopyFile( task->cacheKeysLocn, slot->installLocation +  wxFileName::GetPathSeparator() + containerDir + wxFileName::GetPathSeparator() + fn.GetFullName())){
+            wxLogError(_T("oernc_pi: Unable to copy: ") + task->cacheKeysLocn );
+            OCPNMessageBox_PlugIn(NULL, _("Error copying file"), _("oeRNC_pi Message"), wxOK);
+            return 3;
+        }
+        
+        chart->lastInstalledtlDir = slot->installLocation +  wxFileName::GetPathSeparator() + containerDir;
+        
+    }
+        
+
+    return true;
+}
+
 
 void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 {
@@ -3539,92 +3730,137 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
     }
 
     //  Is the queue done?
-    if((gtargetSlot->idlQueue + 1) < gtargetSlot->dlQueue.size()){
-        gtargetSlot->idlQueue++;
+
+    if(gtargetSlot->idlQueue < gtargetSlot->dlQueue.size()){
         
-        // Kick off the next file
+        // is the required file available in the cache?
+        if(wxFileExists(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile)){
+            
+            // TODO validate the file using SHA256
+            if(1){
+                //Skip to next in queue
+                gtargetSlot->idlQueue++;        // next
+                
+                //Send an event to continue the download chain
+                wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED);
+                event.SetId( ID_CMD_BUTTON_INSTALL_CHAIN );
+                g_shopPanel->GetEventHandler()->AddPendingEvent(event);
+                return;
+            }
+        }
+
+        // Prepare to start the next download
+        //Make the temp download directory if needed
+        wxFileName fn(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
+        if( !wxFileName::DirExists(fn.GetPath()) ){
+            if( !wxFileName::Mkdir(fn.GetPath()) ){
+                wxLogError(_T("Can not create directory '") + fn.GetPath() + _T("'."));
+                return;
+            }
+        }
+
         g_curlDownloadThread = new wxCurlDownloadThread(g_CurlEventHandler);
         downloadOutStream = new wxFFileOutputStream(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
         g_curlDownloadThread->SetURL(gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
         g_curlDownloadThread->SetOutputStream(downloadOutStream);
         g_curlDownloadThread->Download();
+
+        gtargetSlot->idlQueue++;        // next
         
         return;
     }
 
 
     // Chained through from download end event
-        if(m_binstallChain){
-            m_binstallChain = false;
-            
-            //  Download is apparently done.
-            g_statusOverride.Clear();
-            
-            //We can check some data to be sure.
-            
-            // Does the download destination file exist?
-//             if(!::wxFileExists( chart->downloadingFile )){
-//                 OCPNMessageBox_PlugIn(NULL, _("Chart download error, missing file."), _("oeRNC_PI Message"), wxOK);
-//                 m_buttonInstall->Enable();
-//                 return;
-//             }
-            
-            /*        
-             *        long dlFileLength = 0;
-             *        
-             *        wxFile tFile(dlFile);
-             *        if(tFile.IsOpened())
-             *            dlFileLength = tFile.Length();
-             *        else
-             *            return;
-             *        
-             *        long testLength;
-             *        if(!dlSize.ToLong(&testLength))
-             *            return;
-             *        
-             *        if(testLength != dlFileLength){
-             *            OCPNMessageBox_PlugIn(NULL, _("Chart download error, wrong file length."), _("oeSENC_PI Message"), wxOK);
-             *            return;
-             }
-             */      
-            // So far, so good.
-            
-            // Download exists
+    if(m_binstallChain){
+        m_binstallChain = false;
+        
+        int rv = 0;
+        
+        //  Download is apparently done.
+        g_statusOverride.Clear();
 
-            // Update the records
-             
-            wxString msg = _("Chart download complete.");
-            msg +=_T("\n\n");
-            msg += _("Proceed to install?");
-            msg += _T("\n\n");
-            int ret = -1;
+        // Parse the task definitions, decide what to do
+    
+        // the simple case of inital load, or full base update
+        if(gtargetChart->taskAction == TASK_REPLACE){
             
-            while(ret != wxID_YES){
-                ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_PI Message"), wxYES_NO);
+            // Is there a known install directory?
+            wxString installDir = gtargetSlot->installLocation;
             
-                if(ret == wxID_YES){
-                    g_statusOverride = _("Installing charts");
-                
-                    int rv = doUnzip(gtargetSlot);
-                
-                    g_statusOverride.Clear();
-                    setStatusText( _("Status: Ready"));
-                
-                    if(0 == rv)
-                        OCPNMessageBox_PlugIn(NULL, _("Chart installation complete."), _("oeRNC_PI Message"), wxOK);
-                
-//                    UpdateChartList();
-                }
-                else if(ret == wxID_NO)
-                    break;
+            // Update, or initial load?
+            if(!gtargetChart->taskCurrentEdition.Length() || !installDir.Length()){             // initial load
+        
+                wxString installLocn = g_PrivateDataDir;
+                if(installDir.Length())
+                    installLocn = installDir;
+                else if(g_lastInstallDir.Length())
+                    installLocn = g_lastInstallDir;
+        
+                wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
+                int result = dirSelector.ShowModal();
+        
+                if(result == wxID_OK)
+                    gtargetSlot->installLocation = dirSelector.GetPath().mb_str();
 
             }
+            
+            //Presumably there is an install directory, and a current Edition, so this is an update
+                
+            // Process the array of itemTaskFileInfo
+            for(unsigned int i=0 ; i < gtargetSlot->taskFileList.size() ; i++){
+                itemTaskFileInfo *pTask = gtargetSlot->taskFileList[i];
+                if(!processTask(gtargetSlot, gtargetChart, pTask)){
 
-            UpdateChartList();
+                    g_statusOverride.Clear();
+                    setStatusText( _("Status: Ready"));
+                    OCPNMessageBox_PlugIn(NULL, _("Chart installation ERROR."), _("oeRNC_PI Message"), wxOK);
+                    UpdateChartList();
+                    m_buttonInstall->Enable();
+                    return;
+                }
+            }
 
-            m_buttonInstall->Enable();
-            return;
+            // If no error, update the installed records
+            gtargetChart->installedChartEdition = gtargetChart->taskRequestedEdition;
         }
+        
+           
+
+        //  We know that the unzip process puts all charts in a subdir whose name is the "downloadFile", without extension
+        //  This is the dir that we want to add to database.
+        wxString targetAddDir = gtargetChart->lastInstalledtlDir;
+    
+        //  If the currect core chart directories do not cover this new directory, then add it
+        bool covered = false;
+        for( size_t i = 0; i < GetChartDBDirArrayString().GetCount(); i++ ){
+            if( targetAddDir.StartsWith((GetChartDBDirArrayString().Item(i))) ){
+                covered = true;
+                break;
+            }
+        }
+        if( !covered ){
+            AddChartDirectory( targetAddDir );
+        }
+
+        g_lastInstallDir = gtargetSlot->installLocation;
+    
+        ForceChartDBUpdate();
+    
+        saveShopConfig();
+    
+   
+        g_statusOverride.Clear();
+        setStatusText( _("Status: Ready"));
+                
+        OCPNMessageBox_PlugIn(NULL, _("Chart installation complete."), _("oeRNC_PI Message"), wxOK);
+
+        UpdateChartList();
+
+        m_buttonInstall->Enable();
+
+        return;
+    }
 }
 
 void shopPanel::OnButtonInstall( wxCommandEvent& event )
@@ -3633,6 +3869,8 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     if(!chart)
         return;
 
+    ComputeUpdates(chart);
+    
     g_LastErrorMessage.Clear();
     SetErrorMessage();
     
@@ -3663,17 +3901,42 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     if(g_dongleName.Len()){
         if(g_systemNameServerArray.Index(g_dongleName) == wxNOT_FOUND){
             if( doUploadXFPR( true ) != 0){
+                g_dongleName.Clear();
                 g_statusOverride.Clear();
                 setStatusText( _("Status: Dongle FPR upload error"));
+
+                m_buttonInstall->Enable();
+                m_buttonCancelOp->Hide();
+
                 return;
             }
         }
     }
     else{
+        if(!g_systemName.Length()){
+            if(GetNewSystemName())
+                RefreshSystemName();
+        }
+        
+        if(!g_systemName.Length()){
+                saveShopConfig();       // record blank system name.
+                m_buttonInstall->Enable();
+                m_buttonCancelOp->Hide();
+                RefreshSystemName();
+                return;
+        }
+
         if(g_systemNameServerArray.Index(g_systemName) == wxNOT_FOUND){
             if( doUploadXFPR( false ) != 0){
+                g_systemName.Clear();
                 g_statusOverride.Clear();
                 setStatusText( _("Status: System FPR upload error"));
+                saveShopConfig();       // record blank system name.
+                RefreshSystemName();
+                
+                m_buttonInstall->Enable();
+                m_buttonCancelOp->Hide();
+
                 return;
             }
         }
@@ -3727,10 +3990,11 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     // Is the selected chart ready for download?
     // If not, we do the "Request/Prepare" step
 
-    // We can determine state based on the contents of activeSlot.baseFileDownloadPath 
+    //TODO // We can determine state based on the contents of activeSlot.baseFileDownloadPath 
     bool bNeedRequestWait = false;
-    //if(!activeSlot->baseFileDownloadPath.size())
-        bNeedRequestWait = true;
+    
+    
+    bNeedRequestWait = true;
     
     int request_return;
     if(bNeedRequestWait){
@@ -4071,7 +4335,6 @@ void shopPanel::UpdateActionControls()
         m_buttonInstall->SetLabel(_("Install Selected Chart"));
         m_buttonInstall->Show();
     }
-#if 0    
     else if(chart->getChartStatus() == STAT_CURRENT){
         m_buttonInstall->SetLabel(_("Reinstall Selected Chart"));
         m_buttonInstall->Show();
@@ -4080,6 +4343,7 @@ void shopPanel::UpdateActionControls()
         m_buttonInstall->SetLabel(_("Update Selected Chart"));
         m_buttonInstall->Show();
     }
+#if 0    
     else if(chart->getChartStatus() == STAT_READY_DOWNLOAD){
         m_buttonInstall->SetLabel(_("Download Selected Chart"));
         m_buttonInstall->Show();       

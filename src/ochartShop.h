@@ -67,6 +67,11 @@ enum{
         STAT_NEED_REFRESH
 };
 
+enum{
+        TASK_NULL = 0,
+        TASK_REPLACE
+};
+
 class itemDLTask
 {
 public:
@@ -81,7 +86,22 @@ public:
 };
     
     
-
+class itemTaskFileInfo
+{
+public:
+    itemTaskFileInfo(){}
+    ~itemTaskFileInfo(){}
+    
+    std::string target;
+    std::string result;
+    std::string link;
+    std::string size;
+    std::string sha256;
+    std::string linkKeys;
+    std::string sha256Keys;
+    std::string cacheKeysLocn;
+    std::string cacheLinkLocn;
+};
 
 
 
@@ -97,13 +117,10 @@ public:
     std::string assignedSystemName;
     std::string lastRequested;
     std::string installLocation;
-    std::string baseFileDownloadPath;
-    std::string baseFileSize;
-    std::string baseFileSHA256;
-    std::string chartKeysDownloadPath;
-    std::string chartKeysSHA256;
     
     std::vector<itemDLTask> dlQueue;
+    std::vector<itemTaskFileInfo *>taskFileList;
+    
     unsigned int idlQueue;
 
 };
@@ -153,7 +170,9 @@ public:
     int getChartStatus();
     wxBitmap& GetChartThumbnail(int size);
     wxString getKeytypeString( std::string slotUUID );
-    
+    int GetInstalledEditionInt();
+    int GetServerEditionInt();
+
     
     std::string orderRef;
     std::string purchaseDate;
@@ -175,31 +194,12 @@ public:
     
     std::vector<itemQuantity> quantityList;
 
-
-
-/*    
-    wxString sysID0;
-    wxString statusID0;
-    wxString fileDownloadURL0;      //  https://.....
-    wxString filedownloadSize0;
-    wxString fileDownloadPath0;     // Where the file was downloaded
-    wxString lastRequestEdition0;
-    wxString fileDownloadName0;     // The short name "charts.zip"
-    wxString installedFileDownloadPath0;        // The zip file that is currently installed
-    wxString installLocation0;
-    wxString installedEdition0;
+    // Computed update task parameters
+    wxString  taskRequestedFile;
+    wxString  taskRequestedEdition;
+    wxString  taskCurrentEdition;
+    int       taskAction;
     
-    wxString sysID1;
-    wxString statusID1;
-    wxString fileDownloadURL1;      //  https://.....
-    wxString filedownloadSize1;
-    wxString fileDownloadPath1;     // Where the file was downloaded
-    wxString lastRequestEdition1;
-    wxString fileDownloadName1;     // The short name "charts.zip"
-    wxString installedFileDownloadPath1;
-    wxString installLocation1;
-    wxString installedEdition1;
-    */
     bool m_downloading;
     wxString downloadingFile;
     
@@ -210,6 +210,7 @@ public:
     
     wxString lastInstall;          // For updates, the full path of installed chartset
     int m_status;
+    wxString lastInstalledtlDir;
         
 };
 
@@ -454,7 +455,10 @@ public:
     void setStatusText( const wxString &text ){ m_staticTextStatus->SetLabel( text );  m_staticTextStatus->Refresh(); }
     void setStatusTextProgress( const wxString &text ){ m_staticTextStatus/*m_staticTextStatusProgress*/->SetLabel( text );  /*m_staticTextStatusProgress->Refresh();*/ }
     void MakeChartVisible(oeXChartPanel *chart);
-    
+    int ComputeUpdates(itemChart *chart);
+    bool GetNewSystemName();
+    int processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task);
+
     int m_prepareTimerCount;
     int m_prepareTimeout;
     int m_prepareProgress;
