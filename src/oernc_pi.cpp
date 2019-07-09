@@ -388,6 +388,7 @@ void oernc_pi::OnSetupOptions( void )
     sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
     m_shoppanel->FitInside();
 
+    
 #endif
 }
 void oernc_pi::OnCloseToolboxPanel(int page_sel, int ok_apply_cancel)

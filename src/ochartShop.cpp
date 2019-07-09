@@ -2417,6 +2417,19 @@ int doShop(){
     
     loadShopConfig();
    
+    // Check the dongle
+    g_dongleName.Clear();
+    if(IsDongleAvailable()){
+        g_dongleSN = GetDongleSN();
+        char sName[20];
+        snprintf(sName, 19, "sgl%08X", g_dongleSN);
+
+        g_dongleName = wxString(sName);
+    }
+ 
+    if(g_shopPanel)
+        g_shopPanel->RefreshSystemName();
+
     //  Do we need an initial login to get the persistent key?
     if(g_loginKey.Len() == 0){
         doLogin();
@@ -2935,19 +2948,19 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         dc.DrawText( tx, text_x_val, yPos);
         yPos += yPitch;
         
+        tx = _("Current Chart Edition:");
+        dc.DrawText( tx, text_x, yPos);
+        tx = m_pChart->serverChartEdition;
+        dc.DrawText( tx, text_x_val, yPos);
+        yPos += yPitch;
+        
         tx = _("Order Reference:");
         dc.DrawText( tx, text_x, yPos);
         tx = m_pChart->orderRef;
         dc.DrawText( tx, text_x_val, yPos);
         yPos += yPitch;
         
-        tx = _("Purchase date:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->purchaseDate;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Expiration date:");
+        tx = _("Updates available through:");
         dc.DrawText( tx, text_x, yPos);
         tx = m_pChart->expDate;
         dc.DrawText( tx, text_x_val, yPos);
@@ -3330,6 +3343,18 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonCancelOp->Hide();
     m_staticTextLEM->Hide();
     
+        // Check the dongle
+    g_dongleName.Clear();
+    if(IsDongleAvailable()){
+        g_dongleSN = GetDongleSN();
+        char sName[20];
+        snprintf(sName, 19, "sgl%08X", g_dongleSN);
+
+        g_dongleName = wxString(sName);
+    }
+
+    RefreshSystemName();
+    
     UpdateChartList();
     
 }
@@ -3355,9 +3380,18 @@ void shopPanel::SetErrorMessage()
 
 void shopPanel::RefreshSystemName()
 {
-    wxString sn = _("System Name:");
-    sn += _T(" ");
-    sn += g_systemName;
+    wxString sn;
+    if(g_dongleName.Length()){
+        sn = _("System Name:");
+        sn += _T(" ");
+        sn += g_dongleName + _T(" (") + _("USB Key Dongle") + _T(")");
+        m_staticTextSystemName->SetLabel( sn );
+    }
+    else{
+        sn = _("System Name:");
+        sn += _T(" ");
+        sn += g_systemName;
+    }
     
     m_staticTextSystemName->SetLabel(sn);
 }
@@ -3434,22 +3468,9 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
         snprintf(sName, 19, "sgl%08X", g_dongleSN);
 
         g_dongleName = wxString(sName);
-        
-        wxString sn = _("System Name:");
-        sn += _T(" ");
-        sn += g_dongleName + _T(" (") + _("USB Key Dongle") + _T(")");
-        m_staticTextSystemName->SetLabel( sn );
-        m_staticTextSystemName->Refresh();
- 
-    }
-    else{
-        wxString sn = _("System Name:");
-        sn += _T(" ");
-        sn += g_systemName;
-        m_staticTextSystemName->SetLabel( sn );
-        m_staticTextSystemName->Refresh();
     }
  
+    RefreshSystemName();
     
     //  Do we need an initial login to get the persistent key?
     if(g_loginKey.Len() == 0){
@@ -3593,6 +3614,17 @@ int shopPanel::ComputeUpdates(itemChart *chart)
     int installedEdition = chart->GetInstalledEditionInt();
     int serverEdition = chart->GetServerEditionInt();
  
+    // Is this a reload?
+    // If so, just download and install the appropriate "base"
+    if(serverEdition == installedEdition){
+        chart->taskRequestedFile = _T("base");
+        chart->taskRequestedEdition = chart->serverChartEdition;
+        chart->taskCurrentEdition = chart->installedChartEdition;
+        chart->taskAction = TASK_REPLACE;
+        
+        return 0;               // no error
+    }
+    
     // Is this a base edition update?
     //  If so, we need to simply download the latest new edition available
     if(serverEdition/100 > installedEdition / 100){
@@ -3693,28 +3725,49 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(!ret){
             wxLogError(_T("oernc_pi: Unable to extract: ") + task->cacheLinkLocn );
             OCPNMessageBox_PlugIn(NULL, _("Error extracting zip file"), _("oeRNC_pi Message"), wxOK);
+            ::wxRemoveFile(wxString(task->cacheLinkLocn.c_str()));
             return 2;
         }
     
     //  keyList.XML should be simply copied to the root
     // directory of the zip set, or, in other words, to the directory containing the .oernc files.
     // Find that directory...
-        wxFileName fnz(task->cacheLinkLocn);
-        wxString containerDir = fnz.GetName();
+        wxString containerDir;
+        
+        if(wxFileName::Exists(wxString(task->cacheKeysLocn.c_str()))){
+            wxFile file(wxString(task->cacheKeysLocn.c_str()));
+            if(file.IsOpened()){
+                if(!file.Length()){
+                    wxLogError(_T("oernc_pi: Found empty file: ") + task->cacheKeysLocn );
+                    OCPNMessageBox_PlugIn(NULL, _("Error empty file "), _("oeRNC_pi Message"), wxOK);
+                    ::wxRemoveFile(wxString(task->cacheKeysLocn.c_str()));
+                    return 5;
+                }
+            }
+            
+            wxFileName fnz(task->cacheLinkLocn);
+            containerDir = fnz.GetName();
     
-        wxFileName fn(task->cacheKeysLocn);
-        if(!::wxCopyFile( task->cacheKeysLocn, slot->installLocation +  wxFileName::GetPathSeparator() + containerDir + wxFileName::GetPathSeparator() + fn.GetFullName())){
-            wxLogError(_T("oernc_pi: Unable to copy: ") + task->cacheKeysLocn );
-            OCPNMessageBox_PlugIn(NULL, _("Error copying file"), _("oeRNC_pi Message"), wxOK);
-            return 3;
+            wxFileName fn(task->cacheKeysLocn);
+            if(!::wxCopyFile( task->cacheKeysLocn, slot->installLocation +  wxFileName::GetPathSeparator() + containerDir + wxFileName::GetPathSeparator() + fn.GetFullName())){
+                wxLogError(_T("oernc_pi: Unable to copy: ") + task->cacheKeysLocn );
+                OCPNMessageBox_PlugIn(NULL, _("Error copying file"), _("oeRNC_pi Message"), wxOK);
+                return 3;
+            }
         }
+        else{
+            wxLogError(_T("oernc_pi: Unable to find: ") + task->cacheKeysLocn );
+            OCPNMessageBox_PlugIn(NULL, _("Error finding file"), _("oeRNC_pi Message"), wxOK);
+            return 4;
+        }
+            
         
         chart->lastInstalledtlDir = slot->installLocation +  wxFileName::GetPathSeparator() + containerDir;
         
     }
         
 
-    return true;
+    return 0;
 }
 
 
@@ -3763,6 +3816,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         downloadOutStream = new wxFFileOutputStream(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
         g_curlDownloadThread->SetURL(gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
         g_curlDownloadThread->SetOutputStream(downloadOutStream);
+        //wxLogMessage(_T("Downloading: ") + gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
         g_curlDownloadThread->Download();
 
         gtargetSlot->idlQueue++;        // next
@@ -3810,7 +3864,9 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             // Process the array of itemTaskFileInfo
             for(unsigned int i=0 ; i < gtargetSlot->taskFileList.size() ; i++){
                 itemTaskFileInfo *pTask = gtargetSlot->taskFileList[i];
-                if(!processTask(gtargetSlot, gtargetChart, pTask)){
+                int rv = 0;
+                rv = processTask(gtargetSlot, gtargetChart, pTask);
+                if(rv){
 
                     g_statusOverride.Clear();
                     setStatusText( _("Status: Ready"));
@@ -3980,6 +4036,9 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         }
 
     }
+    
+    //TODO  After first upload of a new FPR, and then the initial assigment, we need to search for the correct new slot for the following
+    //  Otherwise, activeSlot is NULL, leading to crash.
     
     // Known assigned to me, so maybe Ready for download
     
@@ -4407,11 +4466,7 @@ bool shopPanel::doSystemNameWizard(  )
     else 
         return false;
     
-    wxString sn = _("System Name:");
-    sn += _T(" ");
-    sn += g_systemName;
-    m_staticTextSystemName->SetLabel( sn );
-    m_staticTextSystemName->Refresh();
+    RefreshSystemName();
     
     saveShopConfig();
     
