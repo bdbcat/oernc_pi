@@ -31,6 +31,8 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#include <iostream>
+#include <fstream>
 #include <wx/fileconf.h>
 #include <wx/uri.h>
 #include "wx/tokenzr.h"
@@ -44,6 +46,7 @@
 #include <wx/zipstrm.h>
 #include <memory>
 #include "fpr.h"
+#include "sha256.h"
 
 #include <wx/arrimpl.cpp> 
 WX_DEFINE_OBJARRAY(ArrayOfCharts);
@@ -2105,6 +2108,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 
         task1.url = downloadURL;
         task1.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
+        task1.SHA256 = targetSlot->taskFileList[i]->sha256Keys;
         targetSlot->taskFileList[i]->cacheKeysLocn = task1.localFile;
         targetSlot->dlQueue.push_back(task1);
         
@@ -2119,6 +2123,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 
         task2.url = downloadURL;
         task2.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
+        task2.SHA256 = targetSlot->taskFileList[i]->sha256;
         targetSlot->taskFileList[i]->cacheLinkLocn = task2.localFile;
         targetSlot->dlQueue.push_back(task2);
     }
@@ -2216,6 +2221,9 @@ bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool
                 wxFileOutputStream file(name);
                 
                 g_shopPanel->setStatusText( _("Unzipping chart files...") + fn.GetFullName());
+                
+                if(g_ipGauge)
+                    g_ipGauge->Pulse();
                 wxYield();
                 
                 if( !file )
@@ -3654,6 +3662,19 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(!slot->installLocation.size())
             return false;
 
+        // Check the SHA256 of both files in the task
+        if(!validateSHA256(task->cacheLinkLocn, task->sha256)){
+            wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheLinkLocn );
+            OCPNMessageBox_PlugIn(NULL, _("Validation error on zip file"), _("oeRNC_pi Message"), wxOK);
+            return 6;
+        }
+        if(!validateSHA256(task->cacheKeysLocn, task->sha256Keys)){
+            wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheKeysLocn );
+            OCPNMessageBox_PlugIn(NULL, _("Validation error on key file"), _("oeRNC_pi Message"), wxOK);
+            return 7;
+        }
+
+            
         // Remove all .oernc files from the current installation directory
         
         if(chart->taskCurrentEdition.size()){
@@ -3773,6 +3794,81 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
     return 0;
 }
 
+bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
+{
+    //File...
+    std::string sfile = fileName;
+    
+    // Does the file exist?
+    if(!wxFileName::Exists(wxString(sfile.c_str())))
+        return false;
+    
+    // Has the file any content?
+    wxFile file(wxString(sfile.c_str()));
+    if(!file.IsOpened())
+        return false;
+                
+    if(!file.Length())
+        return false;
+    
+    // Calculate the SHA256 Digest
+
+    // Check for the file presence, and openability
+    FILE *rFile = fopen(sfile.c_str(), "rb");
+   
+    if (rFile < 0)
+        return false;            // file error
+
+    wxString previousStatus = getStatusText();
+    setStatusText( _("Status: Validating download file..."));
+    wxYield();
+
+    // compute the file length    
+    fseek(rFile, 0, SEEK_END);
+    unsigned int rLength = ftell(rFile);
+                        
+    unsigned char buffer[1024 * 64];
+    fseek(rFile, 0, SEEK_SET);
+    
+    SHA256_CTX ctx;
+    unsigned char shasum[32];
+    sha256_init(&ctx);
+ 
+    size_t nread = 0;
+    int ic = 0;
+    while (nread < rLength){
+        memset(buffer, 0, sizeof(buffer));
+        int iread = fread(buffer, 1, sizeof(buffer), rFile);
+        sha256_update(&ctx, buffer, iread);
+        nread += iread;
+        
+        if((!(ic % 16)) && g_ipGauge){
+            g_ipGauge->Pulse();
+            wxYieldIfNeeded();
+        }
+        ic++;
+    }
+
+    fclose(rFile);
+    
+    sha256_final(&ctx, shasum);
+    
+    std::string ssum;
+    for(int i=0 ; i < 32 ; i++){
+        char t[3];
+        sprintf(t, "%02x", shasum[i]);
+        ssum += t;
+    }
+    
+    int cval = ssum.compare(shaSum);
+    
+    setStatusText(previousStatus);
+    wxYield();
+    
+    return (cval == 0);
+    
+}
+
 
 void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 {
@@ -3792,9 +3888,9 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         // is the required file available in the cache?
         if(wxFileExists(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile)){
             
-            // TODO validate the file using SHA256
-            if(1){
-                //Skip to next in queue
+            // Validate the existing file using SHA256
+            if( validateSHA256(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile, gtargetSlot->dlQueue[gtargetSlot->idlQueue].SHA256)){
+                //  OK, Skip to next in queue
                 gtargetSlot->idlQueue++;        // next
                 
                 //Send an event to continue the download chain

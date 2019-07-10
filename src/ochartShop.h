@@ -83,6 +83,7 @@ public:
     std::string localFile;
     long        currentOffset;
     long        totalSize;
+    std::string SHA256;
 };
     
     
@@ -453,11 +454,13 @@ public:
     wxString doGetNewSystemName( );
     void UpdateActionControls();
     void setStatusText( const wxString &text ){ m_staticTextStatus->SetLabel( text );  m_staticTextStatus->Refresh(); }
+    wxString getStatusText(){ return m_staticTextStatus->GetLabel(); }
     void setStatusTextProgress( const wxString &text ){ m_staticTextStatus/*m_staticTextStatusProgress*/->SetLabel( text );  /*m_staticTextStatusProgress->Refresh();*/ }
     void MakeChartVisible(oeXChartPanel *chart);
     int ComputeUpdates(itemChart *chart);
     bool GetNewSystemName();
     int processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task);
+    bool validateSHA256(std::string fileName, std::string shaSum);
 
     int m_prepareTimerCount;
     int m_prepareTimeout;
