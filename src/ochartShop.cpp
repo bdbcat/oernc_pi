@@ -505,10 +505,10 @@ int itemChart::GetSlotAssignedToSystem( int &qId )
     return (-1);
 }
             
-int itemChart::FindQuantityIndex( int nqty){
+int itemChart::FindQuantityIndex( int nqtyID){
     for(unsigned int i=0 ; i < quantityList.size() ; i++){
         itemQuantity Qty = quantityList[i];
-        if(Qty.quantityId == nqty)
+        if(Qty.quantityId == nqtyID)
             return i;
     }
     
@@ -517,11 +517,11 @@ int itemChart::FindQuantityIndex( int nqty){
 
 itemSlot *itemChart::GetActiveSlot(){
     itemSlot *rv = NULL;
-    if((m_activeQty < 0) || (m_assignedSlot < 0))
+    if((m_activeQtyID < 0) || (m_assignedSlotIndex < 0))
         return rv;
     
-    int qtyIndex = FindQuantityIndex( m_activeQty );
-    return quantityList[qtyIndex].slotList[m_assignedSlot];
+    int qtyIndex = FindQuantityIndex( m_activeQtyID );
+    return quantityList[qtyIndex].slotList[m_assignedSlotIndex];
 }
                 
 //  Current status can be one of:
@@ -561,23 +561,23 @@ int itemChart::getChartStatus()
     }
     
     // We know that chart is assigned to me, so identify the slot
-    m_assignedSlot = -1;
-    int tmpQty = -1;
+    m_assignedSlotIndex = -1;
+    int tmpQtyID = -1;
     
-    int slot = GetSlotAssignedToInstalledDongle( tmpQty );
-    if(slot >= 0){
-        m_assignedSlot = slot;
-        m_activeQty = tmpQty;
+    int slotIndex = GetSlotAssignedToInstalledDongle( tmpQtyID );
+    if(slotIndex >= 0){
+        m_assignedSlotIndex = slotIndex;
+        m_activeQtyID = tmpQtyID;
     }
     else{
-        slot = GetSlotAssignedToSystem( tmpQty );
-        if(slot >= 0){
-           m_assignedSlot = slot;
-           m_activeQty = tmpQty;
+        slotIndex = GetSlotAssignedToSystem( tmpQtyID );
+        if(slotIndex >= 0){
+           m_assignedSlotIndex = slotIndex;
+           m_activeQtyID = tmpQtyID;
         }
     }
     
-    if(m_assignedSlot < 0)
+    if(m_assignedSlotIndex < 0)
         return m_status;
 
     // From here, chart may be:
@@ -4043,9 +4043,9 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         }
         
         // Find the active slot parameters
-        chart->m_activeQty = qtyIndex;
+        chart->m_activeQtyID = chart->quantityList[qtyIndex].quantityId;
         // By definition, the new active slot index is the last one added
-        chart->m_assignedSlot = chart->quantityList[qtyIndex].slotList.size()-1;
+        chart->m_assignedSlotIndex = chart->quantityList[qtyIndex].slotList.size()-1;
 
     }
     
@@ -4060,16 +4060,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     }
 
         
-
-    
-    // Is the selected chart ready for download?
-    // If not, we do the "Request/Prepare" step
-
-    //TODO // We can determine state based on the contents of activeSlot.baseFileDownloadPath 
-    bool bNeedRequestWait = false;
-    
-    
-    bNeedRequestWait = true;
+    bool bNeedRequestWait = true;
     
     int request_return;
     if(bNeedRequestWait){

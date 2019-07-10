@@ -141,7 +141,7 @@ public:
 class itemChart
 {
 public:    
-    itemChart() { m_downloading = false; m_bEnabled = true; m_assignedSlot = -1; m_activeQty = -1; maxSlots = 0;}
+    itemChart() { m_downloading = false; m_bEnabled = true; m_assignedSlotIndex = -1; m_activeQtyID = -1; maxSlots = 0;}
     ~itemChart() {};
 
     void setDownloadPath(int slot, wxString path);
@@ -186,8 +186,8 @@ public:
 
     unsigned int maxSlots;
     bool bExpired;
-    int m_assignedSlot;
-    int m_activeQty;
+    int m_assignedSlotIndex;
+    int m_activeQtyID;
     
     wxArrayString baseChartListArray;
     wxArrayString updateChartListArray;
