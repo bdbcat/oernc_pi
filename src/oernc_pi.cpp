@@ -76,7 +76,12 @@ bool g_bNoFindMessageShown;
 
 //std::unordered_map<std::string, std::string> keyMap;
 WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
-OKeyHash keyMap;
+OKeyHash keyMapDongle;
+OKeyHash keyMapSystem;
+
+OKeyHash *pPrimaryKey;
+OKeyHash *pAlternateKey;
+
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -86,7 +91,7 @@ OKeyHash keyMap;
 
 #include "default_pi.xpm"
 
-bool parseKeyFile( wxString kfile )
+bool parseKeyFile( wxString kfile, bool bDongle )
 {
     FILE *iFile = fopen(kfile.mb_str(), "rb");
    
@@ -145,9 +150,17 @@ bool parseKeyFile( wxString kfile )
 
             }
             if(RInstallKey.Length() && fileName.Length()){
-                OKeyHash::iterator search = keyMap.find(fileName);
-                if (search == keyMap.end()) {
-                    keyMap[fileName] = RInstallKey;
+                if(bDongle){
+                    OKeyHash::iterator search = keyMapDongle.find(fileName);
+                    if (search == keyMapDongle.end()) {
+                        keyMapDongle[fileName] = RInstallKey;
+                    }
+                }
+                else{
+                    OKeyHash::iterator search = keyMapSystem.find(fileName);
+                    if (search == keyMapSystem.end()) {
+                        keyMapSystem[fileName] = RInstallKey;
+                    }
                 }
             }
         }
@@ -162,7 +175,7 @@ bool parseKeyFile( wxString kfile )
 }
     
 
-bool loadKeyMap( wxString file )
+bool loadKeyMaps( wxString file )
 {
     // Make a list of all XML or xml files found in the parent directory of the chart itself.
     wxFileName fn(file);
@@ -174,7 +187,11 @@ bool loadKeyMap( wxString file )
     //  Read and parse them all
     for(unsigned int i=0; i < xmlFiles.GetCount(); i++){
         wxString xmlFile = xmlFiles.Item(i);
-        parseKeyFile(xmlFile);
+        // Is this a dongle key file?
+        if(wxNOT_FOUND != xmlFile.Find(_T("-sgl")))
+            parseKeyFile(xmlFile, true);
+        else
+            parseKeyFile(xmlFile, false);
     }
     
  
@@ -182,32 +199,52 @@ bool loadKeyMap( wxString file )
 }
 
 
-wxString getKey(wxString file)
+wxString getPrimaryKey(wxString file)
 {
-     wxFileName fn(file);
-//     char buf[400];
-//     strcpy( buf, (const char*)fn.GetName().mb_str(wxConvUTF8) ); // buf will now contain name, as UTF8
-//     std::string sKey(buf);
-    
-    OKeyHash::iterator search = keyMap.find(fn.GetName());
-    if (search != keyMap.end()) {
-        return search->second;
-    }
+    if(pPrimaryKey){
+        wxFileName fn(file);
+        OKeyHash::iterator search = pPrimaryKey->find(fn.GetName());
+        if (search != pPrimaryKey->end()) {
+            return search->second;
+        }
 
-    loadKeyMap(file);
+        loadKeyMaps(file);
 
-    search = keyMap.find(fn.GetName());
-    if (search != keyMap.end()) {
-        return search->second;
+        search = pPrimaryKey->find(fn.GetName());
+        if (search != pPrimaryKey->end()) {
+            return search->second;
+        }
     }
-    
     return wxString();
-    
-    
 }
 
+wxString getAlternateKey(wxString file)
+{
+    if(pAlternateKey){
+        wxFileName fn(file);
+        OKeyHash::iterator search = pAlternateKey->find(fn.GetName());
+        if (search != pAlternateKey->end()) {
+            return search->second;
+        }
 
+        loadKeyMaps(file);
 
+        search = pAlternateKey->find(fn.GetName());
+        if (search != pAlternateKey->end()) {
+            return search->second;
+        }
+    }
+    return wxString();
+}
+
+void SwapKeyHashes()
+{
+    OKeyHash *tmp = pPrimaryKey;
+    pPrimaryKey = pAlternateKey;
+    pAlternateKey = tmp;
+}
+
+    
 //---------------------------------------------------------------------------------------------------------
 //
 //          PlugIn initialization and de-init
@@ -278,6 +315,10 @@ int oernc_pi::Init(void)
 
       flags |= INSTALLS_TOOLBOX_PAGE;             // for  shop interface
       
+      // Set up the initial key hash table pointers
+      pPrimaryKey = &keyMapDongle;
+      pAlternateKey = &keyMapSystem;
+
       return flags;
       
 }

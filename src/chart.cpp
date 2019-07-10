@@ -72,7 +72,10 @@ float hex2float( std::string h)
 }
 
 
-wxString getKey(wxString file);
+// Static methods belonging to upstream plugin
+wxString getPrimaryKey(wxString file);
+wxString getAlternateKey(wxString file);
+void SwapKeyHashes();
 
 #ifdef __WXGTK__
 class OCPNStopWatch
@@ -533,13 +536,16 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
       validate_server();
       
 
-      wxString key = wxString(getKey(name));
+      wxString key = wxString(getPrimaryKey(name));
       if(!key.Len()){
-          wxString msg(_T("   OERNC_PI: chart RInstallKey not found: "));
-          msg.Append(m_FullPath);
-          wxLogMessage(msg);
+          key = wxString(getAlternateKey(name));
+          if(!key.Len()){
+            wxString msg(_T("   OERNC_PI: chart RInstallKey not found: "));
+            msg.Append(m_FullPath);
+            wxLogMessage(msg);
           
-          return INIT_FAIL_REMOVE;
+            return INIT_FAIL_REMOVE;
+          }
       }
 
       bool bHeaderOnly = false;
@@ -552,6 +558,10 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
           wxString msg(_T("   OERNC_PI: chart local server error, retrying: "));
           msg.Append(m_FullPath);
           wxLogMessage(msg);
+
+          SwapKeyHashes();          // interchanges hashes, so next time will be faster
+
+          key = wxString(getPrimaryKey(name));
 
           validate_server();
  

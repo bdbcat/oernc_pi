@@ -86,6 +86,10 @@ itemChart       *gtargetChart;
 
 InProgressIndicator *g_ipGauge;
 
+WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
+extern OKeyHash keyMapDongle;
+extern OKeyHash keyMapSystem;
+
 #define ID_CMD_BUTTON_INSTALL 7783
 #define ID_CMD_BUTTON_INSTALL_CHAIN 7784
 
@@ -3650,7 +3654,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(!slot->installLocation.size())
             return false;
 
-        // Remove all .oernc and .XML files from the current installation directory
+        // Remove all .oernc files from the current installation directory
         
         if(chart->taskCurrentEdition.size()){
             // Craft the name of the previous chartset's top level directory
@@ -3698,7 +3702,6 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             if(tlDirFull.Length()){
                 wxArrayString fileArray;
                 size_t nFiles = wxDir::GetAllFiles( tlDirFull, &fileArray, _T("*.oernc"));
-                nFiles += wxDir::GetAllFiles( slot->installLocation.c_str(), &fileArray, _T("*.XML"));
                 for(unsigned int i=0 ; i < nFiles ;i++)
                     ::wxRemoveFile(fileArray.Item(i));
                 
@@ -3901,6 +3904,10 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
         g_lastInstallDir = gtargetSlot->installLocation;
     
+        // Clear out the global key hashes...
+        keyMapDongle.clear();
+        keyMapSystem.clear();
+
         ForceChartDBUpdate();
     
         saveShopConfig();
@@ -4034,16 +4041,25 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
             m_buttonInstall->Enable();
             return;
         }
+        
+        // Find the active slot parameters
+        chart->m_activeQty = qtyIndex;
+        // By definition, the new active slot index is the last one added
+        chart->m_assignedSlot = chart->quantityList[qtyIndex].slotList.size()-1;
 
     }
-    
-    //TODO  After first upload of a new FPR, and then the initial assigment, we need to search for the correct new slot for the following
-    //  Otherwise, activeSlot is NULL, leading to crash.
     
     // Known assigned to me, so maybe Ready for download
     
     // Get the slot target
     itemSlot *activeSlot = chart->GetActiveSlot();
+    if(!activeSlot){
+        wxLogMessage(_T("oeRNC Error: active slot not defined."));
+        m_buttonInstall->Enable();
+        return;
+    }
+
+        
 
     
     // Is the selected chart ready for download?
