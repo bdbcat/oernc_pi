@@ -3429,7 +3429,8 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
                 tx = m_pChart->getKeytypeString(slot->slotUuid);
                 id.Printf(_("%d) "), nid);
                 tx.Prepend(id);
-                tx += _T("    ") + wxString(slot->assignedSystemName.c_str()) + _T(" ") + wxString(slot->slotUuid.c_str());
+                tx += _T("    ") + wxString(slot->assignedSystemName.c_str());
+                //tx += _T(" ") + wxString(slot->slotUuid.c_str());
                 dc.DrawText( tx, text_x_val, yPos);
                 yPos += yPitch;
                 nid++;
