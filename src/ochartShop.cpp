@@ -1703,7 +1703,8 @@ void saveShopConfig()
           pConf->Write( _T("chartName"), wxString(chart->chartName) );
           pConf->Write( _T("orderRef"), wxString(chart->orderRef) );
           pConf->Write( _T("installedChartEdition"), wxString(chart->installedChartEdition) );
-          pConf->Write( _T("overrideChartEdition"), wxString(chart->overrideChartEdition) );
+          if(chart->overrideChartEdition.size())
+            pConf->Write( _T("overrideChartEdition"), wxString(chart->overrideChartEdition) );
 
           wxString slotsPath = chartPath + _T("/Slots");
           pConf->DeleteGroup( slotsPath );
@@ -4308,6 +4309,20 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         
 
         wxString pathSep(wxFileName::GetPathSeparator());  std::string ps(pathSep.mb_str());
+        
+        // If the task type is TASK_REPLACE, we will not get any "WithdrawnCharts" directives
+        // So best to simply delete all the charts, and the keylist file from the current installation
+        if(chart->taskAction == TASK_REPLACE){
+            wxArrayString fileArray;
+            wxString currentTLDIR = wxString((slot->installLocation +  ps + task->chartsetNameNormalized).c_str());
+            if(wxDir::Exists(currentTLDIR)){
+                size_t nFiles = wxDir::GetAllFiles( currentTLDIR, &fileArray);
+                for(unsigned int i=0 ; i < nFiles ;i++)
+                    ::wxRemoveFile(fileArray.Item(i));
+            }
+        }
+
+        
         
         // Create chart list container class from currently installed base set   e.g. /home/dsr/Charts/oeRNC_GREECE/oeRNC-IMR/ChartList.XML
         std::string chartListXMLtarget = slot->installLocation +  ps + task->chartsetNameNormalized + ps + "ChartList.XML";
