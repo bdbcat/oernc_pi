@@ -69,9 +69,69 @@ enum{
 
 enum{
         TASK_NULL = 0,
-        TASK_REPLACE
+        TASK_REPLACE,
+        TASK_UPDATE
 };
 
+class itemChartDataKeys
+{
+public:
+    itemChartDataKeys(){}
+    ~itemChartDataKeys(){}
+    
+    std::string  Name;
+    std::string  ID;
+    std::string  fileName;
+    std::string  RIK;
+
+};
+
+class ChartSetKeys
+{
+public:
+    ChartSetKeys(){ m_bOK = false; }
+    ChartSetKeys(std::string fileXML);
+    ~ChartSetKeys(){}
+    
+    bool Load( std::string fileNameKap );
+    bool RemoveKey( std::string fileNameKap );
+    bool AddKey(itemChartDataKeys *kdata);
+    bool WriteFile( std::string fileName);
+
+    std::vector < itemChartDataKeys *> chartList;
+    bool m_bOK;
+};
+
+class itemChartData
+{
+public:
+    itemChartData(){}
+    ~itemChartData(){}
+    
+    std::string  Name;
+    std::string  ID;
+    std::string  SE;
+    std::string  RE;
+    std::string  ED;
+    std::string  Scale;
+
+};
+
+class ChartSetData
+{
+public:
+    ChartSetData(std::string fileXML);
+    ~ChartSetData(){}
+    
+    bool RemoveChart( std::string fileNameKap );
+    bool AddChart(itemChartData *cdata);
+    bool WriteFile( std::string fileName);
+
+    std::vector < itemChartData *> chartList;
+    
+};
+
+    
 class itemDLTask
 {
 public:
@@ -102,6 +162,7 @@ public:
     std::string sha256Keys;
     std::string cacheKeysLocn;
     std::string cacheLinkLocn;
+    std::string chartsetNameNormalized;          // like "oeRNC-XXXXX"
 };
 
 
@@ -184,7 +245,8 @@ public:
     std::string serverChartEdition;
     std::string editionDate;
     std::string thumbLink;
-
+    std::string overrideChartEdition;
+    
     unsigned int maxSlots;
     bool bExpired;
     int m_assignedSlotIndex;

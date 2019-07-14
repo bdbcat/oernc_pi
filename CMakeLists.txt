@@ -204,6 +204,7 @@ SET(SRC_OERNC
             src/ochartShop.cpp
             src/ochartShop.h
             src/fpr.cpp
+            src/sha256.c
      )
 
 IF(QT_ANDROID)

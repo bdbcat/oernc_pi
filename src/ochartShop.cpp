@@ -66,6 +66,7 @@ wxArrayString g_systemNameDisabledArray;
 wxString g_lastSlotUUID;
 
 extern int g_admin;
+
 wxString g_systemName;
 wxString g_loginKey;
 wxString g_loginUser;
@@ -240,6 +241,420 @@ std::string wxCurlHTTPNoZIP::GetResponseBody() const
     
 }
 
+
+//    ChartSetData()
+//------------------------------------------------------------------------------------------
+ChartSetData::ChartSetData( std::string fileXML)
+{
+    // Open and parse the given file
+    FILE *iFile = fopen(fileXML.c_str(), "rb");
+   
+    if (iFile <= 0)
+        return;            // file error
+        
+    // compute the file length    
+    fseek(iFile, 0, SEEK_END);
+    size_t iLength = ftell(iFile);
+    
+    char *iText = (char *)calloc(iLength + 1, sizeof(char));
+    
+    // Read the file
+    fseek(iFile, 0, SEEK_SET);
+    size_t nread = 0;
+    while (nread < iLength){
+        nread += fread(iText + nread, 1, iLength - nread, iFile);
+    }           
+    fclose(iFile);
+
+    
+    //  Parse the XML
+    TiXmlDocument * doc = new TiXmlDocument();
+    const char *rr = doc->Parse( iText);
+    
+    TiXmlElement * root = doc->RootElement();
+    if(!root){
+        free(iText);
+        return;                              // undetermined error??
+    }
+
+    wxString rootName = wxString::FromUTF8( root->Value() );
+    if(rootName.IsSameAs(_T("chartList"))){
+            
+        TiXmlNode *child;
+        for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
+            itemChartData *cdata = new itemChartData();
+            chartList.push_back(cdata);
+            
+            wxString s = wxString::FromUTF8(child->Value());  //chart
+            
+            TiXmlNode *childChart = child->FirstChild();
+            for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
+                const char *chartVal =  childChart->Value();
+                
+/*                
+    <Name>Kemer Turkiz Marina</Name>
+    <ID>G40-E-2014</ID>
+    <SE></SE>
+    <RE>01</RE>
+    <ED>2019-06-03</ED>
+    <Scale>17500</Scale>
+*/
+                            
+                if(!strcmp(chartVal, "Name")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->Name = childVal->Value();
+                }
+                else if(!strcmp(chartVal, "ID")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->ID = childVal->Value();
+                }
+                else if(!strcmp(chartVal, "SE")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->SE = childVal->Value();                                
+                }
+                else if(!strcmp(chartVal, "RE")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->RE = childVal->Value();
+                }
+                else if(!strcmp(chartVal, "ED")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->ED = childVal->Value();
+                }
+                else if(!strcmp(chartVal, "Scale")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->Scale = childVal->Value();
+                }
+            }
+        }
+        
+        free( iText );
+        return;
+    }           
+
+    free( iText );
+    return;
+
+}
+
+bool ChartSetData::RemoveChart( std::string fileNameKap )
+{
+    size_t nl = fileNameKap.find(".kap");
+    std::string search;
+    if(nl != std::string::npos)
+        search = fileNameKap.substr(0, nl);
+    else{
+        nl = fileNameKap.find(".KAP");
+        if(nl != std::string::npos)
+            search = fileNameKap.substr(0, nl);
+    }
+
+        // Search for the chart
+
+    for(unsigned int i=0 ; i < chartList.size() ; i++){
+        itemChartData *pd = chartList[i];
+        if(!search.compare(pd->ID)){
+            chartList.erase(chartList.begin()+i);
+            delete pd;
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+bool ChartSetData::AddChart(itemChartData *cdata){
+
+    //Search for an existing entry, by ID
+
+    itemChartData *target = NULL;
+    for(unsigned int i=0 ; i < chartList.size() ; i++){
+        itemChartData *pd = chartList[i];
+        if(!pd->ID.compare(cdata->ID)){
+            target = pd;
+            break;
+        }
+    }
+    
+    // If no current chart item found, create one and add it to the vector
+    if(!target){
+        target = new itemChartData;
+        chartList.push_back(target);
+    }
+    
+    target->Name = cdata->Name;
+    target->ID = cdata->ID;
+    target->SE = cdata->SE;
+    target->RE = cdata->RE;
+    target->ED = cdata->ED;
+    target->Scale = cdata->Scale;
+        
+    return true;
+    
+}
+
+bool ChartSetData::WriteFile( std::string fileName)
+{
+    TiXmlDocument doc;  
+    TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );  
+    doc.LinkEndChild( decl );  
+ 
+    TiXmlElement * root = new TiXmlElement( "ChartList" );  
+    doc.LinkEndChild( root );  
+    root->SetAttribute("version", "1.0");
+    root->SetAttribute("creator", "OpenCPN");
+    root->SetAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+    root->SetAttribute("xmlns:opencpn", "http://www.opencpn.org");
+
+    for(size_t i=0 ; i < chartList.size() ;i++){
+        TiXmlElement * chart = new TiXmlElement( "Chart" );  
+        root->LinkEndChild( chart );  
+    
+        TiXmlElement *item = new TiXmlElement( "Name" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->Name.c_str()) );  
+        chart->LinkEndChild( item );  
+
+        item = new TiXmlElement( "ID" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->ID.c_str()) );  
+        chart->LinkEndChild( item );  
+        
+        item = new TiXmlElement( "SE" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->SE.c_str()) );  
+        chart->LinkEndChild( item );  
+        
+        item = new TiXmlElement( "RE" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->RE.c_str()) );  
+        chart->LinkEndChild( item );  
+        
+        item = new TiXmlElement( "ED" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->ED.c_str()) );  
+        chart->LinkEndChild( item );  
+
+        item = new TiXmlElement( "Scale" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->Scale.c_str()) );  
+        chart->LinkEndChild( item );  
+
+    }
+    
+    return(doc.SaveFile( fileName.c_str() ));  
+    
+        
+/*
+<?xml version="1.0"?>
+<chartList version="1.0" creator="OpenCPN" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:opencpn="http://www.opencpn.org">
+  <Chart>
+    <Name>Chart AB 16 Treasure Cay</Name>
+    <ID>AB16</ID>
+    <SE>2017</SE>
+    <RE>01</RE>
+    <ED>2019-04-22</ED>
+    <Scale>20000</Scale>
+  </Chart>
+*/
+
+}
+
+
+
+//    ChartSetKeys()
+//------------------------------------------------------------------------------------------
+ChartSetKeys::ChartSetKeys( std::string fileXML)
+{
+    m_bOK = Load( fileXML );
+    
+}
+
+bool ChartSetKeys::Load( std::string fileXML)
+{
+    // Open and parse the given file
+    FILE *iFile = fopen(fileXML.c_str(), "rb");
+   
+    if (iFile <= 0)
+        return false;            // file error
+        
+    // compute the file length    
+    fseek(iFile, 0, SEEK_END);
+    size_t iLength = ftell(iFile);
+    
+    char *iText = (char *)calloc(iLength + 1, sizeof(char));
+    
+    // Read the file
+    fseek(iFile, 0, SEEK_SET);
+    size_t nread = 0;
+    while (nread < iLength){
+        nread += fread(iText + nread, 1, iLength - nread, iFile);
+    }           
+    fclose(iFile);
+
+    
+    //  Parse the XML
+    TiXmlDocument * doc = new TiXmlDocument();
+    const char *rr = doc->Parse( iText);
+    
+    TiXmlElement * root = doc->RootElement();
+    if(!root){
+        free(iText);
+        return false;                              // undetermined error??
+    }
+
+    wxString rootName = wxString::FromUTF8( root->Value() );
+    if(rootName.IsSameAs(_T("keyList"))){
+            
+        TiXmlNode *child;
+        for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
+
+            itemChartDataKeys *cdata = new itemChartDataKeys();
+            chartList.push_back(cdata);
+           
+            TiXmlNode *childChart = child->FirstChild();
+            for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
+                const char *chartVal =  childChart->Value();
+  
+/*
+    <Name>Chart AB 6 Walkers &amp; Grand Cays</Name>
+    <FileName>AB6</FileName>
+    <ID>AB6</ID>
+    <RInstallKey>AF2A6D76</RInstallKey>
+*/
+                if(!strcmp(chartVal, "RInstallKey")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->RIK = childVal->Value();
+                }
+                if(!strcmp(chartVal, "FileName")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->fileName = childVal->Value();
+                }
+                if(!strcmp(chartVal, "Name")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->Name = childVal->Value();
+                }
+                if(!strcmp(chartVal, "ID")){
+                    TiXmlNode *childVal = childChart->FirstChild();
+                    if(childVal)
+                        cdata->ID = childVal->Value();
+                }
+
+            }
+        }
+        
+        free( iText );
+        m_bOK = true;
+        return true;
+    }           
+
+    free( iText );
+    m_bOK = true;
+    return true;
+
+}
+
+bool ChartSetKeys::RemoveKey( std::string fileNameKap )
+{
+    size_t nl = fileNameKap.find(".kap");
+    std::string search;
+    if(nl != std::string::npos)
+        search = fileNameKap.substr(0, nl);
+    else{
+        nl = fileNameKap.find(".KAP");
+        if(nl != std::string::npos)
+            search = fileNameKap.substr(0, nl);
+    }
+
+        // Search for the chart
+
+    for(unsigned int i=0 ; i < chartList.size() ; i++){
+        itemChartDataKeys *pd = chartList[i];
+        if(!search.compare(pd->ID)){
+            chartList.erase(chartList.begin()+i);
+            delete pd;
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+bool ChartSetKeys::AddKey(itemChartDataKeys *kdata)
+{
+    //Search for an existing entry, by ID
+
+    itemChartDataKeys *target = NULL;
+    for(unsigned int i=0 ; i < chartList.size() ; i++){
+        itemChartDataKeys *pd = chartList[i];
+        if(!pd->ID.compare(kdata->ID)){
+            target = pd;
+            break;
+        }
+    }
+    
+    // If no current chart item found, create one and add it to the vector
+    if(!target){
+        target = new itemChartDataKeys;
+        chartList.push_back(target);
+    }
+    
+    target->Name = kdata->Name;
+    target->ID = kdata->ID;
+    target->fileName = kdata->fileName;
+    target->RIK = kdata->RIK;
+        
+    return true;
+
+}
+
+bool ChartSetKeys::WriteFile( std::string fileName)
+{
+    TiXmlDocument doc;  
+    TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );  
+    doc.LinkEndChild( decl );  
+ 
+    TiXmlElement * root = new TiXmlElement( "keyList" );  
+    doc.LinkEndChild( root );  
+    root->SetAttribute("version", "1.0");
+    root->SetAttribute("creator", "OpenCPN");
+    root->SetAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+    root->SetAttribute("xmlns:opencpn", "http://www.opencpn.org");
+
+    for(size_t i=0 ; i < chartList.size() ;i++){
+        TiXmlElement * chart = new TiXmlElement( "Chart" );  
+        root->LinkEndChild( chart );  
+    
+        TiXmlElement *item = new TiXmlElement( "Name" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->Name.c_str()) );  
+        chart->LinkEndChild( item );  
+
+        item = new TiXmlElement( "FileName" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->fileName.c_str()) );  
+        chart->LinkEndChild( item );  
+        
+        item = new TiXmlElement( "ID" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->ID.c_str()) );  
+        chart->LinkEndChild( item );  
+        
+        item = new TiXmlElement( "RInstallKey" );  
+        item->LinkEndChild( new TiXmlText( chartList[i]->RIK.c_str()) );  
+        chart->LinkEndChild( item );  
+    }
+    
+/*
+    <Chart>
+    <Name>Chart AB 6 Walkers &amp; Grand Cays</Name>
+    <FileName>AB6</FileName>
+    <ID>AB6</ID>
+    <RInstallKey>AF2A6D</RInstallKey>
+    </Chart>
+*/    
+    return(doc.SaveFile( fileName.c_str() ));  
+    
+}
 
 // itemChart
 //------------------------------------------------------------------------------------------
@@ -478,6 +893,9 @@ bool itemChart::isChartsetShow()
 
 int itemChart::GetSlotAssignedToInstalledDongle( int &qId )
 {
+    if(!g_dongleName.Length())
+        return (-1);
+    
     for(unsigned int i=0 ; i < quantityList.size() ; i++){
         itemQuantity Qty = quantityList[i];
         for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
@@ -1171,10 +1589,11 @@ void loadShopConfig()
             wxString chartID = chartIDArray[i];
             pConf->SetPath ( _T ( "/PlugIns/oernc/charts/" ) + chartID );
             
-            wxString orderRef, chartName, installedChartEdition;
+            wxString orderRef, chartName, installedChartEdition, overrideChartEdition;
             pConf->Read( _T("orderRef"), &orderRef);
             pConf->Read( _T("chartName"), &chartName);
             pConf->Read( _T("installedChartEdition"), &installedChartEdition);
+            pConf->Read( _T("overrideChartEdition"), &overrideChartEdition);
 
 
             // Add a chart if necessary
@@ -1186,6 +1605,7 @@ void loadShopConfig()
                 chart->chartID = chartID.mb_str();
                 chart->chartName = chartName.mb_str();
                 chart->installedChartEdition = installedChartEdition.mb_str();
+                chart->overrideChartEdition = overrideChartEdition.mb_str();
                 ChartVector.push_back(chart);
             }
             else
@@ -1283,6 +1703,7 @@ void saveShopConfig()
           pConf->Write( _T("chartName"), wxString(chart->chartName) );
           pConf->Write( _T("orderRef"), wxString(chart->orderRef) );
           pConf->Write( _T("installedChartEdition"), wxString(chart->installedChartEdition) );
+          pConf->Write( _T("overrideChartEdition"), wxString(chart->overrideChartEdition) );
 
           wxString slotsPath = chartPath + _T("/Slots");
           pConf->DeleteGroup( slotsPath );
@@ -3626,6 +4047,26 @@ int shopPanel::ComputeUpdates(itemChart *chart)
     int installedEdition = chart->GetInstalledEditionInt();
     int serverEdition = chart->GetServerEditionInt();
  
+    // Debugging/testing?
+    if(g_admin && chart->overrideChartEdition.size()){
+        if(chart->overrideChartEdition.find("-0") != std::string::npos){
+            chart->taskRequestedFile = _T("base");
+            chart->taskRequestedEdition = chart->overrideChartEdition;
+            chart->taskCurrentEdition = std::string();
+            chart->taskAction = TASK_REPLACE;
+        
+            return 0;               // no error
+        }
+        else{
+            chart->taskRequestedFile = _T("update");
+            chart->taskRequestedEdition = chart->overrideChartEdition;
+            chart->taskCurrentEdition = chart->installedChartEdition;
+            chart->taskAction = TASK_UPDATE;
+        
+            return 0;               // no error
+        }
+    }
+        
     // Is this a reload?
     // If so, just download and install the appropriate "base"
     if(serverEdition == installedEdition){
@@ -3653,10 +4094,42 @@ int shopPanel::ComputeUpdates(itemChart *chart)
     return 1;           // General error
 }
 
-
+std::string GetNormalizedChartsetName( std::string rawName)
+{
+    //Get the basic chartset names
+    
+    wxFileName fn1(rawName);            // /home/xxx/.opencpn/oernc_pi/DownloadCache/oeRNC-IMR-GR-2-0-base.zip
+    wxString tlDir = fn1.GetName();     // oeRNC-IMR-GR-2-0-base
+    int nl = tlDir.Find( _T("-base"));
+    if(nl == wxNOT_FOUND)
+        nl = tlDir.Find( _T("-update"));
+        
+    if(nl != wxNOT_FOUND){
+        nl--;
+        int ndash_found = 0;
+        while(nl){
+            wxString ttt = tlDir.Mid(0, nl);
+            if(tlDir[nl] == '-'){
+                ndash_found++;
+                if(ndash_found == 2)
+                    break;
+            }
+            nl--;
+        }
+        return  std::string(tlDir.Mid(0, nl).mb_str());   // like "oeRNC-XXXXX"
+    }
+    else
+        return std::string();
+}
+ 
 
 int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task)
 {
+    //Get the basic chartset name, and store in the task for later reference
+    task->chartsetNameNormalized = GetNormalizedChartsetName( task->cacheLinkLocn);
+    
+
+#if 0    
     if(chart->taskAction == TASK_REPLACE){
         
         if(!slot->installLocation.size())
@@ -3789,6 +4262,271 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         chart->lastInstalledtlDir = slot->installLocation +  wxFileName::GetPathSeparator() + containerDir;
         
     }
+#endif    
+    if(1/*chart->taskAction == TASK_UPDATE*/){
+        
+        if(!slot->installLocation.size())
+            return 11;
+
+        // Check the SHA256 of both files in the task
+        if(!validateSHA256(task->cacheLinkLocn, task->sha256)){
+            wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheLinkLocn );
+            OCPNMessageBox_PlugIn(NULL, _("Validation error on zip file"), _("oeRNC_pi Message"), wxOK);
+            return 8;
+        }
+        if(!validateSHA256(task->cacheKeysLocn, task->sha256Keys)){
+            wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheKeysLocn );
+            OCPNMessageBox_PlugIn(NULL, _("Validation error on key file"), _("oeRNC_pi Message"), wxOK);
+            return 9;
+        }
+
+        // Extract the key type and name from the downloaded KeyList file
+        wxFileName fn2(wxString(task->cacheKeysLocn.c_str()));
+        wxString kfn = fn2.GetName();
+        int nl = kfn.Find( _T("-base"));
+        if(nl == wxNOT_FOUND)
+            nl = kfn.Find( _T("-update"));
+
+        wxString keySystem;
+        nl++;
+        if(nl != wxNOT_FOUND){
+            bool dash_found = false;
+            while( (size_t)nl < kfn.Length() - 1){
+                if(kfn[nl++] == '-'){
+                    dash_found = true;
+                    break;
+                }
+            }
+            if(dash_found)
+                keySystem = kfn.Mid(nl);
+        }
+  
+        if(!keySystem.Length()){
+            wxLogError(_T("ChartKey list system name cannot be determined: ") + wxString(task->cacheKeysLocn.c_str()));
+            return 16;
+        }
+        
+
+        wxString pathSep(wxFileName::GetPathSeparator());  std::string ps(pathSep.mb_str());
+        
+        // Create chart list container class from currently installed base set   e.g. /home/dsr/Charts/oeRNC_GREECE/oeRNC-IMR/ChartList.XML
+        std::string chartListXMLtarget = slot->installLocation +  ps + task->chartsetNameNormalized + ps + "ChartList.XML";
+        ChartSetData csdata_target(chartListXMLtarget);
+
+        // Create chart keylist container class from currently installed keylist   e.g. /home/dsr/Charts/oeRNC_GREECE/oeRNC-IMR-GR/oeRNC-IMR-GR-hp64linux.XML
+        std::string chartListKeysXMLtarget = slot->installLocation +  ps + task->chartsetNameNormalized + ps + task->chartsetNameNormalized + "-" + std::string(keySystem.mb_str()) + ".XML";
+        ChartSetKeys cskey_target(chartListKeysXMLtarget);
+        
+        // Extract the zip file to a temporary location, making the embedded files available for parsing
+        wxString tmp_dir = wxFileName::CreateTempFileName( _T("") );                    // Be careful, this method actually create a file
+        tmp_dir += _T("zipTemp");
+        tmp_dir += wxFileName::GetPathSeparator();
+        wxFileName fn(tmp_dir);
+        if( !fn.DirExists() ){
+            if( !wxFileName::Mkdir(fn.GetPath()) ){
+                wxLogError(_T("Can not create tmp directory on TASK_UPDATE '") + fn.GetPath() + _T("'."));
+                return 10;
+            }
+        }
+  
+        bool zret = ExtractZipFiles( task->cacheLinkLocn, tmp_dir, false, wxDateTime::Now(), false);
+
+        // Find any "ChartList.XML" file
+        wxString actionChartList;
+        wxArrayString fileArrayXML;
+        wxDir::GetAllFiles(tmp_dir, &fileArrayXML, _T("*.XML"));
+        
+        for(unsigned int i=0 ; i < fileArrayXML.GetCount() ; i++){
+            wxString candidate = fileArrayXML.Item(i);
+            wxFileName fn(candidate);
+            if(fn.GetName().IsSameAs(_T("ChartList"))){
+                actionChartList = candidate;
+                break;
+            }
+        }
+
+        // Action vectors
+        std::vector < std::string> actionWithdrawn;
+        std::vector < itemChartData *> actionAddUpdate;
+
+        // If there is a ChartList.XML, read it, parse it and prepare the indicated operations
+        if(actionChartList.Length()){
+            
+                FILE *iFile = fopen(actionChartList.mb_str(), "rb");
+                if (iFile > 0){
+                    // compute the file length    
+                    fseek(iFile, 0, SEEK_END);
+                    size_t iLength = ftell(iFile);
+        
+                    char *iText = (char *)calloc(iLength + 1, sizeof(char));
+    
+                    // Read the file
+                    fseek(iFile, 0, SEEK_SET);
+                    size_t nread = 0;
+                    while (nread < iLength){
+                        nread += fread(iText + nread, 1, iLength - nread, iFile);
+                    }           
+                    fclose(iFile);
+
+                    //  Parse the XML
+                    TiXmlDocument * doc = new TiXmlDocument();
+                    const char *rr = doc->Parse( iText);
+    
+                    TiXmlElement * root = doc->RootElement();
+                    if(root){
+                        //wxString rootName = wxString::FromUTF8( root->Value() );
+                        if(!strcmp(root->Value(), "chartList")){    //rootName.IsSameAs(_T("chartList"))){
+            
+                            TiXmlNode *child;
+                            for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
+
+                                if(!strcmp(child->Value(), "WithdrawnCharts")){
+                                    TiXmlNode *childChart = child->FirstChild();
+                                    for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
+                                        TiXmlNode *childChartName = childChart->FirstChild();
+                                        const char *chartNameKAP =  childChartName->Value();
+                                        actionWithdrawn.push_back(std::string(chartNameKAP));
+                                    }
+                                }
+                                else if(!strcmp(child->Value(), "Chart")){
+                                    TiXmlNode *childChart = child->FirstChild();
+                                    itemChartData *cdata = new itemChartData;
+                                    actionAddUpdate.push_back(cdata);
+                                    
+                                    for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
+                                        const char *chartVal = childChart->Value();
+                                        if(!strcmp(chartVal, "Name")){
+                                            TiXmlNode *childVal = childChart->FirstChild();
+                                            if(childVal)
+                                                cdata->Name = childVal->Value();
+                                        }
+                                        else if(!strcmp(chartVal, "ID")){
+                                            TiXmlNode *childVal = childChart->FirstChild();
+                                            if(childVal)
+                                                cdata->ID = childVal->Value();
+                                        }
+                                        else if(!strcmp(chartVal, "SE")){
+                                            TiXmlNode *childVal = childChart->FirstChild();
+                                            if(childVal)
+                                                cdata->SE = childVal->Value();                                
+                                        }
+                                        else if(!strcmp(chartVal, "RE")){
+                                            TiXmlNode *childVal = childChart->FirstChild();
+                                            if(childVal)
+                                                cdata->RE = childVal->Value();
+                                        }
+                                        else if(!strcmp(chartVal, "ED")){
+                                            TiXmlNode *childVal = childChart->FirstChild();
+                                            if(childVal)
+                                                cdata->ED = childVal->Value();
+                                        }
+                                        else if(!strcmp(chartVal, "Scale")){
+                                            TiXmlNode *childVal = childChart->FirstChild();
+                                            if(childVal)
+                                                cdata->Scale = childVal->Value();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    free( iText );
+                }
+        }
+
+        ChartSetKeys workCSK;
+        
+        // If there is a Key list file (there had better be, even if empty), read it, parse it and prepare the indicated operations
+        if(task->cacheKeysLocn.size()){
+            workCSK.Load( task->cacheKeysLocn ); 
+        }
+        if( !workCSK.m_bOK){
+            wxLogError(_T("New ChartKey list cannot be loaded: ") + wxString(task->cacheKeysLocn.c_str()));
+            return 13;
+        }
+
+        //Ready to perform the actions indicated
+        
+        // Process withdrawn charts
+        for(unsigned int i = 0 ; i < actionWithdrawn.size() ; i++){
+            // Delete the oernc file
+            wxFileName fn(actionWithdrawn[i].c_str());
+            std::string chartFileToDelete = slot->installLocation +  ps + task->chartsetNameNormalized + ps + std::string(fn.GetName().c_str()) + ".oernc";
+            if(::wxFileExists(wxString(chartFileToDelete.c_str()))){
+                ::wxRemoveFile(wxString(chartFileToDelete.c_str()));
+            }
+            
+            // Remove the entry from the working copy of ChartList.XML file
+            csdata_target.RemoveChart( actionWithdrawn[i] );
+ 
+            // Remove the entry from the working copy of keylist XML file
+            cskey_target.RemoveKey( actionWithdrawn[i] );
+ 
+        }
+        
+        wxDir unzipDir(tmp_dir);
+        wxString chartTopLevelZip;
+        if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeRNC*"), wxDIR_DIRS)){
+            wxLogError(_T("Can not find oeRNC directory in zip file ") + task->cacheLinkLocn);
+            return 11;
+        }
+ 
+ 
+        wxString destinationDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + task->chartsetNameNormalized + wxFileName::GetPathSeparator();
+        wxFileName fndd(destinationDir);
+        if( !fndd.DirExists() ){
+            if( !wxFileName::Mkdir(fndd.GetPath()) ){
+                wxLogError(_T("Can not create chart target directory on TASK_UPDATE '") + fndd.GetPath() );
+                return 12;
+            }
+        }
+  
+        // Process added/modified charts
+        for(unsigned int i = 0 ; i < actionAddUpdate.size() ; i++){
+            
+            wxString fileTarget = wxString( (actionAddUpdate[i]->ID).c_str()) + _T(".oernc");
+            // Copy the oernc chart from the temp unzip location to the target location
+            wxString source = tmp_dir + chartTopLevelZip + wxFileName::GetPathSeparator() + fileTarget;
+            if(!wxFileExists(source)){
+                wxLogError(_T("Can not find .oernc file referenced in ChartList: ") + source);
+                continue;
+            }
+            
+            wxString destination = destinationDir + fileTarget;
+            if(!wxCopyFile( source, destination)){
+                wxLogError(_T("Can not copy .oernc file referenced in ChartList...Source: ") + source + _T("   Destination: ") + destination);
+                continue;
+            }
+
+            // Add the entry from the working copy of ChartList.XML file
+            csdata_target.AddChart( actionAddUpdate[i] );
+ 
+        }
+        
+        // Process the new Key list file, adding/editing new keys into the target set
+        for(size_t i=0 ; i < workCSK.chartList.size() ; i++){
+            cskey_target.AddKey(workCSK.chartList[i]);
+        }
+                
+       
+        // Write out the modified Target ChartList.XML file as the new result ChartList.XML
+        wxString destinationCLXML = destinationDir + _T("ChartList.XML");
+        if(! csdata_target.WriteFile( std::string(destinationCLXML.mb_str()) )){
+            wxLogError(_T("Can not write target ChartList.XML on TASK_UPDATE '") + destinationCLXML );
+            return 14;
+        }
+        
+
+        // Write out the modified Target KeyList.XML file as the new result KeyList.XML
+        wxString destinationKLXML = destinationDir  + wxString(task->chartsetNameNormalized.c_str()) + _T("-") + keySystem + _T(".XML");
+        if(!cskey_target.WriteFile( std::string(destinationKLXML.mb_str()) )){
+            wxLogError(_T("Can not write target KefList XML file on TASK_UPDATE '") + destinationKLXML );
+            return 15;
+        }
+        
+        chart->lastInstalledtlDir = destinationDir;
+
+    }    
         
 
     return 0;
@@ -3936,7 +4674,53 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         // Parse the task definitions, decide what to do
     
         // the simple case of inital load, or full base update
-        if(gtargetChart->taskAction == TASK_REPLACE){
+        if( (gtargetChart->taskAction == TASK_REPLACE) || (gtargetChart->taskAction == TASK_UPDATE) ){
+            
+            // Is there a known install directory?
+            wxString installDir = gtargetSlot->installLocation;
+            
+            // Update, or initial load?
+            if(!gtargetChart->taskCurrentEdition.Length() || !installDir.Length()){             // initial load
+        
+                wxString installLocn = g_PrivateDataDir;
+                if(installDir.Length())
+                    installLocn = installDir;
+                else if(g_lastInstallDir.Length())
+                    installLocn = g_lastInstallDir;
+        
+                wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
+                int result = dirSelector.ShowModal();
+        
+                if(result == wxID_OK)
+                    gtargetSlot->installLocation = dirSelector.GetPath().mb_str();
+
+            }
+            
+            //Presumably there is an install directory, and a current Edition, so this is an update
+                
+            // Process the array of itemTaskFileInfo
+            for(unsigned int i=0 ; i < gtargetSlot->taskFileList.size() ; i++){
+                itemTaskFileInfo *pTask = gtargetSlot->taskFileList[i];
+                int rv = 0;
+                rv = processTask(gtargetSlot, gtargetChart, pTask);
+                if(rv){
+
+                    g_statusOverride.Clear();
+                    setStatusText( _("Status: Ready"));
+                    OCPNMessageBox_PlugIn(NULL, _("Chart installation ERROR."), _("oeRNC_PI Message"), wxOK);
+                    UpdateChartList();
+                    m_buttonInstall->Enable();
+                    return;
+                }
+            }
+
+            // If no error, finalize the contract
+            gtargetChart->installedChartEdition = gtargetChart->taskRequestedEdition;
+        }
+        
+#if 0 
+         // the Update case
+        if(gtargetChart->taskAction == TASK_UPDATE){
             
             // Is there a known install directory?
             wxString installDir = gtargetSlot->installLocation;
@@ -3979,8 +4763,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             // If no error, update the installed records
             gtargetChart->installedChartEdition = gtargetChart->taskRequestedEdition;
         }
-        
-           
+#endif 
 
         //  We know that the unzip process puts all charts in a subdir whose name is the "downloadFile", without extension
         //  This is the dir that we want to add to database.
