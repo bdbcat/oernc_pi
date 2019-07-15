@@ -1586,10 +1586,11 @@ void loadShopConfig()
         }
             
         for(unsigned int i=0 ; i < chartIDArray.GetCount() ; i++){
-            wxString chartID = chartIDArray[i];
-            pConf->SetPath ( _T ( "/PlugIns/oernc/charts/" ) + chartID );
+            wxString chartConfigIdent = chartIDArray[i];
+            pConf->SetPath ( _T ( "/PlugIns/oernc/charts/" ) + chartConfigIdent );
             
-            wxString orderRef, chartName, installedChartEdition, overrideChartEdition;
+            wxString orderRef, chartName, installedChartEdition, overrideChartEdition, chartID;
+            pConf->Read( _T("chartID"), &chartID);
             pConf->Read( _T("orderRef"), &orderRef);
             pConf->Read( _T("chartName"), &chartName);
             pConf->Read( _T("installedChartEdition"), &installedChartEdition);
@@ -1613,7 +1614,7 @@ void loadShopConfig()
             
             // Process Slots
             
-            pConf->SetPath ( _T ( "/PlugIns/oernc/charts/" ) + chartID + _T("/Slots" ));
+            pConf->SetPath ( _T ( "/PlugIns/oernc/charts/" ) + chartConfigIdent + _T("/Slots" ));
 
             bContk = pConf->GetFirstEntry( strk, dummyval );
             while( bContk ) {
@@ -1690,23 +1691,23 @@ void saveShopConfig()
           itemChart *chart = ChartVector[i];
           wxString keyChart;
           keyChart.Printf(_T("Chart%d"), i);
-          pConf->Write(keyChart, wxString(chart->chartID));
+          pConf->Write(keyChart, wxString(chart->chartID + "-" + chart->orderRef));
      }
       
      for(unsigned int i = 0 ; i < ChartVector.size() ; i++){
           itemChart *chart = ChartVector[i];
-          wxString chartPath = _T("/PlugIns/oernc/charts/");
-          chartPath += wxString(chart->chartID);
-          pConf->DeleteGroup( chartPath );
-          pConf->SetPath( chartPath );
+          wxString chartConfigIdent = _T("/PlugIns/oernc/charts/") + wxString(chart->chartID + "-" + chart->orderRef);
+          pConf->DeleteGroup( chartConfigIdent );
+          pConf->SetPath( chartConfigIdent );
            
+          pConf->Write( _T("chartID"), wxString(chart->chartID) );
           pConf->Write( _T("chartName"), wxString(chart->chartName) );
           pConf->Write( _T("orderRef"), wxString(chart->orderRef) );
           pConf->Write( _T("installedChartEdition"), wxString(chart->installedChartEdition) );
           if(chart->overrideChartEdition.size())
             pConf->Write( _T("overrideChartEdition"), wxString(chart->overrideChartEdition) );
 
-          wxString slotsPath = chartPath + _T("/Slots");
+          wxString slotsPath = chartConfigIdent + _T("/Slots");
           pConf->DeleteGroup( slotsPath );
           pConf->SetPath( slotsPath );
          
