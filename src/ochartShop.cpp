@@ -404,7 +404,7 @@ bool ChartSetData::WriteFile( std::string fileName)
     TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );  
     doc.LinkEndChild( decl );  
  
-    TiXmlElement * root = new TiXmlElement( "ChartList" );  
+    TiXmlElement * root = new TiXmlElement( "chartList" );  
     doc.LinkEndChild( root );  
     root->SetAttribute("version", "1.0");
     root->SetAttribute("creator", "OpenCPN");
