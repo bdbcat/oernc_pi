@@ -34,6 +34,7 @@
 #endif //precompiled headers
 #include <wx/filename.h>
 #include <wx/dir.h>
+#include <wx/fileconf.h>
 
 #include "oernc_pi.h"
 #include "chart.h"
@@ -73,6 +74,9 @@ extern wxString  g_loginUser;
 extern wxString  g_PrivateDataDir;
 wxString  g_versionString;
 bool g_bNoFindMessageShown;
+extern wxString g_systemName;
+extern wxString g_loginKey;
+wxString  g_fpr_file;
 
 //std::unordered_map<std::string, std::string> keyMap;
 WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
@@ -82,7 +86,9 @@ OKeyHash keyMapSystem;
 OKeyHash *pPrimaryKey;
 OKeyHash *pAlternateKey;
 
-
+oerncPrefsDialog  *g_prefs_dialog;
+oernc_pi_event_handler         *g_event_handler;
+    
 //---------------------------------------------------------------------------------------------------------
 //
 //    PlugIn Implementation
@@ -271,7 +277,9 @@ int oernc_pi::Init(void)
     g_versionString = vs;
 
     m_shoppanel = NULL;
-    
+
+    g_event_handler = new oernc_pi_event_handler(this);
+
     AddLocaleCatalog( _T("opencpn-oernc_pi") );
 
       //    Build an arraystring of dynamically loadable chart class names
@@ -314,7 +322,8 @@ int oernc_pi::Init(void)
       int flags = INSTALLS_PLUGIN_CHART;
 
       flags |= INSTALLS_TOOLBOX_PAGE;             // for  shop interface
-      
+      flags |= WANTS_PREFERENCES;             
+
       // Set up the initial key hash table pointers
       pPrimaryKey = &keyMapDongle;
       pAlternateKey = &keyMapSystem;
@@ -439,6 +448,41 @@ void oernc_pi::OnCloseToolboxPanel(int page_sel, int ok_apply_cancel)
     }
     
 }
+
+void oernc_pi::ShowPreferencesDialog( wxWindow* parent )
+{
+    wxString titleString =  _("oeRNC_PI Preferences");
+
+    long style = wxDEFAULT_DIALOG_STYLE;
+#ifdef __WXOSX__
+        style |= wxSTAY_ON_TOP;
+#endif
+
+    g_prefs_dialog = new oerncPrefsDialog( parent, wxID_ANY, titleString, wxPoint( 20, 20), wxDefaultSize, style );
+    g_prefs_dialog->Fit();
+//    g_prefs_dialog->SetSize(wxSize(300, -1));
+    //wxColour cl;
+    //GetGlobalColor(_T("DILG1"), &cl);
+//    g_prefs_dialog->SetBackgroundColour(cl);
+    
+    
+    g_prefs_dialog->Show();
+        
+    if(g_prefs_dialog->ShowModal() == wxID_OK)
+    {
+        saveShopConfig();
+        
+    }
+    delete g_prefs_dialog;
+    g_prefs_dialog = NULL;
+}
+
+void oernc_pi::Set_FPR()
+{
+    g_prefs_dialog->EndModal( wxID_OK );
+    g_prefs_dialog->m_buttonShowFPR->Enable( g_fpr_file != wxEmptyString );
+}
+
 
 
 bool validate_server(void)
@@ -627,6 +671,638 @@ bool shutdown_server( void )
         return false;
     }
 }
+
+
+BEGIN_EVENT_TABLE( oerncPrefsDialog, wxDialog )
+EVT_BUTTON( wxID_OK, oerncPrefsDialog::OnPrefsOkClick )
+END_EVENT_TABLE()
+
+oerncPrefsDialog::oerncPrefsDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style )
+{
+    wxDialog::Create( parent, id, title, pos, size, style );
+    
+#ifdef __OCPN__ANDROID__
+    SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
+#endif    
+    
+        this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+    
+        wxBoxSizer* bSizerTop = new wxBoxSizer( wxVERTICAL );
+        
+        wxPanel *content = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBG_STYLE_ERASE );
+        bSizerTop->Add(content, 0, wxALL|wxEXPAND, WXC_FROM_DIP(10));
+        
+        wxBoxSizer* bSizer2 = new wxBoxSizer( wxVERTICAL );
+        content->SetSizer(bSizer2);
+        
+        // Plugin Version
+        wxString versionText = _(" oeSENC Version: ") + g_versionString;
+        wxStaticText *versionTextBox = new wxStaticText(content, wxID_ANY, versionText);
+        bSizer2->Add(versionTextBox, 1, wxALL | wxALIGN_CENTER_HORIZONTAL, 20 );
+ 
+        //  Show EULA
+        m_buttonShowEULA = new wxButton( content, wxID_ANY, _("Show EULA"), wxDefaultPosition, wxDefaultSize, 0 );
+        bSizer2->AddSpacer( 10 );
+        bSizer2->Add( m_buttonShowEULA, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        m_buttonShowEULA->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(oernc_pi_event_handler::OnShowEULA), NULL, g_event_handler );
+        bSizer2->AddSpacer( 20 );
+
+#ifndef __OCPN__ANDROID__        
+        //  FPR File Permit
+        wxStaticBoxSizer* sbSizerFPR= new wxStaticBoxSizer( new wxStaticBox( content, wxID_ANY, _("System Identification") ), wxHORIZONTAL );
+        m_fpr_text = new wxStaticText(content, wxID_ANY, _T(" "));
+        if(g_fpr_file.Len())
+             m_fpr_text->SetLabel( wxFileName::FileName(g_fpr_file).GetFullName() );
+        else
+             m_fpr_text->SetLabel( _T("                  "));
+         
+        sbSizerFPR->Add(m_fpr_text, wxEXPAND);
+        bSizer2->Add(sbSizerFPR, 0, wxEXPAND, 50 );
+
+        m_buttonNewFPR = new wxButton( content, wxID_ANY, _("Create System Identifier file..."), wxDefaultPosition, wxDefaultSize, 0 );
+        
+        bSizer2->AddSpacer( 5 );
+        bSizer2->Add( m_buttonNewFPR, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        
+        m_buttonNewFPR->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(oernc_pi_event_handler::OnNewFPRClick), NULL, g_event_handler );
+
+#ifndef OCPN_ARM64        
+        m_buttonNewDFPR = new wxButton( content, wxID_ANY, _("Create USB key dongle System ID file..."), wxDefaultPosition, wxDefaultSize, 0 );
+        
+        bSizer2->AddSpacer( 5 );
+        bSizer2->Add( m_buttonNewDFPR, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        
+        m_buttonNewDFPR->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(oernc_pi_event_handler::OnNewDFPRClick), NULL, g_event_handler );
+#endif
+            
+#ifdef __WXMAC__
+        m_buttonShowFPR = new wxButton( content, wxID_ANY, _("Show In Finder"), wxDefaultPosition, wxDefaultSize, 0 );
+#else
+        m_buttonShowFPR = new wxButton( content, wxID_ANY, _("Show on disk"), wxDefaultPosition, wxDefaultSize, 0 );
+#endif
+        bSizer2->AddSpacer( 20 );
+        bSizer2->Add( m_buttonShowFPR, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+
+        m_buttonShowFPR->Enable( g_fpr_file != wxEmptyString );
+
+        m_buttonShowFPR->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(oernc_pi_event_handler::OnShowFPRClick), NULL, g_event_handler );
+
+#endif        
+        // System Name
+        if(g_systemName.Length()){
+            wxString nameText = _T(" ") + _("System Name:") + _T(" ") + g_systemName;
+            m_nameTextBox = new wxStaticText(content, wxID_ANY, nameText);
+            bSizer2->AddSpacer( 20 );
+            bSizer2->Add(m_nameTextBox, 1, wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL, 10 );
+        }
+        else
+            bSizer2->AddSpacer( 10 );
+ 
+#ifndef __OCPN__ANDROID__        
+        m_buttonClearSystemName = new wxButton( content, wxID_ANY, _("Reset System Name"), wxDefaultPosition, wxDefaultSize, 0 );
+        
+        bSizer2->AddSpacer( 10 );
+        bSizer2->Add( m_buttonClearSystemName, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        
+        m_buttonClearSystemName->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(oernc_pi_event_handler::OnClearSystemName), NULL, g_event_handler );
+        
+        if(!g_systemName.Length())
+            m_buttonClearSystemName->Disable();
+        
+        m_buttonClearCreds = new wxButton( content, wxID_ANY, _("Reset o-charts credentials"), wxDefaultPosition, wxDefaultSize, 0 );
+        
+        bSizer2->AddSpacer( 10 );
+        bSizer2->Add( m_buttonClearCreds, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        
+        m_buttonClearCreds->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(oernc_pi_event_handler::OnClearCredentials), NULL, g_event_handler );
+        
+        
+#endif
+            
+        m_sdbSizer1 = new wxStdDialogButtonSizer();
+        m_sdbSizer1OK = new wxButton( content, wxID_OK );
+        m_sdbSizer1->AddButton( m_sdbSizer1OK );
+        m_sdbSizer1Cancel = new wxButton( content, wxID_CANCEL );
+        m_sdbSizer1->AddButton( m_sdbSizer1Cancel );
+        m_sdbSizer1->Realize();
+        
+        bSizer2->Add( m_sdbSizer1, 0, wxBOTTOM|wxEXPAND|wxTOP, 20 );
+        
+        
+        this->SetSizer( bSizerTop );
+        this->Layout();
+        bSizerTop->Fit( this );
+        
+        this->Centre( wxBOTH );
+}
+
+oerncPrefsDialog::~oerncPrefsDialog()
+{
+}
+
+void oerncPrefsDialog::OnPrefsOkClick(wxCommandEvent& event)
+{
+#if 0    
+    m_trackedPointName = m_wpComboPort->GetValue();
+    
+    wxArrayString guidArray = GetWaypointGUIDArray();
+    for(unsigned int i=0 ; i < guidArray.GetCount() ; i++){
+        wxString name = getWaypointName( guidArray[i] );
+        if(name.Length()){
+            if(name.IsSameAs(m_trackedPointName)){
+                m_trackedPointGUID = guidArray[i];
+                break;
+            }
+        }
+    }
+#endif
+    EndModal( wxID_OK );
+ 
+}
+
+// An Event handler class to catch events from UI dialog
+//      Implementation
+#define ANDROID_EVENT_TIMER 4392
+#define ACTION_ARB_RESULT_POLL 1
+
+BEGIN_EVENT_TABLE ( oernc_pi_event_handler, wxEvtHandler )
+EVT_TIMER ( ANDROID_EVENT_TIMER, oernc_pi_event_handler::onTimerEvent )
+END_EVENT_TABLE()
+
+oernc_pi_event_handler::oernc_pi_event_handler(oernc_pi *parent)
+{
+    m_parent = parent;
+    m_eventTimer.SetOwner( this, ANDROID_EVENT_TIMER );
+    m_timerAction = -1;
+    
+}
+
+oernc_pi_event_handler::~oernc_pi_event_handler()
+{
+}
+
+void oernc_pi_event_handler::onTimerEvent(wxTimerEvent &event)
+{
+#ifdef __OCPN__ANDROID__    
+    if(ACTION_ARB_RESULT_POLL == m_timerAction){
+        wxString status = callActivityMethod_vs("getArbActivityStatus");
+        //qDebug() << status.mb_str();
+        
+        if(status == _T("COMPLETE")){
+            m_eventTimer.Stop();
+            m_timerAction = -1;
+            
+            qDebug() << "Got COMPLETE";
+            wxString result = callActivityMethod_vs("getArbActivityResult");
+            qDebug() << result.mb_str();
+            processArbResult(result);
+        }
+    }
+#endif    
+}
+
+void oernc_pi_event_handler::processArbResult( wxString result )
+{
+//    m_parent->ProcessChartManageResult(result);
+}
+
+
+void oernc_pi_event_handler::OnShowFPRClick( wxCommandEvent &event )
+{
+#ifdef __WXMAC__
+    wxExecute( wxString::Format("open -R %s", g_fpr_file) );
+#endif
+#ifdef __WXMSW__                 
+    wxExecute( wxString::Format("explorer.exe /select,%s", g_fpr_file) );
+#endif
+#ifdef __WXGTK__
+    wxExecute( wxString::Format("xdg-open %s", wxFileName::FileName(g_fpr_file).GetPath()) );
+#endif
+}
+
+void oernc_pi_event_handler::OnClearSystemName( wxCommandEvent &event )
+{
+    wxString msg = _("System name RESET shall be performed only by request from o-charts technical support staff.");
+    msg += _T("\n\n");
+    msg += _("Proceed to RESET?");
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_PI Message"), wxYES_NO);
+    
+    if(ret != wxID_YES)
+        return;
+        
+    g_systemName.Clear();
+    if(g_prefs_dialog){
+        g_prefs_dialog->m_nameTextBox->SetLabel(_T(" "));
+        g_prefs_dialog->m_buttonClearSystemName->Disable();
+        
+        g_prefs_dialog->Refresh(true);
+    }
+    wxFileConfig *pConf = GetOCPNConfigObject();
+    if( pConf ) {
+        pConf->SetPath( _T("/PlugIns/oernc") );
+        pConf->Write( _T("systemName"), g_systemName);
+    }
+    
+#ifndef __OCPN__ANDROID__    
+    if(m_parent->m_shoppanel){
+        m_parent->m_shoppanel->RefreshSystemName();
+    }
+#endif    
+        
+}
+
+void oernc_pi_event_handler::OnShowEULA( wxCommandEvent &event )
+{
+#if 0
+    ChartSetEULA *CSE;
+    
+    for(unsigned int i=0 ; i < g_EULAArray.GetCount() ; i++){
+        CSE = g_EULAArray.Item(i);
+        wxString file = CSE->fileName;
+        file.Replace('!', wxFileName::GetPathSeparator());
+        
+        if(wxFileExists(file)){
+            oesenc_pi_about *pab = new oesenc_pi_about( GetOCPNCanvasWindow(), file );
+            pab->SetOKMode();
+            pab->ShowModal();
+            pab->Destroy();
+        
+            break;                      // once is enough
+        }
+    }
+#endif    
+}
+
+extern void saveShopConfig();
+
+void oernc_pi_event_handler::OnClearCredentials( wxCommandEvent &event )
+{
+    g_loginKey.Clear();
+    saveShopConfig();
+    
+    OCPNMessageBox_PlugIn(NULL, _("Credential Reset Successful"), _("oeSENC_pi Message"), wxOK);
+ 
+}
+
+void oernc_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
+{
+#ifndef __OCPN__ANDROID__    
+    wxString msg = _("To obtain a chart set, you must generate a Unique System Identifier File.\n");
+    msg += _("This file is also known as a\"fingerprint\" file.\n");
+    msg += _("The fingerprint file contains information related to a connected USB key dongle.\n\n");
+    msg += _("After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n");
+    msg += _("Proceed to create Fingerprint file?");
+
+
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_PI Message"), wxYES_NO);
+    
+    if(ret == wxID_YES){
+        wxString msg1;
+        
+        bool b_copyOK = false;
+        wxString fpr_file = getFPR( true , b_copyOK, true);
+        
+        // Check for missing dongle...
+        if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT"))){
+            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n USB key dongle not detected."), _("oeSENC_pi Message"), wxOK);
+            return;
+        }
+        
+        if(fpr_file.Len()){
+            msg1 += _("Fingerprint file created.\n");
+            msg1 += fpr_file;
+            
+            if(b_copyOK)
+                msg1 += _("\n\n Fingerprint file is also copied to desktop.");
+            
+            OCPNMessageBox_PlugIn(NULL, msg1, _("oeSENC_pi Message"), wxOK);
+            
+            m_parent->Set_FPR();
+            
+        }
+        else{
+            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("oeSENC_pi Message"), wxOK);
+        }
+        
+        g_fpr_file = fpr_file;
+        
+    }           // yes
+#endif
+}
+
+
+
+void oernc_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
+{
+#ifndef __OCPN__ANDROID__    
+    wxString msg = _("To obtain a chart set, you must generate a Unique System Identifier File.\n");
+    msg += _("This file is also known as a\"fingerprint\" file.\n");
+    msg += _("The fingerprint file contains information to uniquely identify this computer.\n\n");
+    msg += _("After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n");
+    msg += _("Proceed to create Fingerprint file?");
+
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_PI Message"), wxYES_NO);
+    
+    if(ret == wxID_YES){
+        wxString msg1;
+        
+        bool b_copyOK = false;
+        wxString fpr_file = getFPR( true , b_copyOK, false);
+        
+        if(fpr_file.Len()){
+            msg1 += _("Fingerprint file created.\n");
+            msg1 += fpr_file;
+            
+            if(b_copyOK)
+                msg1 += _("\n\n Fingerprint file is also copied to desktop.");
+            
+            OCPNMessageBox_PlugIn(NULL, msg1, _("oeSENC_pi Message"), wxOK);
+            
+            m_parent->Set_FPR();
+            
+        }
+        else{
+            OCPNMessageBox_PlugIn(NULL, _T("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("oeSENC_pi Message"), wxOK);
+        }
+        
+        g_fpr_file = fpr_file;
+        
+    }           // yes
+#else                   // Android
+
+        // Get XFPR from the oeserverda helper utility.
+        //  The target binary executable
+        wxString cmd = g_sencutil_bin;
+
+//  Set up the parameter passed as the local app storage directory, and append "cache/" to it
+        wxString dataLoc = *GetpPrivateApplicationDataLocation();
+        wxFileName fn(dataLoc);
+        wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        dataDir += _T("cache/");
+
+        wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        
+        //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
+        // This will be {dir of g_sencutil_bin}/lib
+        wxFileName fnl(cmd);
+        wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
+        
+        wxLogMessage(_T("oesenc_pi: Getting XFPR: Starting: ") + cmd );
+
+        wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-g"), dataDir, libDir);
+
+        wxLogMessage(_T("oesenc_pi: Start Result: ") + result);
+
+        
+        wxString sFPRPlus;              // The composite string we will pass to the management activity
+        
+        // Convert the XFPR to an ASCII string for transmission inter-process...
+        // Find the file...
+        wxArrayString files;
+        wxString lastFile = _T("NOT_FOUND");
+        time_t tmax = -1;
+        size_t nf = wxDir::GetAllFiles(dataDir, &files, _T("*.fpr"), wxDIR_FILES);
+        if(nf){
+            for(size_t i = 0 ; i < files.GetCount() ; i++){
+                qDebug() << "looking at FPR file: " << files[i].mb_str();
+                time_t t = ::wxFileModificationTime(files[i]);
+                if(t > tmax){
+                    tmax = t;
+                    lastFile = files[i];
+                }
+            }
+        }
+        
+        qDebug() << "last FPR file: " << lastFile.mb_str();
+            
+        //Read the file, convert to ASCII hex, and build a string
+        if(::wxFileExists(lastFile)){
+            wxString stringFPR;
+            wxFileInputStream stream(lastFile);
+            while(stream.IsOk() && !stream.Eof() ){
+                char c = stream.GetC();
+                if(!stream.Eof()){
+                    wxString sc;
+                    sc.Printf(_T("%02X"), c);
+                    stringFPR += sc;
+                }
+            }
+            sFPRPlus += _T("FPR:");                 // name        
+            sFPRPlus += stringFPR;                  // values
+            sFPRPlus += _T(";");                    // delimiter
+        }
+        
+        //  Add the filename
+        wxFileName fnxpr(lastFile);
+        wxString fprName = fnxpr.GetName();
+        sFPRPlus += _T("fprName:");                 // name        
+        sFPRPlus += fprName;                  // values
+        sFPRPlus += _T(".fpr");
+        sFPRPlus += _T(";");                    // delimiter
+        
+
+        // We can safely delete the FPR file now.
+        if(::wxFileExists(lastFile))
+            wxRemoveFile( lastFile );
+        
+        // Get and add other name/value pairs to the sFPRPlus string
+        sFPRPlus += _T("User:");
+        sFPRPlus += g_loginUser;
+        sFPRPlus += _T(";");                    // delimiter
+        
+        sFPRPlus += _T("loginKey:");
+        if(!g_loginKey.Length())
+            sFPRPlus += _T("?");
+        else
+            sFPRPlus += g_loginKey;
+        sFPRPlus += _T(";");                    // delimiter
+        
+        //  System Name
+        sFPRPlus += _T("systemName:");
+        sFPRPlus += g_systemName;
+        sFPRPlus += _T(";");                    // delimiter
+        
+        //  ADMIN mode bit
+        sFPRPlus += _T("ADMIN:");
+        sFPRPlus += g_admin ? _T("1"):_T("0");
+        sFPRPlus += _T(";");                    // delimiter
+        
+        qDebug() << "sFPRPlus: " << sFPRPlus.mb_str();
+        
+        m_eventTimer.Stop();
+            
+        wxLogMessage(_T("sFPRPlus: ") + sFPRPlus);
+        
+        // Start the Chart management activity
+        callActivityMethod_s5s( "startActivityWithIntent", _T("org.opencpn.oesencplugin"), _T("ChartsetListActivity"), _T("FPRPlus"), sFPRPlus, _T("ManageResult") );
+        
+        // Start a timer to poll for results.
+        m_timerAction = ACTION_ARB_RESULT_POLL;
+        m_eventTimer.Start(1000, wxTIMER_CONTINUOUS);
+        
+        
+#endif
+        
+}
+
+
+void oernc_pi_event_handler::OnManageShopClick( wxCommandEvent &event )
+{
+    
+#ifndef __OCPN__ANDROID__
+
+        doShop();
+#else
+
+        // Get XFPR from the oeserverda helper utility.
+        //  The target binary executable
+        wxString cmd = g_sencutil_bin;
+
+//  Set up the parameter passed as the local app storage directory, and append "cache/" to it
+        wxString dataLoc = *GetpPrivateApplicationDataLocation();
+        wxFileName fn(dataLoc);
+        wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        dataDir += _T("cache/");
+
+        wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        
+        //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
+        // This will be {dir of g_sencutil_bin}/lib
+        wxFileName fnl(cmd);
+        wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
+        
+        wxLogMessage(_T("oesenc_pi: Getting XFPR: Starting: ") + cmd );
+
+        wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-g"), dataDir, libDir);
+
+        wxLogMessage(_T("oesenc_pi: Start Result: ") + result);
+
+        
+        wxString sFPRPlus;              // The composite string we will pass to the management activity
+        
+        // Convert the XFPR to an ASCII string for transmission inter-process...
+        // Find the file...
+        wxArrayString files;
+        wxString lastFile = _T("NOT_FOUND");
+        time_t tmax = -1;
+        size_t nf = wxDir::GetAllFiles(dataDir, &files, _T("*.fpr"), wxDIR_FILES);
+        if(nf){
+            for(size_t i = 0 ; i < files.GetCount() ; i++){
+                qDebug() << "looking at FPR file: " << files[i].mb_str();
+                time_t t = ::wxFileModificationTime(files[i]);
+                if(t > tmax){
+                    tmax = t;
+                    lastFile = files[i];
+                }
+            }
+        }
+        
+        qDebug() << "last FPR file: " << lastFile.mb_str();
+            
+        //Read the file, convert to ASCII hex, and build a string
+        if(::wxFileExists(lastFile)){
+            wxString stringFPR;
+            wxFileInputStream stream(lastFile);
+            while(stream.IsOk() && !stream.Eof() ){
+                char c = stream.GetC();
+                if(!stream.Eof()){
+                    wxString sc;
+                    sc.Printf(_T("%02X"), c);
+                    stringFPR += sc;
+                }
+            }
+            sFPRPlus += _T("FPR:");                 // name        
+            sFPRPlus += stringFPR;                  // values
+            sFPRPlus += _T(";");                    // delimiter
+        }
+        
+        //  Add the filename
+        wxFileName fnxpr(lastFile);
+        wxString fprName = fnxpr.GetName();
+        sFPRPlus += _T("fprName:");                 // name        
+        sFPRPlus += fprName;                  // values
+        sFPRPlus += _T(".fpr");
+        sFPRPlus += _T(";");                    // delimiter
+        
+
+        // We can safely delete the FPR file now.
+        if(::wxFileExists(lastFile))
+            wxRemoveFile( lastFile );
+        
+        // Get and add other name/value pairs to the sFPRPlus string
+        sFPRPlus += _T("User:");
+        sFPRPlus += g_loginUser;
+        sFPRPlus += _T(";");                    // delimiter
+        
+        sFPRPlus += _T("loginKey:");
+        if(!g_loginKey.Length())
+            sFPRPlus += _T("?");
+        else
+            sFPRPlus += g_loginKey;
+        sFPRPlus += _T(";");                    // delimiter
+        
+        //  System Name
+        sFPRPlus += _T("systemName:");
+        sFPRPlus += g_systemName;
+        sFPRPlus += _T(";");                    // delimiter
+        
+        //  ADMIN mode bit
+        sFPRPlus += _T("ADMIN:");
+        sFPRPlus += g_admin ? _T("1"):_T("0");
+        sFPRPlus += _T(";");                    // delimiter
+        
+        qDebug() << "sFPRPlus: " << sFPRPlus.mb_str();
+        
+        m_eventTimer.Stop();
+            
+        wxLogMessage(_T("sFPRPlus: ") + sFPRPlus);
+        
+        // Start the Chart management activity
+        callActivityMethod_s5s( "startActivityWithIntent", _T("org.opencpn.oesencplugin"), _T("ChartsetListActivity"), _T("FPRPlus"), sFPRPlus, _T("ManageResult") );
+        
+        // Start a timer to poll for results.
+        m_timerAction = ACTION_ARB_RESULT_POLL;
+        m_eventTimer.Start(1000, wxTIMER_CONTINUOUS);
+        
+
+#endif  // Android
+
+    
+}
+
+
+void oernc_pi_event_handler::OnGetHWIDClick( wxCommandEvent &event )
+{
+#ifndef __OCPN__ANDROID__    
+
+#else
+
+        // Get XFPR from the oeserverda helper utility.
+        //  The target binary executable
+        wxString cmd = g_sencutil_bin;
+
+//  Set up the parameter passed as the local app storage directory, and append "cache/" to it
+        wxString dataLoc = *GetpPrivateApplicationDataLocation();
+        wxFileName fn(dataLoc);
+        wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        
+        wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        
+        //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
+        // This will be {dir of g_sencutil_bin}/lib
+        wxFileName fnl(cmd);
+        wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
+        
+        wxLogMessage(_T("oesenc_pi: Getting HWID: Starting: ") + cmd );
+
+        wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-w"), dataDir, libDir);
+
+        wxLogMessage(_T("oesenc_pi: Start Result: ") + result);
+
+#endif
+        
+}
+
 
 #if 0
 #ifdef __OCPN__ANDROID__

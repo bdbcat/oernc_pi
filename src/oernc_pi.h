@@ -53,7 +53,8 @@ class shopPanel;
 
 bool validate_server(void);
 bool shutdown_server(void);
-
+void saveShopConfig(void);
+wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock);
 
 //----------------------------------------------------------------------------------------------------------
 //    The PlugIn Class Definition
@@ -80,27 +81,84 @@ public:
 
       wxArrayString GetDynamicChartClassNameArray();
 
-//       bool RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp);
-//       void SetPluginMessage(wxString &message_id, wxString &message_body);
-//
-//       bool RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp){ return false; }
-
       void OnSetupOptions( void );
       void OnCloseToolboxPanel(int page_sel, int ok_apply_cancel);
-      
+      void ShowPreferencesDialog( wxWindow* parent );
+      void Set_FPR();
+
 
       wxArrayString     m_class_name_array;
+      shopPanel         *m_shoppanel;
 
 private:
 
       wxBitmap          *m_pplugin_icon;
 
       wxScrolledWindow  *m_pOptionsPage;
-      shopPanel         *m_shoppanel;
 
 };
 
 
+class oerncPrefsDialog : public wxDialog 
+{
+private:
+    
+protected:
+    wxStdDialogButtonSizer* m_sdbSizer1;
+    wxButton* m_sdbSizer1OK;
+    wxButton* m_sdbSizer1Cancel;
+    
+public:
+    
+    
+    oerncPrefsDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("oeRNC_PI Preferences"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxDEFAULT_DIALOG_STYLE ); 
+    ~oerncPrefsDialog();
+    void OnPrefsOkClick(wxCommandEvent& event);
+    
+    wxButton *m_buttonNewFPR, *m_buttonNewDFPR;
+    wxButton *m_buttonShowFPR;
+    wxButton *m_buttonClearSystemName;
+    wxButton *m_buttonClearCreds;
+    wxStaticText *m_fpr_text;
+    wxStaticText *m_nameTextBox;
+    wxButton *m_buttonShowEULA;
+    
+    DECLARE_EVENT_TABLE()
+    
+    
+    
+};
+
+
+// An Event handler class to catch events from UI dialog
+class oernc_pi_event_handler : public wxEvtHandler
+{
+public:
+    
+    oernc_pi_event_handler(oernc_pi *parent);
+    ~oernc_pi_event_handler();
+    
+    void OnNewFPRClick( wxCommandEvent &event );
+    void OnNewDFPRClick( wxCommandEvent &event );
+    void OnShowFPRClick( wxCommandEvent &event );
+    void onTimerEvent(wxTimerEvent &event);
+    void OnGetHWIDClick( wxCommandEvent &event );
+    void OnManageShopClick( wxCommandEvent &event );
+    void OnClearSystemName( wxCommandEvent &event );
+    void OnShowEULA( wxCommandEvent &event );
+    void OnClearCredentials( wxCommandEvent &event );
+    
+private:
+    void processArbResult( wxString result );
+    
+    oernc_pi  *m_parent;
+    
+    wxTimer     m_eventTimer;
+    int         m_timerAction;
+    
+    DECLARE_EVENT_TABLE()
+    
+};
 
 
 #endif
