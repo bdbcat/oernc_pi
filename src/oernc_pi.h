@@ -122,7 +122,7 @@ public:
     wxStaticText *m_fpr_text;
     wxStaticText *m_nameTextBox;
     wxButton *m_buttonShowEULA;
-    
+    wxButton *m_buttonClearDownloadCache;
     DECLARE_EVENT_TABLE()
     
     
@@ -147,7 +147,8 @@ public:
     void OnClearSystemName( wxCommandEvent &event );
     void OnShowEULA( wxCommandEvent &event );
     void OnClearCredentials( wxCommandEvent &event );
-    
+    void OnClearDownloadCache( wxCommandEvent &event );
+
 private:
     void processArbResult( wxString result );
     

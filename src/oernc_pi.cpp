@@ -626,7 +626,7 @@ bool validate_server(void)
             msg += bin_test;
             msg += _T("}\n");
             msg += _T(" reports Unavailable.\n\n");
-            //            OCPNMessageBox_PlugIn(NULL, msg, _("oesenc_pi Message"),  wxOK, -1, -1);
+            //            OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_PI Message"),  wxOK, -1, -1);
             wxLogMessage(_T("oernc_pi: ") + msg);
             
             g_server_bin.Clear();
@@ -775,6 +775,12 @@ oerncPrefsDialog::oerncPrefsDialog( wxWindow* parent, wxWindowID id, const wxStr
         bSizer2->Add( m_buttonClearCreds, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
         
         m_buttonClearCreds->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(oernc_pi_event_handler::OnClearCredentials), NULL, g_event_handler );
+
+        m_buttonClearDownloadCache = new wxButton( content, wxID_ANY, _("Clear file download cache"), wxDefaultPosition, wxDefaultSize, 0 );
+        bSizer2->AddSpacer( 10 );
+        bSizer2->Add( m_buttonClearDownloadCache, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        
+        m_buttonClearDownloadCache->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(oernc_pi_event_handler::OnClearDownloadCache), NULL, g_event_handler );
         
         
 #endif
@@ -885,7 +891,7 @@ void oernc_pi_event_handler::OnClearSystemName( wxCommandEvent &event )
     wxString msg = _("System name RESET shall be performed only by request from o-charts technical support staff.");
     msg += _T("\n\n");
     msg += _("Proceed to RESET?");
-    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_PI Message"), wxYES_NO);
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_PI Message"), wxYES_NO);
     
     if(ret != wxID_YES)
         return;
@@ -910,6 +916,23 @@ void oernc_pi_event_handler::OnClearSystemName( wxCommandEvent &event )
 #endif    
         
 }
+
+void oernc_pi_event_handler::OnClearDownloadCache( wxCommandEvent &event )
+{
+    wxString cache_locn = wxString(g_PrivateDataDir + _T("DownloadCache"));
+    if(wxDir::Exists(cache_locn)){
+        wxArrayString fileArray;
+        size_t nFiles = wxDir::GetAllFiles( cache_locn, &fileArray);
+        for(unsigned int i=0 ; i < nFiles ;i++)
+            ::wxRemoveFile(fileArray.Item(i));
+    }
+    
+    wxString msg = _("Download file cache cleared.");
+    OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_PI Message"), wxOK);
+    
+
+}
+
 
 void oernc_pi_event_handler::OnShowEULA( wxCommandEvent &event )
 {
@@ -940,7 +963,7 @@ void oernc_pi_event_handler::OnClearCredentials( wxCommandEvent &event )
     g_loginKey.Clear();
     saveShopConfig();
     
-    OCPNMessageBox_PlugIn(NULL, _("Credential Reset Successful"), _("oeSENC_pi Message"), wxOK);
+    OCPNMessageBox_PlugIn(NULL, _("Credential Reset Successful"), _("oeRNC_PI Message"), wxOK);
  
 }
 
@@ -954,7 +977,7 @@ void oernc_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
     msg += _("Proceed to create Fingerprint file?");
 
 
-    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_PI Message"), wxYES_NO);
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_PI Message"), wxYES_NO);
     
     if(ret == wxID_YES){
         wxString msg1;
@@ -964,7 +987,7 @@ void oernc_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
         
         // Check for missing dongle...
         if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT"))){
-            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n USB key dongle not detected."), _("oeSENC_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n USB key dongle not detected."), _("oeRNC_PI Message"), wxOK);
             return;
         }
         
@@ -975,13 +998,13 @@ void oernc_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
             if(b_copyOK)
                 msg1 += _("\n\n Fingerprint file is also copied to desktop.");
             
-            OCPNMessageBox_PlugIn(NULL, msg1, _("oeSENC_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, msg1, _("oeRNC_PI Message"), wxOK);
             
             m_parent->Set_FPR();
             
         }
         else{
-            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("oeSENC_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("oeRNC_PI Message"), wxOK);
         }
         
         g_fpr_file = fpr_file;
@@ -1001,7 +1024,7 @@ void oernc_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
     msg += _("After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n");
     msg += _("Proceed to create Fingerprint file?");
 
-    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_PI Message"), wxYES_NO);
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_PI Message"), wxYES_NO);
     
     if(ret == wxID_YES){
         wxString msg1;
@@ -1016,13 +1039,13 @@ void oernc_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
             if(b_copyOK)
                 msg1 += _("\n\n Fingerprint file is also copied to desktop.");
             
-            OCPNMessageBox_PlugIn(NULL, msg1, _("oeSENC_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, msg1, _("oeRNC_PI Message"), wxOK);
             
             m_parent->Set_FPR();
             
         }
         else{
-            OCPNMessageBox_PlugIn(NULL, _T("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("oeSENC_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, _T("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("oeRNC_PI Message"), wxOK);
         }
         
         g_fpr_file = fpr_file;
@@ -1047,11 +1070,11 @@ void oernc_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
         wxFileName fnl(cmd);
         wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
         
-        wxLogMessage(_T("oesenc_pi: Getting XFPR: Starting: ") + cmd );
+        wxLogMessage(_T("oeRNC_PI: Getting XFPR: Starting: ") + cmd );
 
         wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-g"), dataDir, libDir);
 
-        wxLogMessage(_T("oesenc_pi: Start Result: ") + result);
+        wxLogMessage(_T("oeRNC_PI: Start Result: ") + result);
 
         
         wxString sFPRPlus;              // The composite string we will pass to the management activity
@@ -1171,11 +1194,11 @@ void oernc_pi_event_handler::OnManageShopClick( wxCommandEvent &event )
         wxFileName fnl(cmd);
         wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
         
-        wxLogMessage(_T("oesenc_pi: Getting XFPR: Starting: ") + cmd );
+        wxLogMessage(_T("oeRNC_PI: Getting XFPR: Starting: ") + cmd );
 
         wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-g"), dataDir, libDir);
 
-        wxLogMessage(_T("oesenc_pi: Start Result: ") + result);
+        wxLogMessage(_T("oeRNC_PI: Start Result: ") + result);
 
         
         wxString sFPRPlus;              // The composite string we will pass to the management activity
@@ -1293,11 +1316,11 @@ void oernc_pi_event_handler::OnGetHWIDClick( wxCommandEvent &event )
         wxFileName fnl(cmd);
         wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
         
-        wxLogMessage(_T("oesenc_pi: Getting HWID: Starting: ") + cmd );
+        wxLogMessage(_T("oeRNC_PI: Getting HWID: Starting: ") + cmd );
 
         wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-w"), dataDir, libDir);
 
-        wxLogMessage(_T("oesenc_pi: Start Result: ") + result);
+        wxLogMessage(_T("oeRNC_PI: Start Result: ") + result);
 
 #endif
         
