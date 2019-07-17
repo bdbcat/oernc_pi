@@ -193,6 +193,7 @@ bool loadKeyMaps( wxString file )
     //  Read and parse them all
     for(unsigned int i=0; i < xmlFiles.GetCount(); i++){
         wxString xmlFile = xmlFiles.Item(i);
+        wxLogMessage(_T("Loading keyFile: ") + xmlFile);
         // Is this a dongle key file?
         if(wxNOT_FOUND != xmlFile.Find(_T("-sgl")))
             parseKeyFile(xmlFile, true);
