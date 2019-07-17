@@ -4905,7 +4905,18 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     int qtyIndex = -1;
     
     //  Check if I am already assigned to this chart
-    if(!chart->isChartsetAssignedToSystemKey(g_systemName) && !chart->isChartsetAssignedToSystemKey(g_dongleName) ){
+    bool bNeedAssign = false;
+    if(g_dongleName.Len()){
+        if(!chart->isChartsetAssignedToSystemKey(g_dongleName))
+            bNeedAssign = true;
+    }
+    else{
+        if(!chart->isChartsetAssignedToSystemKey(g_systemName))
+            bNeedAssign = true;
+    }
+        
+        
+    if(bNeedAssign){
         
         // Need assignment
         // Choose the first available qty that has an available slot
