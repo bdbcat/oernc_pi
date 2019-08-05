@@ -3379,7 +3379,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         double font_size = dFont->GetPointSize() * 3/2;
         wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
         
-        int text_x = scaledWidth * 12 / 10;
+        int text_x = scaledWidth * 11 / 10;
         dc.SetFont( *qFont );
         dc.SetTextForeground(wxColour(0,0,0));
         dc.DrawText(nameString, text_x, height * 5 / 100);
