@@ -405,6 +405,7 @@ protected:
     wxStaticText *m_staticTextStatusProgress;
     wxStaticText *m_staticTextLEM;
     
+
 protected:
     
 public:
@@ -427,7 +428,8 @@ public:
     wxButton* GetButtonInstall() { return m_buttonInstall; }
     wxButton* GetButtonUpdate() { return m_buttonUpdate; }
     
-    piScreenLogContainer *m_ValidateLog;
+    piScreenLog *m_shopLog;
+    
     oeSENCLogin *m_login;
     
     void RefreshSystemName();

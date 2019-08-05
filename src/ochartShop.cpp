@@ -49,6 +49,7 @@
 #include "sha256.h"
 #include "piScreenLog.h"
 #include "validator.h"
+#include "oernc_pi.h"
 
 #include <wx/arrimpl.cpp> 
 WX_DEFINE_OBJARRAY(ArrayOfCharts);
@@ -95,6 +96,8 @@ InProgressIndicator *g_ipGauge;
 WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
 extern OKeyHash keyMapDongle;
 extern OKeyHash keyMapSystem;
+
+extern oernc_pi *g_pi;
 
 #define ID_CMD_BUTTON_INSTALL 7783
 #define ID_CMD_BUTTON_INSTALL_CHAIN 7784
@@ -3710,7 +3713,7 @@ END_EVENT_TABLE()
 shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
 : wxPanel(parent, id, pos, size, style)
 {
-    m_ValidateLog =NULL;
+    m_shopLog =NULL;
     m_validator = NULL;
     
     loadShopConfig();
@@ -3794,6 +3797,10 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_staticTextLEM = new wxStaticText(this, wxID_ANY, _("Last Error Message: "), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     staticBoxSizerAction->Add(m_staticTextLEM, 0, wxALL|wxALIGN_LEFT, WXC_FROM_DIP(5));
     
+    m_shopLog = new piScreenLog(this);
+    m_shopLog->SetMinSize(wxSize(-1, 16 * GetCharHeight()));
+    boxSizerTop->Add(m_shopLog, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    
     SetName(wxT("shopPanel"));
     //SetSize(500,600);
     if (GetSizer()) {
@@ -3824,7 +3831,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 
 shopPanel::~shopPanel()
 {
-    delete m_ValidateLog;
+    delete m_shopLog;
     delete m_validator;
 }
 
@@ -4655,22 +4662,17 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
 
 void shopPanel::ValidateChartset( wxCommandEvent& event )
 {
-//    m_login = new oeSENCLogin(this);
-//    m_login->ShowModal();
 
    
     if(m_ChartPanelSelected){
-        if(!m_ValidateLog){
-            wxSize bestSize = wxSize(GetParent()->GetSize().x, GetParent()->GetSize().y);
-            m_ValidateLog = new piScreenLogContainer( NULL, _("Validation Log"), bestSize );
-            m_ValidateLog->Centre();
-        }
-        m_ValidateLog->Show();
+        m_shopLog->ClearLog();
+        if(g_pi)
+            g_pi->m_pOptionsPage->Scroll(0, GetSize().y / 2);
         
         if(m_validator)
             delete m_validator;
         
-        m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), m_ValidateLog);
+        m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), m_shopLog);
         m_validator->startValidation();
     }
     else{

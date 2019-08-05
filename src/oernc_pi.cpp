@@ -88,7 +88,9 @@ OKeyHash *pAlternateKey;
 
 oerncPrefsDialog  *g_prefs_dialog;
 oernc_pi_event_handler         *g_event_handler;
-    
+
+oernc_pi *g_pi;
+
 //---------------------------------------------------------------------------------------------------------
 //
 //    PlugIn Implementation
@@ -264,6 +266,7 @@ oernc_pi::oernc_pi(void *ppimgr)
       // Create the PlugIn icons
 
       m_pplugin_icon = new wxBitmap(default_pi);
+      g_pi = this;
 }
 
 oernc_pi::~oernc_pi()

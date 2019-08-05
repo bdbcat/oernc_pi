@@ -38,7 +38,6 @@ IMPLEMENT_DYNAMIC_CLASS( piScreenLogContainer, wxFrame )
 
 //      Screen log container implementation
 BEGIN_EVENT_TABLE(piScreenLogContainer, wxFrame)
-//EVT_CLOSE(piScreenLogContainer::OnClose)
 EVT_BUTTON(ID_PISLCLOSE, piScreenLogContainer::OnCloseClick)
 
 END_EVENT_TABLE()
@@ -53,7 +52,12 @@ piScreenLogContainer::piScreenLogContainer( wxWindow *parent, wxString title, wx
     if( (size.x >0) && (size.y > 0) )
         tsize = size;
         
-    wxFrame::Create( parent, -1, title, wxDefaultPosition, size, wxCAPTION | wxRESIZE_BORDER );
+    long style = wxCAPTION | wxRESIZE_BORDER |  wxSTAY_ON_TOP;
+#ifdef __WXMAC__
+    style = wxDEFAULT_FRAME_STYLE | wxSTAY_ON_TOP;
+#endif
+    
+    wxFrame::Create( parent, -1, title, wxDefaultPosition, size, style );
     m_slog = new piScreenLog( this );
     
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer( wxVERTICAL );
@@ -231,6 +235,8 @@ void piScreenLog::ClearLog(void)
     if(m_plogtc){
         m_plogtc->Clear();
     }
+    m_nseq = 0;
+
 }
 
 void piScreenLog::OnServerEvent(wxSocketEvent& event)

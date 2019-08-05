@@ -221,6 +221,15 @@ ocValidator::ocValidator( itemChart *chart, piScreenLogContainer *log)
 {
     init();
 
+    m_clog = log;
+    m_chart = chart;
+    
+}
+
+ocValidator::ocValidator( itemChart *chart, piScreenLog *log)
+{
+    init();
+
     m_log = log;
     m_chart = chart;
     

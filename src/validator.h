@@ -41,6 +41,7 @@ class ocValidator
 public:
   ocValidator();
   ocValidator( itemChart *chart, piScreenLogContainer *log);
+  ocValidator( itemChart *chart, piScreenLog *log);
 
   ~ocValidator();
   
@@ -51,7 +52,8 @@ public:
 private:
     
   itemChart *m_chart;
-  piScreenLogContainer *m_log;
+  piScreenLogContainer *m_clog;
+  piScreenLog *m_log;
   
 };  
   

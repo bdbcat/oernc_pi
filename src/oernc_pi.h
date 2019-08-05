@@ -89,12 +89,12 @@ public:
 
       wxArrayString     m_class_name_array;
       shopPanel         *m_shoppanel;
+      wxScrolledWindow  *m_pOptionsPage;
 
 private:
 
       wxBitmap          *m_pplugin_icon;
 
-      wxScrolledWindow  *m_pOptionsPage;
 
 };
 
