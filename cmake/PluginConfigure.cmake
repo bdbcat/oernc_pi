@@ -146,7 +146,7 @@ IF (NOT QT_ANDROID )
     if(WXWIDGETS_FORCE_VERSION)
         set (wxWidgets_CONFIG_OPTIONS --version=${WXWIDGETS_FORCE_VERSION})
     endif()
-    FIND_PACKAGE(wxWidgets REQUIRED)
+    FIND_PACKAGE(wxWidgets COMPONENTS ${wxWidgets_USE_LIBS})
     INCLUDE(${wxWidgets_USE_FILE})
 ENDIF (NOT QT_ANDROID )
 
