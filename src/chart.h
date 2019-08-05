@@ -12,7 +12,6 @@
 
 #include "wx/wxprec.h"
 #include <wx/wfstream.h>
-#include "lodepng.h"
 
 #ifndef  WX_PRECOMP
   #include "wx/wx.h"

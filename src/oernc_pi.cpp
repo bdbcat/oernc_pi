@@ -101,7 +101,7 @@ bool parseKeyFile( wxString kfile, bool bDongle )
 {
     FILE *iFile = fopen(kfile.mb_str(), "rb");
    
-    if (iFile <= 0)
+    if (iFile <= (void *) 0)
         return false;            // file error
         
     // compute the file length    

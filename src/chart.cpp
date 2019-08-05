@@ -37,6 +37,7 @@
 #include "oernc_pi.h"
 #include "chart.h"
 #include "oernc_inStream.h"
+#include "lodepng.h"
 
 
 #ifdef __WXMSW__
@@ -76,6 +77,7 @@ float hex2float( std::string h)
 wxString getPrimaryKey(wxString file);
 wxString getAlternateKey(wxString file);
 void SwapKeyHashes();
+
 
 #ifdef __WXGTK__
 class OCPNStopWatch
@@ -6671,9 +6673,4 @@ double lm_enorm( int n, double *x )
 
     return x3max*sqrt(s3);
 }
-
-
-
-
-
 

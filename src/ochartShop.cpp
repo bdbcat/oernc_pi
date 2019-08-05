@@ -47,6 +47,8 @@
 #include <memory>
 #include "fpr.h"
 #include "sha256.h"
+#include "piScreenLog.h"
+#include "validator.h"
 
 #include <wx/arrimpl.cpp> 
 WX_DEFINE_OBJARRAY(ArrayOfCharts);
@@ -96,6 +98,7 @@ extern OKeyHash keyMapSystem;
 
 #define ID_CMD_BUTTON_INSTALL 7783
 #define ID_CMD_BUTTON_INSTALL_CHAIN 7784
+#define ID_CMD_BUTTON_VALIDATE 7785
 
 
 // Private class implementations
@@ -249,7 +252,7 @@ ChartSetData::ChartSetData( std::string fileXML)
     // Open and parse the given file
     FILE *iFile = fopen(fileXML.c_str(), "rb");
    
-    if (iFile <= 0)
+    if (iFile <= (void *)0)
         return;            // file error
         
     // compute the file length    
@@ -474,7 +477,7 @@ bool ChartSetKeys::Load( std::string fileXML)
     // Open and parse the given file
     FILE *iFile = fopen(fileXML.c_str(), "rb");
    
-    if (iFile <= 0)
+    if (iFile <= (void *)0)
         return false;            // file error
         
     // compute the file length    
@@ -832,6 +835,17 @@ itemSlot *itemChart::GetSlotPtr( wxString UUID )
  
 }
 
+itemSlot *itemChart::GetSlotPtr( int slot, int qId )
+{
+    for(unsigned int i=0 ; i < quantityList.size() ; i++){
+        itemQuantity Qty = quantityList[i];
+        if(Qty.quantityId == qId){
+            return Qty.slotList[slot];
+        }
+    }
+    return NULL;
+}
+
 
 bool itemChart::isChartsetFullyAssigned()
 {
@@ -1179,7 +1193,7 @@ int itemChart::GetServerEditionInt()
 }
 
 
-
+#if 0
 // oitemChart
 //------------------------------------------------------------------------------------------
 
@@ -1523,12 +1537,14 @@ wxBitmap& oitemChart::GetChartThumbnail(int size)
     
 }
 
-
+#endif
 
 
 //Utility Functions
-
 //  Search g_ChartArray for chart having specified parameters
+
+#if 0
+
 int findOrderRefChartId(wxString &orderRef, wxString &chartId, wxString &quantity)
 {
     for(unsigned int i = 0 ; i < g_ChartArray.GetCount() ; i++){
@@ -1540,6 +1556,7 @@ int findOrderRefChartId(wxString &orderRef, wxString &chartId, wxString &quantit
     }
     return -1;
 }
+#endif
 
 int findOrderRefChartId( std::string orderRef, std::string chartId)
 {
@@ -1925,7 +1942,7 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
         
         itemChart *pChart = NULL;
 
-        wxString queryResult;
+        wxString queryResult = _T("59");  // Default value, general error.
         wxString chartOrder;
         wxString chartPurchase;
         wxString chartExpiration;
@@ -2458,7 +2475,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     url +=_T("?fc=module&module=occharts&controller=apioernc");
     
    
-    itemChart *chart = chartPrepare->m_pChart;
+    itemChart *chart = chartPrepare->GetSelectedChart();
     
     
 /*
@@ -2747,9 +2764,10 @@ int doUnzip(itemSlot *slot)
         }
     }
    
-    
     //  We know that the unzip process puts all charts in a subdir whose name is the "downloadFile", without extension
     //  This is the dir that we want to add to database.
+    //  n.b.     Make sure the added dir does not end with '/'
+
     wxFileName fn(downloadFile);
     wxString chartDir = fn.GetName();
     wxString targetAddDir = chosenInstallDir + wxFileName::GetPathSeparator() + chartDir;
@@ -2896,6 +2914,7 @@ EVT_ERASE_BACKGROUND(MyStaticTextCtrl::OnEraseBackGround)
 END_EVENT_TABLE()
 
 
+#if 0
 BEGIN_EVENT_TABLE(oeSencChartPanel, wxPanel)
 EVT_PAINT ( oeSencChartPanel::OnPaint )
 EVT_ERASE_BACKGROUND(oeSencChartPanel::OnEraseBackground)
@@ -3227,7 +3246,7 @@ void oeSencChartPanel::OnPaint( wxPaintEvent &event )
     
     
 }
-
+#endif
 
 BEGIN_EVENT_TABLE(oeXChartPanel, wxPanel)
 EVT_PAINT ( oeXChartPanel::OnPaint )
@@ -3582,7 +3601,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         dc.SetFont( *qFont );
         dc.SetTextForeground(wxColour(128, 128, 128));
         
-        if(m_pContainer->GetSelectedChart())
+        if(m_pContainer->GetSelectedChartPanel())
             dc.SetTextForeground(wxColour(220,220,220));
         
         dc.DrawText(nameString, scaledWidth * 15 / 10, height * 35 / 100);
@@ -3684,12 +3703,16 @@ BEGIN_EVENT_TABLE( shopPanel, wxPanel )
 EVT_TIMER( 4357, shopPanel::OnPrepareTimer )
 EVT_BUTTON( ID_CMD_BUTTON_INSTALL, shopPanel::OnButtonInstall )
 EVT_BUTTON( ID_CMD_BUTTON_INSTALL_CHAIN, shopPanel::OnButtonInstallChain )
+EVT_BUTTON( ID_CMD_BUTTON_VALIDATE, shopPanel::ValidateChartset )
 END_EVENT_TABLE()
 
 
 shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
 : wxPanel(parent, id, pos, size, style)
 {
+    m_ValidateLog =NULL;
+    m_validator = NULL;
+    
     loadShopConfig();
     
     g_CurlEventHandler = new OESENC_CURL_EvtHandler;
@@ -3698,7 +3721,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_binstallChain = false;
     m_bAbortingDownload = false;
     
-    m_ChartSelected = NULL;
+    m_ChartPanelSelected = NULL;
     m_choiceSystemName = NULL;
     int ref_len = GetCharHeight();
     
@@ -3743,7 +3766,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     staticBoxSizerAction->Add(m_staticLine121, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     
     ///Buttons
-    wxGridSizer* gridSizerActionButtons = new wxGridSizer(1, 2, 0, 0);
+    wxGridSizer* gridSizerActionButtons = new wxGridSizer(1, 3, 0, 0);
     staticBoxSizerAction->Add(gridSizerActionButtons, 1, wxALL|wxEXPAND, WXC_FROM_DIP(2));
     
     m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Install Selected Chart Set"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
@@ -3753,6 +3776,9 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonCancelOp->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonCancelOp), NULL, this);
     gridSizerActionButtons->Add(m_buttonCancelOp, 1, wxTOP | wxBOTTOM, WXC_FROM_DIP(2));
 
+     m_buttonValidate = new wxButton(this, ID_CMD_BUTTON_VALIDATE, _("Validate Installed Chart Set"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+     gridSizerActionButtons->Add(m_buttonValidate, 1, wxTOP | wxBOTTOM, WXC_FROM_DIP(2));
+ 
     wxStaticLine* sLine1 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxLI_HORIZONTAL);
     staticBoxSizerAction->Add(sLine1, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     
@@ -3778,7 +3804,8 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonInstall->Hide();
     m_buttonCancelOp->Hide();
     m_staticTextLEM->Hide();
-    
+    m_buttonValidate->Hide();
+
         // Check the dongle
     g_dongleName.Clear();
     if(IsDongleAvailable()){
@@ -3797,6 +3824,8 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 
 shopPanel::~shopPanel()
 {
+    delete m_ValidateLog;
+    delete m_validator;
 }
 
 void shopPanel::SetErrorMessage()
@@ -3833,21 +3862,21 @@ void shopPanel::RefreshSystemName()
 }
 
 
-void shopPanel::SelectChart( oeXChartPanel *chart )
+void shopPanel::SelectChart( oeXChartPanel *panel )
 {
-    if (m_ChartSelected == chart)
+    if (m_ChartPanelSelected == panel)
         return;
     
-    if (m_ChartSelected)
-        m_ChartSelected->SetSelected(false);
+    if (m_ChartPanelSelected)
+        m_ChartPanelSelected->SetSelected(false);
     
-    m_ChartSelected = chart;
-    if (m_ChartSelected)
-        m_ChartSelected->SetSelected(true);
+    m_ChartPanelSelected = panel;
+    if (m_ChartPanelSelected)
+        m_ChartPanelSelected->SetSelected(true);
     
     m_scrollWinChartList->GetSizer()->Layout();
     
-    MakeChartVisible(m_ChartSelected);
+    MakeChartVisible(m_ChartPanelSelected);
     
     UpdateActionControls();
     
@@ -3860,10 +3889,10 @@ void shopPanel::SelectChart( oeXChartPanel *chart )
 void shopPanel::SelectChartByID( std::string id, std::string order)
 {
     for(unsigned int i = 0 ; i < panelVector.size() ; i++){
-        itemChart *chart = panelVector[i]->m_pChart;
+        itemChart *chart = panelVector[i]->GetSelectedChart();
         if(wxString(id).IsSameAs(chart->chartID) && wxString(order).IsSameAs(chart->orderRef)){
             SelectChart(panelVector[i]);
-            MakeChartVisible(m_ChartSelected);
+            MakeChartVisible(m_ChartPanelSelected);
         }
     }
 }
@@ -3874,10 +3903,10 @@ void shopPanel::MakeChartVisible(oeXChartPanel *chart)
     if(!chart)
         return;
     
-    itemChart *vchart = chart->m_pChart;
+    itemChart *vchart = chart->GetSelectedChart();
     
     for(unsigned int i = 0 ; i < panelVector.size() ; i++){
-        itemChart *lchart = panelVector[i]->m_pChart;
+        itemChart *lchart = panelVector[i]->GetSelectedChart();
         if( !strcmp(vchart->chartID.c_str(), lchart->chartID.c_str()) && !strcmp(vchart->orderRef.c_str(), lchart->orderRef.c_str())){
             
             int offset = i * chart->GetUnselectedHeight();
@@ -4370,7 +4399,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(actionChartList.Length()){
             
                 FILE *iFile = fopen(actionChartList.mb_str(), "rb");
-                if (iFile > 0){
+                if (iFile > (void *)0){
                     // compute the file length    
                     fseek(iFile, 0, SEEK_END);
                     size_t iLength = ftell(iFile);
@@ -4571,7 +4600,7 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
     // Check for the file presence, and openability
     FILE *rFile = fopen(sfile.c_str(), "rb");
    
-    if (rFile < 0)
+    if (rFile < (void *)0)
         return false;            // file error
 
     wxString previousStatus = getStatusText();
@@ -4624,6 +4653,33 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
     
 }
 
+void shopPanel::ValidateChartset( wxCommandEvent& event )
+{
+//    m_login = new oeSENCLogin(this);
+//    m_login->ShowModal();
+
+   
+    if(m_ChartPanelSelected){
+        if(!m_ValidateLog){
+            wxSize bestSize = wxSize(GetParent()->GetSize().x, GetParent()->GetSize().y);
+            m_ValidateLog = new piScreenLogContainer( NULL, _("Validation Log"), bestSize );
+            m_ValidateLog->Centre();
+        }
+        m_ValidateLog->Show();
+        
+        if(m_validator)
+            delete m_validator;
+        
+        m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), m_ValidateLog);
+        m_validator->startValidation();
+    }
+    else{
+        OCPNMessageBox_PlugIn(NULL, _("No chartset selected."), _("oeRNC_PI Message"), wxOK);
+    }
+
+
+}
+    
 
 void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 {
@@ -4632,7 +4688,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
     if(m_bAbortingDownload){
         m_bAbortingDownload = false;
         OCPNMessageBox_PlugIn(NULL, _("Chart download cancelled."), _("oeRNC_PI Message"), wxOK);
-        m_buttonInstall->Enable();
+        UpdateActionControls();
         return;
     }
 
@@ -4726,7 +4782,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                     setStatusText( _("Status: Ready"));
                     OCPNMessageBox_PlugIn(NULL, _("Chart installation ERROR."), _("oeRNC_PI Message"), wxOK);
                     UpdateChartList();
-                    m_buttonInstall->Enable();
+                    UpdateActionControls();
                     return;
                 }
             }
@@ -4816,7 +4872,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
         UpdateChartList();
 
-        m_buttonInstall->Enable();
+        UpdateActionControls();
 
         return;
     }
@@ -4824,7 +4880,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
 void shopPanel::OnButtonInstall( wxCommandEvent& event )
 {
-    itemChart *chart = m_ChartSelected->m_pChart;
+    itemChart *chart = m_ChartPanelSelected->GetSelectedChart();
     if(!chart)
         return;
 
@@ -4849,6 +4905,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     }
 
     m_buttonInstall->Disable();
+    m_buttonValidate->Hide();
     m_buttonCancelOp->Show();
     
 
@@ -4864,8 +4921,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
                 g_statusOverride.Clear();
                 setStatusText( _("Status: Dongle FPR upload error"));
 
-                m_buttonInstall->Enable();
-                m_buttonCancelOp->Hide();
+                UpdateActionControls();
 
                 return;
             }
@@ -4879,8 +4935,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         
         if(!g_systemName.Length()){
                 saveShopConfig();       // record blank system name.
-                m_buttonInstall->Enable();
-                m_buttonCancelOp->Hide();
+                UpdateActionControls();
                 RefreshSystemName();
                 return;
         }
@@ -4893,8 +4948,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
                 saveShopConfig();       // record blank system name.
                 RefreshSystemName();
                 
-                m_buttonInstall->Enable();
-                m_buttonCancelOp->Hide();
+                UpdateActionControls();
 
                 return;
             }
@@ -4930,7 +4984,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         
         if(qtyIndex < 0){
             wxLogMessage(_T("oeRNC Error: No available slot found for unassigned chart."));
-            m_buttonInstall->Enable();
+            UpdateActionControls();
             return;
         }
             
@@ -4945,7 +4999,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         
         if(assignResult != 0){
             wxLogMessage(_T("oeRNC Error: Slot doAssign()."));
-            m_buttonInstall->Enable();
+            UpdateActionControls();
             return;
         }
         
@@ -4962,7 +5016,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     itemSlot *activeSlot = chart->GetActiveSlot();
     if(!activeSlot){
         wxLogMessage(_T("oeRNC Error: active slot not defined."));
-        m_buttonInstall->Enable();
+        UpdateActionControls();
         return;
     }
 
@@ -4984,11 +5038,10 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
                 g_ipGauge->SetValue(0);
             m_buttonCancelOp->Hide();
             g_statusOverride.Clear();
-            m_buttonInstall->Show();
-            m_buttonInstall->Enable();
             
             SetErrorMessage();
             UpdateChartList();
+            UpdateActionControls();
 
             
             return;
@@ -5058,19 +5111,18 @@ int shopPanel::doPrepareGUI(itemSlot *targetSlot)
 
     wxYield();
     
-    int err_code = doPrepare(m_ChartSelected, targetSlot);
+    int err_code = doPrepare(m_ChartPanelSelected, targetSlot);
     if(err_code != 0){                  // Some error
 //             wxString ec;
 //             ec.Printf(_T(" { %d }"), err_code);     
 //             setStatusText( _("Status: Communications error.") + ec);
             if(g_ipGauge)
                 g_ipGauge->SetValue(0);
-            m_buttonCancelOp->Hide();
             m_prepareTimer.Stop();
             g_statusOverride.Clear();
-            m_buttonInstall->Show();
 
             SetErrorMessage();
+            UpdateActionControls();
 
             return err_code;
     }
@@ -5086,7 +5138,9 @@ int shopPanel::doDownloadGui(itemChart *targetChart, itemSlot* targetSlot)
     
     g_statusOverride = _("Downloading...");
     UpdateChartList();
-    
+    m_buttonValidate->Hide();
+    m_buttonCancelOp->Show();
+
     wxYield();
     
     m_binstallChain = true;
@@ -5235,8 +5289,8 @@ void shopPanel::OnPrepareTimer(wxTimerEvent &evt)
 void shopPanel::UpdateChartList( )
 {
     // Capture the state of any selected chart
-     if(m_ChartSelected){
-         itemChart *chart = m_ChartSelected->m_pChart;
+     if(m_ChartPanelSelected){
+         itemChart *chart = m_ChartPanelSelected->GetSelectedChart();
          if(chart){
              m_ChartSelectedID = chart->chartID;           // save a copy of the selected chart
              m_ChartSelectedOrder = chart->orderRef;
@@ -5250,7 +5304,7 @@ void shopPanel::UpdateChartList( )
         delete panelVector[i];
     }
     panelVector.clear();
-    m_ChartSelected = NULL;
+    m_ChartPanelSelected = NULL;
 
     
     // Add new panels
@@ -5286,9 +5340,11 @@ void shopPanel::UpdateActionControls()
 {
     //  Turn off all buttons.
     m_buttonInstall->Hide();
+    m_buttonValidate->Hide();
+    m_buttonCancelOp->Hide();
+
     
-    
-    if(!m_ChartSelected){                // No chart selected
+    if(!m_ChartPanelSelected){                // No chart selected
         m_buttonInstall->Enable();
         return;
     }
@@ -5297,7 +5353,10 @@ void shopPanel::UpdateActionControls()
         m_buttonInstall->Enable();
     }
     
-    itemChart *chart = m_ChartSelected->m_pChart;
+    m_buttonValidate->Show();
+    m_buttonValidate->Enable();
+    
+    itemChart *chart = m_ChartPanelSelected->GetSelectedChart();
 
     if(chart->getChartStatus() == STAT_REQUESTABLE){
         m_buttonInstall->SetLabel(_("Download Selected Chart"));
@@ -5806,7 +5865,7 @@ void OESENC_CURL_EvtHandler::onEndEvent(wxCurlEndPerformEvent &evt)
     g_curlDownloadThread = NULL;
 
     if(g_shopPanel->m_bAbortingDownload){
-        if(g_shopPanel->GetSelectedChart()){
+        if(g_shopPanel->GetSelectedChartPanel()){
 //             oitemChart *chart = g_shopPanel->GetSelectedChart()->m_pChart;
 //             if(chart){
 //                 chart->downloadingFile.Clear();

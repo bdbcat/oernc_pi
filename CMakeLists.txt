@@ -205,6 +205,10 @@ SET(SRC_OERNC
             src/ochartShop.h
             src/fpr.cpp
             src/sha256.c
+            src/piScreenLog.cpp
+            src/piScreenLog.h
+            src/validator.cpp
+            src/validator.h
      )
 
 IF(QT_ANDROID)

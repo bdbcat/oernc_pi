@@ -53,6 +53,10 @@ wxString ProcessResponse(std::string, bool bsubAmpersand = false);
 
 class shopPanel;
 class InProgressIndicator;
+class piScreenLog;
+class piScreenLogContainer;
+class oeSENCLogin;
+class ocValidator;
 
 enum{
         STAT_UNKNOWN = 0,
@@ -222,8 +226,10 @@ public:
     int getChartAssignmentCount();
     itemSlot *GetActiveSlot();
     bool isUUIDAssigned( wxString UUID);
+    
     itemSlot *GetSlotPtr( wxString UUID );
-
+    itemSlot *GetSlotPtr(int slot, int qId);
+    
     void Update(itemChart *other);
     
 public:    
@@ -277,83 +283,9 @@ public:
         
 };
 
-        
-//      A single chart(set) container
-class oitemChart
-{
-public:    
-    oitemChart() { m_downloading = false; m_bEnabled = true; }
-    ~oitemChart() {};
-
-    oitemChart( wxString &order_ref, wxString &chartid, wxString &quantity);
-    void setDownloadPath(int slot, wxString path);
-    wxString getDownloadPath(int slot); 
-    bool isChartsetFullyAssigned();
-    bool isChartsetAssignedToMe(wxString systemName);
-    bool isChartsetExpired();
-    bool isChartsetDontShow();
-    bool isChartsetShow();
-    bool isChartsetAssignedToAnyDongle();
-    bool isSlotAssignedToAnyDongle( int slot );
-    bool isSlotAssignedToMyDongle( int slot );
-
-public:    
-    wxString getOrderRef() { return orderRef;}
-    bool isEnabled(){ return m_bEnabled; }
-    wxString getStatusString();
-    int getChartStatus();
-    wxBitmap& GetChartThumbnail(int size);
-    wxString getKeytypeString();
-    
-    //wxString ident;
-    
-    wxString orderRef;
-    wxString purchaseDate;
-    wxString expDate;
-    wxString chartName;
-    wxString chartID;
-    wxString quantityId;
-    wxString currentChartEdition;
-    wxString thumbnailURL;
-    
-    wxString sysID0;
-    wxString statusID0;
-    wxString fileDownloadURL0;      //  https://.....
-    wxString filedownloadSize0;
-    wxString fileDownloadPath0;     // Where the file was downloaded
-    wxString lastRequestEdition0;
-    wxString fileDownloadName0;     // The short name "charts.zip"
-    wxString installedFileDownloadPath0;        // The zip file that is currently installed
-    wxString installLocation0;
-    wxString installedEdition0;
-    
-    wxString sysID1;
-    wxString statusID1;
-    wxString fileDownloadURL1;      //  https://.....
-    wxString filedownloadSize1;
-    wxString fileDownloadPath1;     // Where the file was downloaded
-    wxString lastRequestEdition1;
-    wxString fileDownloadName1;     // The short name "charts.zip"
-    wxString installedFileDownloadPath1;
-    wxString installLocation1;
-    wxString installedEdition1;
-    
-    bool m_downloading;
-    wxString downloadingFile;
-    
-    long downloadReference;
-    bool m_bEnabled;
-    wxImage m_ChartImage;
-    wxBitmap m_bm;
-    
-    wxString lastInstall;          // For updates, the full path of installed chartset
-    int m_status;
-        
-};
-
-WX_DECLARE_OBJARRAY(oitemChart *,      ArrayOfCharts);    
 
 
+WX_DECLARE_OBJARRAY(itemChart *,      ArrayOfCharts);    
 
 //  The main entry point for ocharts Shop interface
 int doShop();
@@ -371,7 +303,8 @@ public:
     
     bool GetSelected(){ return m_bSelected; }
     int GetUnselectedHeight(){ return m_unselectedHeight; }
-    itemChart *m_pChart;
+    itemChart *GetSelectedChart() { return m_pChart; }
+
     
 private:
     shopPanel *m_pContainer;
@@ -379,11 +312,12 @@ private:
     wxStaticText *m_pName;
     wxColour m_boxColour;
     int m_unselectedHeight;
+    itemChart *m_pChart;
     
     DECLARE_EVENT_TABLE()
 };
 
-
+#if 0
 class oeSencChartPanel: public wxPanel
 {
 public:
@@ -397,6 +331,8 @@ public:
     
     bool GetSelected(){ return m_bSelected; }
     int GetUnselectedHeight(){ return m_unselectedHeight; }
+    oitemChart *GetSelectedChart() { return m_pChart; }
+    
     oitemChart *m_pChart;
     
 private:
@@ -413,6 +349,9 @@ private:
 
 WX_DECLARE_OBJARRAY(oeSencChartPanel *,      ArrayOfChartPanels);    
 
+#endif
+
+WX_DECLARE_OBJARRAY(oeXChartPanel *,      ArrayOfChartPanels);    
 
 class chartScroller : public wxScrolledWindow
 {
@@ -451,12 +390,12 @@ protected:
     wxButton* m_buttonDownload;
     wxButton* m_buttonInstall;
     wxButton* m_buttonUpdate;
+    wxButton* m_buttonValidate;
     wxBoxSizer* boxSizerCharts;
     
     std::vector<oeXChartPanel *> panelVector;
     
-    oeSencChartPanel *m_oChartSelected;
-    oeXChartPanel *m_ChartSelected;
+    oeXChartPanel *m_ChartPanelSelected;
     
     wxChoice* m_choiceSystemName;
     wxButton* m_buttonNewSystemName;
@@ -487,6 +426,10 @@ public:
     //wxButton* GetButtonDownload() { return m_buttonDownload; }
     wxButton* GetButtonInstall() { return m_buttonInstall; }
     wxButton* GetButtonUpdate() { return m_buttonUpdate; }
+    
+    piScreenLogContainer *m_ValidateLog;
+    oeSENCLogin *m_login;
+    
     void RefreshSystemName();
     void SetErrorMessage();
     
@@ -497,14 +440,15 @@ public:
     void SelectChart( oeXChartPanel *chart );
     void SelectChartByID( std::string id, std::string order);
     
-    oeXChartPanel *GetSelectedChart(){ return m_ChartSelected; }
+    oeXChartPanel *GetSelectedChartPanel(){ return m_ChartPanelSelected; }
     
     void OnButtonUpdate( wxCommandEvent& event );
     void OnButtonDownload( wxCommandEvent& event );
     void OnButtonCancelOp( wxCommandEvent& event );
     void OnButtonInstall( wxCommandEvent& event );
     void OnButtonInstallChain( wxCommandEvent& event );
-    
+    void ValidateChartset( wxCommandEvent& event );
+
     void OnPrepareTimer(wxTimerEvent &evt);
     int doPrepareGUI(itemSlot *activeSlot);
     int doDownloadGui( itemChart *targetChart, itemSlot *targetSlot);
@@ -535,6 +479,8 @@ public:
     bool m_binstallChain;
     bool m_bAbortingDownload;
     bool m_startedDownload;
+    
+    ocValidator *m_validator;
 };
 
 

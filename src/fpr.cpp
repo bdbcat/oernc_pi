@@ -114,6 +114,26 @@ unsigned int GetDongleSN()
     return rv;
 }
     
+wxString GetServerVersionString()
+{
+    wxString ver;
+    
+    wxString cmd = g_server_bin;
+    cmd += _T(" -a ");                  // Version
+
+    wxArrayString ret_array;      
+    wxExecute(cmd, ret_array, ret_array );
+            
+    for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
+        wxString line = ret_array[i];
+        if(line.Length() > 2){
+            ver = line;
+            break;
+        }
+    }
+    
+    return ver;
+}
 
 wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
 {

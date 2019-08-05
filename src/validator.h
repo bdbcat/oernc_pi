@@ -1,12 +1,11 @@
 /******************************************************************************
  *
- * Project:  OpenCPN
- * Purpose:  oeRNC Plugin
+ * Project:  
+ * Purpose:   Plugin core
  * Author:   David Register
  *
  ***************************************************************************
- *   Copyright (C) 2019 by David S. Register                               *
- *   $EMAIL$                                                               *
+ *   Copyright (C) 2019 by David S. Register   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,15 +24,37 @@
  ***************************************************************************
  */
 
-#ifndef _FPR_H_
-#define _FPR_H_
 
-bool IsDongleAvailable();
-unsigned int GetDongleSN();
-extern wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock);
-extern wxString GetServerVersionString();
+#ifndef _OVALIDATOR_H_
+#define _OVALIDATOR_H_
+
+#include "wx/wxprec.h"
+
+#ifndef  WX_PRECOMP
+  #include "wx/wx.h"
+#endif //precompiled headers
+
+#include "piScreenLog.h"
+
+class ocValidator
+{
+public:
+  ocValidator();
+  ocValidator( itemChart *chart, piScreenLogContainer *log);
+
+  ~ocValidator();
+  
+  void init();
+  void startValidation();
+  void LogMessage( wxString msg);
+  
+private:
+    
+  itemChart *m_chart;
+  piScreenLogContainer *m_log;
+  
+};  
+  
+  
 
 #endif
-
-
-
