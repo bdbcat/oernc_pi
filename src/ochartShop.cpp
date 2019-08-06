@@ -69,6 +69,7 @@ wxArrayString g_systemNameDisabledArray;
 wxString g_lastSlotUUID;
 
 extern int g_admin;
+extern wxString g_lastEULAFile;
 
 wxString g_systemName;
 wxString g_loginKey;
@@ -1589,7 +1590,8 @@ void loadShopConfig()
         
         pConf->Read( _T("ADMIN"), &g_admin);
         pConf->Read( _T("DEBUG_SHOP"), &g_debugShop);
-        
+        pConf->Read( _T("LastEULAFile"), &g_lastEULAFile);
+
         // Get the list of charts
         wxArrayString chartIDArray;
         
@@ -1703,6 +1705,7 @@ void saveShopConfig()
       pConf->Write( _T("loginUser"), g_loginUser);
       pConf->Write( _T("loginKey"), g_loginKey);
       pConf->Write( _T("lastInstllDir"), g_lastInstallDir);
+      pConf->Write( _T("LastEULAFile"), g_lastEULAFile);
       
       pConf->DeleteGroup( _T("/PlugIns/oernc/charts") );
       pConf->SetPath( _T("/PlugIns/oernc/charts") );
@@ -4415,6 +4418,9 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             
             if(!wxCopyFile( source, destination))
                 wxLogError(_T("Can not copy EULA file...Source: ") + source + _T("   Destination: ") + destination);
+            else
+               g_lastEULAFile = destination;
+
         }
     }    
         

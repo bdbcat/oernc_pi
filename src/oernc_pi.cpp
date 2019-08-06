@@ -77,6 +77,7 @@ bool g_bNoFindMessageShown;
 extern wxString g_systemName;
 extern wxString g_loginKey;
 wxString  g_fpr_file;
+wxString g_lastEULAFile;
 
 //std::unordered_map<std::string, std::string> keyMap;
 WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
@@ -940,24 +941,15 @@ void oernc_pi_event_handler::OnClearDownloadCache( wxCommandEvent &event )
 
 void oernc_pi_event_handler::OnShowEULA( wxCommandEvent &event )
 {
-#if 0
-    ChartSetEULA *CSE;
+    if(g_lastEULAFile.Length()){
+        if(wxFileExists(g_lastEULAFile)){
     
-    for(unsigned int i=0 ; i < g_EULAArray.GetCount() ; i++){
-        CSE = g_EULAArray.Item(i);
-        wxString file = CSE->fileName;
-        file.Replace('!', wxFileName::GetPathSeparator());
-        
-        if(wxFileExists(file)){
-            oesenc_pi_about *pab = new oesenc_pi_about( GetOCPNCanvasWindow(), file );
+            oeRNC_pi_about *pab = new oeRNC_pi_about( GetOCPNCanvasWindow(), g_lastEULAFile );
             pab->SetOKMode();
             pab->ShowModal();
             pab->Destroy();
-        
-            break;                      // once is enough
         }
     }
-#endif    
 }
 
 extern void saveShopConfig();
