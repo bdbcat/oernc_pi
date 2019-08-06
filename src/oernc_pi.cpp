@@ -700,7 +700,7 @@ oerncPrefsDialog::oerncPrefsDialog( wxWindow* parent, wxWindowID id, const wxStr
         content->SetSizer(bSizer2);
         
         // Plugin Version
-        wxString versionText = _(" oeSENC Version: ") + g_versionString;
+        wxString versionText = _(" oeRNC Version: ") + g_versionString;
         wxStaticText *versionTextBox = new wxStaticText(content, wxID_ANY, versionText);
         bSizer2->Add(versionTextBox, 1, wxALL | wxALIGN_CENTER_HORIZONTAL, 20 );
  
@@ -1161,7 +1161,7 @@ void oernc_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
         wxLogMessage(_T("sFPRPlus: ") + sFPRPlus);
         
         // Start the Chart management activity
-        callActivityMethod_s5s( "startActivityWithIntent", _T("org.opencpn.oesencplugin"), _T("ChartsetListActivity"), _T("FPRPlus"), sFPRPlus, _T("ManageResult") );
+        callActivityMethod_s5s( "startActivityWithIntent", _T("org.opencpn.oerncplugin"), _T("ChartsetListActivity"), _T("FPRPlus"), sFPRPlus, _T("ManageResult") );
         
         // Start a timer to poll for results.
         m_timerAction = ACTION_ARB_RESULT_POLL;
@@ -1416,3 +1416,394 @@ wxString callActivityMethod_s4s(const char *method, wxString parm1, wxString par
 
 #endif
 #endif
+
+IMPLEMENT_DYNAMIC_CLASS( oeRNC_pi_about, wxDialog )
+
+BEGIN_EVENT_TABLE( oeRNC_pi_about, wxDialog )
+EVT_BUTTON( xID_OK, oeRNC_pi_about::OnXidOkClick )
+EVT_BUTTON( xID_CANCEL, oeRNC_pi_about::OnXidRejectClick )
+EVT_NOTEBOOK_PAGE_CHANGED(ID_NOTEBOOK_HELP, oeRNC_pi_about::OnPageChange)
+EVT_CLOSE( oeRNC_pi_about::OnClose )
+END_EVENT_TABLE()
+
+oeRNC_pi_about::oeRNC_pi_about( void ) :
+    m_parent( NULL ),
+    m_btips_loaded ( FALSE ) { }
+
+oeRNC_pi_about::oeRNC_pi_about( wxWindow* parent, wxWindowID id, const wxString& caption,
+                  const wxPoint& pos, const wxSize& size, long style) :
+    m_parent( parent ),
+    m_btips_loaded ( FALSE )
+{
+  Create(parent, id, caption, pos, size, style);
+}
+
+oeRNC_pi_about::oeRNC_pi_about( wxWindow* parent, wxString fileName, wxWindowID id, const wxString& caption,
+                                  const wxPoint& pos, const wxSize& size, long style) :
+                                  m_parent( parent ),
+                                  m_btips_loaded ( FALSE )
+{
+    m_fileName = fileName;
+    Create(parent, id, caption, pos, size, style);
+}
+                                  
+                                  
+bool oeRNC_pi_about::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos,
+        const wxSize& size, long style )
+{
+    m_parent = parent;
+#ifdef __WXOSX__
+    style |= wxSTAY_ON_TOP;
+#endif
+
+    SetExtraStyle( GetExtraStyle() | wxWS_EX_BLOCK_EVENTS );
+    wxDialog::Create( parent, id, caption, pos, size, style );
+    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    SetFont( *qFont );
+
+    closeButton = NULL;
+    rejectButton = NULL;
+        
+    //m_displaySize = g_Platform->getDisplaySize();
+    CreateControls();
+    Populate();
+
+    RecalculateSize();
+
+    return TRUE;
+}
+
+void oeRNC_pi_about::SetOKMode()
+{
+    if(closeButton)
+        closeButton->SetLabel(_T("OK"));
+    if(rejectButton)
+        rejectButton->Hide();
+}
+    
+#if 0
+void oesenc_pi_about::SetColorScheme( void )
+{
+    DimeControl( this );
+    wxColor bg = GetBackgroundColour();
+    pAboutHTMLCtl->SetBackgroundColour( bg );
+    pLicenseHTMLCtl->SetBackgroundColour( bg );
+    pAuthorHTMLCtl->SetBackgroundColour( bg );
+    
+
+    // This looks like non-sense, but is needed for __WXGTK__
+    // to get colours to propagate down the control's family tree.
+    SetBackgroundColour( bg );
+
+#ifdef __WXQT__
+    // wxQT has some trouble clearing the background of HTML window...
+    wxBitmap tbm( GetSize().x, GetSize().y, -1 );
+    wxMemoryDC tdc( tbm );
+    tdc.SetBackground( bg );
+    tdc.Clear();
+    pAboutHTMLCtl->SetBackgroundImage(tbm);
+    pLicenseHTMLCtl->SetBackgroundImage(tbm);
+    pAuthorHTMLCtl->SetBackgroundImage(tbm);
+#endif
+
+}
+#endif
+
+void oeRNC_pi_about::Populate( void )
+{
+
+    wxColor bg = GetBackgroundColour();
+    wxColor fg = wxColour( 0, 0, 0 );
+
+    // The HTML Header
+    wxString aboutText =
+        wxString::Format(
+            _T( "<html><body bgcolor=#%02x%02x%02x><font color=#%02x%02x%02x>" ),
+            bg.Red(), bg.Blue(), bg.Green(), fg.Red(), fg.Blue(), fg.Green() );
+
+    wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    
+    // Do weird font size calculation
+    int points = dFont->GetPointSize();
+#ifndef __WXOSX__
+    ++points;
+#endif
+    int sizes[7];
+    for ( int i = -2; i < 5; i++ ) {
+        sizes[i+2] = points + i + ( i > 0 ? i : 0 );
+    }
+    wxString face = dFont->GetFaceName();
+//    pAboutHTMLCtl->SetFonts( face, face, sizes );
+
+    if( wxFONTSTYLE_ITALIC == dFont->GetStyle() )
+        aboutText.Append( _T("<i>") );
+
+#if 0
+#ifdef __OCPN__ANDROID__    
+    aboutText.Append( AboutText + OpenCPNVersionAndroid  + OpenCPNInfoAlt );
+#else
+    aboutText.Append( AboutText + OpenCPNVersion + OpenCPNInfo );
+#endif    
+
+    // Show where the log file is going to be placed
+    wxString log_string = _T("Logfile location: ") + g_Platform->GetLogFileName();
+    log_string.Replace(_T("/"), _T("/ "));      // allow line breaks, in a cheap way...
+    
+    aboutText.Append( log_string );
+
+    // Show where the config file is going to be placed
+    wxString config_string = _T("<br><br>Config file location: ") + g_Platform->GetConfigFileName();
+    config_string.Replace(_T("/"), _T("/ "));      // allow line breaks, in a cheap way...
+    aboutText.Append( config_string );
+#endif
+
+    if(wxFONTSTYLE_ITALIC == dFont->GetStyle())
+        aboutText.Append( _T("</i>") );
+
+    // The HTML Footer
+    aboutText.Append( _T("</font></body></html>") );
+
+//    pAboutHTMLCtl->SetPage( aboutText );
+    
+    
+    ///Authors page
+    // The HTML Header
+    wxString authorText =
+    wxString::Format(
+        _T( "<html><body bgcolor=#%02x%02x%02x><font color=#%02x%02x%02x>" ),
+                     bg.Red(), bg.Blue(), bg.Green(), fg.Red(), fg.Blue(), fg.Green() );
+    
+//    pAuthorHTMLCtl->SetFonts( face, face, sizes );
+    
+    
+    wxString authorFixText = _T(""); //AuthorText;
+    authorFixText.Replace(_T("\n"), _T("<br>"));
+    authorText.Append( authorFixText );
+    
+    // The HTML Footer
+    authorText.Append( _T("</font></body></html>") );
+
+//    pAuthorHTMLCtl->SetPage( authorFixText );
+    
+
+    ///License page
+    // The HTML Header
+    wxString licenseText =
+    wxString::Format(
+        _T( "<html><body bgcolor=#%02x%02x%02x><font color=#%02x%02x%02x>" ),
+            bg.Red(), bg.Blue(), bg.Green(), fg.Red(), fg.Blue(), fg.Green() );
+        
+    pLicenseHTMLCtl->SetFonts( face, face, sizes );
+ 
+//     wxString shareLocn =*GetpSharedDataLocation() +
+//     _T("plugins") + wxFileName::GetPathSeparator() +
+//     _T("oernc_pi") + wxFileName::GetPathSeparator();
+    
+    wxFileName fn(m_fileName);
+    bool bhtml = fn.GetExt().Upper() == _T("HTML");
+    
+    wxTextFile license_filea( m_fileName );
+    if ( license_filea.Open() ) {
+        for ( wxString str = license_filea.GetFirstLine(); !license_filea.Eof() ; str = license_filea.GetNextLine() ){
+            licenseText.Append( str +_T(" ") );
+            if(!bhtml)
+                licenseText += _T("<br>");
+        }
+        license_filea.Close();
+    } else {
+        licenseText.Append(_("Could not open requested EULA: ") + m_fileName + _T("<br>"));
+        wxLogMessage( _T("Could not open requested EULA: ") + m_fileName );
+        closeButton->Disable();
+    }
+    
+        
+        // The HTML Footer
+    licenseText.Append( _T("</font></body></html>") );
+        
+    pLicenseHTMLCtl->SetPage( licenseText );
+    
+    pLicenseHTMLCtl->SetBackgroundColour( bg );
+    
+    #ifdef __WXQT__
+    // wxQT has some trouble clearing the background of HTML window...
+    wxBitmap tbm( GetSize().x, GetSize().y, -1 );
+    wxMemoryDC tdc( tbm );
+    tdc.SetBackground( bg );
+    tdc.Clear();
+    pLicenseHTMLCtl->SetBackgroundImage(tbm);
+    #endif
+    
+        
+#if 0    
+    wxTextFile license_file( m_DataLocn + _T("license.txt") );
+    if ( license_file.Open() ) {
+        for ( wxString str = license_file.GetFirstLine(); !license_file.Eof() ; str = license_file.GetNextLine() )
+            pLicenseTextCtl->AppendText( str + '\n' );
+        license_file.Close();
+    } else {
+        wxLogMessage( _T("Could not open License file: ") + m_DataLocn );
+    }
+    
+    wxString suppLicense = g_Platform->GetSupplementalLicenseString();
+    pLicenseTextCtl->AppendText( suppLicense );
+    
+    pLicenseTextCtl->SetInsertionPoint( 0 );
+#endif
+
+//    SetColorScheme();
+}
+
+void oeRNC_pi_about::RecalculateSize( void )
+{
+    //  Make an estimate of the dialog size, without scrollbars showing
+    
+    wxSize esize;
+    esize.x = GetCharWidth() * 110;
+    esize.y = GetCharHeight() * 44;
+    
+    wxSize dsize = GetParent()->GetClientSize();
+    esize.y = wxMin(esize.y, dsize.y - (2 * GetCharHeight()));
+    esize.x = wxMin(esize.x, dsize.x - (1 * GetCharHeight()));
+    SetClientSize(esize);
+    
+    wxSize fsize = GetSize();
+    fsize.y = wxMin(fsize.y, dsize.y - (2 * GetCharHeight()));
+    fsize.x = wxMin(fsize.x, dsize.x - (1 * GetCharHeight()));
+    
+    SetSize(fsize);
+    
+    Centre();
+}
+
+
+void oeRNC_pi_about::CreateControls( void )
+{
+    //  Set the nominal vertical size of the embedded controls
+    //int v_size = 300; //g_bresponsive ? -1 : 300;
+
+    wxBoxSizer* mainSizer = new wxBoxSizer( wxVERTICAL );
+    SetSizer( mainSizer );
+    wxStaticText *pST1 = new wxStaticText( this, -1,
+        _("oeRNC PlugIn for OpenCPN"), wxDefaultPosition,
+        wxSize( -1, 50 /* 500, 30 */ ), wxALIGN_CENTRE /* | wxALIGN_CENTER_VERTICAL */ );
+
+    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    
+    wxFont *headerFont = qFont;// FontMgr::Get().FindOrCreateFont( 14, wxFONTFAMILY_DEFAULT, qFont->GetStyle(), wxFONTWEIGHT_BOLD, false, qFont->GetFaceName() );
+    
+    pST1->SetFont( *headerFont );
+    mainSizer->Add( pST1, 0, wxALL | wxEXPAND, 8 );
+
+#ifndef __OCPN__ANDROID__    
+    wxSizer *buttonSizer = new wxBoxSizer( wxHORIZONTAL /*m_displaySize.x < m_displaySize.y ? wxVERTICAL : wxHORIZONTAL*/ );
+    mainSizer->Add( buttonSizer, 0, wxALL, 0 );
+    
+//     wxButton* donateButton = new wxBitmapButton( this, ID_DONATE,
+//             g_StyleManager->GetCurrentStyle()->GetIcon( _T("donate") ),
+//             wxDefaultPosition, wxDefaultSize, 0 );
+// 
+//     buttonSizer->Add( new wxButton( this, ID_COPYLOG, _T("Copy Log File to Clipboard") ), 1, wxALL | wxEXPAND, 3 );
+//     buttonSizer->Add( new wxButton( this, ID_COPYINI, _T("Copy Settings File to Clipboard") ), 1, wxALL | wxEXPAND, 3 );
+//     buttonSizer->Add( donateButton, 1, wxALL | wxEXPAND | wxALIGN_RIGHT, 3 );
+#endif
+    
+    //  Main Notebook
+    pNotebook = new wxNotebook( this, ID_NOTEBOOK_HELP, wxDefaultPosition,
+            wxSize( -1, -1 ), wxNB_TOP );
+    pNotebook->InheritAttributes();
+    mainSizer->Add( pNotebook, 1, wxALIGN_CENTER_VERTICAL | wxEXPAND | wxALL, 5 );
+
+#if 0    
+    //  About Panel
+    itemPanelAbout = new wxPanel( pNotebook, -1, wxDefaultPosition, wxDefaultSize,
+            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanelAbout->InheritAttributes();
+    pNotebook->AddPage( itemPanelAbout, _T("About"), TRUE /* Default page */ );
+
+    pAboutHTMLCtl = new wxHtmlWindow( itemPanelAbout, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
+    pAboutHTMLCtl->SetBorders( 5 );
+    wxBoxSizer* aboutSizer = new wxBoxSizer( wxVERTICAL );
+    aboutSizer->Add( pAboutHTMLCtl, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 5 );
+    itemPanelAbout->SetSizer( aboutSizer );
+
+    //  Authors Panel
+
+    itemPanelAuthors = new wxPanel( pNotebook, -1, wxDefaultPosition, wxDefaultSize,
+                                wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanelAuthors->InheritAttributes();
+    pNotebook->AddPage( itemPanelAuthors, _T("Authors") );
+
+    pAuthorHTMLCtl = new wxHtmlWindow( itemPanelAuthors, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                    wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
+    pAuthorHTMLCtl->SetBorders( 5 );
+    wxBoxSizer* authorSizer = new wxBoxSizer( wxVERTICAL );
+    authorSizer->Add( pAuthorHTMLCtl, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 5 );
+    itemPanelAuthors->SetSizer( authorSizer );
+#endif    
+    
+
+    //  License Panel
+    itemPanelLicense = new wxPanel( pNotebook, -1, wxDefaultPosition, wxDefaultSize,
+            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanelLicense->InheritAttributes();
+    pNotebook->AddPage( itemPanelLicense, _("License") );
+    
+    pLicenseHTMLCtl = new wxHtmlWindow( itemPanelLicense, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                      wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
+    pLicenseHTMLCtl->SetBorders( 5 );
+    wxBoxSizer* licenseSizer = new wxBoxSizer( wxVERTICAL );
+    licenseSizer->Add( pLicenseHTMLCtl, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 5 );
+    itemPanelLicense->SetSizer( licenseSizer );
+    
+#if 0
+    //  Help Panel
+    itemPanelTips = new wxPanel( pNotebook, -1, wxDefaultPosition, wxDefaultSize,
+            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanelTips->InheritAttributes();
+    pNotebook->AddPage( itemPanelTips, _T("Help") );
+
+    wxBoxSizer* helpSizer = new wxBoxSizer( wxVERTICAL );
+    itemPanelTips->SetSizer( helpSizer );
+#endif
+
+    //   Buttons
+    wxSizer *buttonBottomSizer = new wxBoxSizer( wxHORIZONTAL );
+    mainSizer->Add( buttonBottomSizer, 0, wxALL, 5 );
+    
+    
+    closeButton = new wxButton( this, xID_OK, _("Accept"), wxDefaultPosition, wxDefaultSize, 0 );
+    closeButton->SetDefault();
+    closeButton->InheritAttributes();
+    buttonBottomSizer->Add( closeButton, 0, wxEXPAND | wxALL, 5 );
+
+    rejectButton = new wxButton( this, xID_CANCEL, _("Reject"), wxDefaultPosition, wxDefaultSize, 0 );
+    rejectButton->InheritAttributes();
+    buttonBottomSizer->Add( rejectButton, 0, wxEXPAND | wxALL, 5 );
+    
+     
+}
+
+
+void oeRNC_pi_about::OnXidOkClick( wxCommandEvent& event )
+{
+    SetReturnCode(0);
+    EndModal(0);
+}
+
+void oeRNC_pi_about::OnXidRejectClick( wxCommandEvent& event )
+{
+    SetReturnCode(1);
+    EndModal(1);
+}
+
+void oeRNC_pi_about::OnClose( wxCloseEvent& event )
+{
+    EndModal(1);
+    Destroy();
+}
+
+void oeRNC_pi_about::OnPageChange( wxNotebookEvent& event )
+{
+}
+

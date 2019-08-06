@@ -33,6 +33,9 @@
 #ifndef  WX_PRECOMP
   #include "wx/wx.h"
 #endif //precompiled headers
+#include <wx/listctrl.h>
+#include <wx/notebook.h>
+#include <wx/html/htmlwin.h>
 
 #include "version.h"
 
@@ -44,6 +47,11 @@
 
 #include <ocpn_plugin.h>
 
+#define ID_DIALOG 10001
+#define SYMBOL_ABOUT_TITLE _("oeRNC_PI Information")
+#define xID_OK          10009
+#define xID_CANCEL      10010
+#define ID_NOTEBOOK_HELP 10002
 
 //----------------------------------------------------------------------------------------------------------
 //    Utility definitions
@@ -158,6 +166,69 @@ private:
     int         m_timerAction;
     
     DECLARE_EVENT_TABLE()
+    
+};
+
+class oeRNC_pi_about: public wxDialog
+{
+    DECLARE_DYNAMIC_CLASS( about )
+    DECLARE_EVENT_TABLE()
+    
+public:
+    explicit oeRNC_pi_about( );
+    explicit oeRNC_pi_about( wxWindow* parent, 
+                    wxWindowID id = ID_DIALOG,
+                    const wxString& caption = SYMBOL_ABOUT_TITLE,
+                    const wxPoint& pos = wxDefaultPosition,
+                    const wxSize& size = wxSize(500, 500),
+                    long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
+
+    explicit oeRNC_pi_about( wxWindow* parent, 
+                              wxString fileName,
+                              wxWindowID id = ID_DIALOG,
+                              const wxString& caption = SYMBOL_ABOUT_TITLE,
+                              const wxPoint& pos = wxDefaultPosition,
+                              const wxSize& size = wxSize(500, 500),
+                              long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
+    
+    bool Create( wxWindow* parent,
+                 wxWindowID id = ID_DIALOG,
+                 const wxString& caption = SYMBOL_ABOUT_TITLE,
+                 const wxPoint& pos = wxDefaultPosition,
+                 const wxSize& size = wxSize(500, 500),
+                 long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
+    
+    void RecalculateSize( void );
+    void SetOKMode();
+    
+private:
+    void CreateControls( void );
+    void Populate( void );
+    void OnXidOkClick( wxCommandEvent& event );
+    void OnXidRejectClick( wxCommandEvent& event );
+    void OnPageChange(wxNotebookEvent& event);
+    void OnClose( wxCloseEvent& event );
+    
+    wxWindow *m_parent;
+    bool m_btips_loaded;
+    
+    wxPanel* itemPanelAbout;
+    wxPanel* itemPanelAuthors;
+    wxPanel* itemPanelLicense;
+    wxPanel* itemPanelTips;
+    
+    wxTextCtrl *pAuthorTextCtl;
+    wxTextCtrl *pLicenseTextCtl;
+    wxNotebook *pNotebook;
+    wxHtmlWindow *pAboutHTMLCtl;
+    wxHtmlWindow *pLicenseHTMLCtl;
+    wxHtmlWindow *pAuthorHTMLCtl;
+    
+    wxString m_fileName;
+    wxButton* closeButton;
+    wxButton* rejectButton;
+    
+    //wxSize m_displaySize;
     
 };
 

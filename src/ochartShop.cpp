@@ -1794,7 +1794,7 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
         }
     }
     else{
-        OCPNMessageBox_PlugIn(NULL, result, _("oeRNC_pi Message"), wxOK);
+        OCPNMessageBox_PlugIn(NULL, _("Unrecognized error\n") + result, _("oeRNC_pi Message"), wxOK);
     }
      
     g_LastErrorMessage = result;
@@ -4579,6 +4579,17 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         
         chart->lastInstalledtlDir = destinationDir;
 
+        // Find and store any EULAs found
+        wxArrayString fileArrayEULA;
+        wxDir::GetAllFiles(tmp_dir, &fileArrayEULA, _T("*.html"));
+        for(unsigned int i=0 ; i < fileArrayEULA.GetCount() ; i++){
+            wxFileName fn(fileArrayEULA.Item(i));
+            wxString destination = destinationDir + fn.GetFullName();
+            wxString source = fileArrayEULA.Item(i);
+            
+            if(!wxCopyFile( source, destination))
+                wxLogError(_T("Can not copy EULA file...Source: ") + source + _T("   Destination: ") + destination);
+        }
     }    
         
 
@@ -4793,57 +4804,15 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             gtargetChart->installedChartEdition = gtargetChart->taskRequestedEdition;
         }
         
-#if 0 
-         // the Update case
-        if(gtargetChart->taskAction == TASK_UPDATE){
-            
-            // Is there a known install directory?
-            wxString installDir = gtargetSlot->installLocation;
-            
-            // Update, or initial load?
-            if(!gtargetChart->taskCurrentEdition.Length() || !installDir.Length()){             // initial load
-        
-                wxString installLocn = g_PrivateDataDir;
-                if(installDir.Length())
-                    installLocn = installDir;
-                else if(g_lastInstallDir.Length())
-                    installLocn = g_lastInstallDir;
-        
-                wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
-                int result = dirSelector.ShowModal();
-        
-                if(result == wxID_OK)
-                    gtargetSlot->installLocation = dirSelector.GetPath().mb_str();
-
-            }
-            
-            //Presumably there is an install directory, and a current Edition, so this is an update
-                
-            // Process the array of itemTaskFileInfo
-            for(unsigned int i=0 ; i < gtargetSlot->taskFileList.size() ; i++){
-                itemTaskFileInfo *pTask = gtargetSlot->taskFileList[i];
-                int rv = 0;
-                rv = processTask(gtargetSlot, gtargetChart, pTask);
-                if(rv){
-
-                    g_statusOverride.Clear();
-                    setStatusText( _("Status: Ready"));
-                    OCPNMessageBox_PlugIn(NULL, _("Chart installation ERROR."), _("oeRNC_PI Message"), wxOK);
-                    UpdateChartList();
-                    m_buttonInstall->Enable();
-                    return;
-                }
-            }
-
-            // If no error, update the installed records
-            gtargetChart->installedChartEdition = gtargetChart->taskRequestedEdition;
-        }
-#endif 
 
         //  We know that the unzip process puts all charts in a subdir whose name is the "downloadFile", without extension
         //  This is the dir that we want to add to database.
         wxString targetAddDir = gtargetChart->lastInstalledtlDir;
     
+        // Remove trailing "/"
+        if(targetAddDir.EndsWith(wxFileName::GetPathSeparator()))
+            targetAddDir = targetAddDir.Truncate(targetAddDir.Length() - 1);
+        
         //  If the currect core chart directories do not cover this new directory, then add it
         bool covered = false;
         for( size_t i = 0; i < GetChartDBDirArrayString().GetCount(); i++ ){
@@ -4872,6 +4841,18 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                 
         OCPNMessageBox_PlugIn(NULL, _("Chart installation complete."), _("oeRNC_PI Message"), wxOK);
 
+        // Show any EULA here
+        wxArrayString fileArrayEULA;
+        wxDir::GetAllFiles(targetAddDir, &fileArrayEULA, _T("*.html"));
+        for(unsigned int i=0 ; i < fileArrayEULA.GetCount() ; i++){
+            oeRNC_pi_about *pab = new oeRNC_pi_about( GetOCPNCanvasWindow(), fileArrayEULA.Item(i) );
+            pab->SetOKMode();
+            pab->ShowModal();
+            pab->Destroy();
+        }
+ 
+        
+        
         UpdateChartList();
 
         UpdateActionControls();
