@@ -4829,7 +4829,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
             return;
         }
             
-        // Read to assign.
+        // Ready to assign.
         //Try to assign to dongle first..... 
         int assignResult;
 
@@ -4840,6 +4840,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         
         if(assignResult != 0){
             wxLogMessage(_T("oeRNC Error: Slot doAssign()."));
+            g_statusOverride.Clear();
             UpdateActionControls();
             return;
         }
