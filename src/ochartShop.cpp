@@ -5200,6 +5200,10 @@ void shopPanel::UpdateActionControls()
     m_buttonValidate->Show();
     m_buttonValidate->Enable();
     
+    wxString suffix = g_systemName;
+    if(g_dongleName.Length())
+        suffix = g_dongleName  + _T(" (") + _("USB Key Dongle") + _T(")");
+    
     itemChart *chart = m_ChartPanelSelected->GetSelectedChart();
 
     if(chart->getChartStatus() == STAT_REQUESTABLE){
@@ -5208,15 +5212,15 @@ void shopPanel::UpdateActionControls()
     }
 
     else if(chart->getChartStatus() == STAT_PURCHASED){
-        m_buttonInstall->SetLabel(_("Install Selected Chart"));
+        m_buttonInstall->SetLabel(_("Install Selected Chart for ") + suffix);
         m_buttonInstall->Show();
     }
     else if(chart->getChartStatus() == STAT_CURRENT){
-        m_buttonInstall->SetLabel(_("Reinstall Selected Chart"));
+        m_buttonInstall->SetLabel(_("Reinstall Selected Chart for ") + suffix);
         m_buttonInstall->Show();
     }
     else if(chart->getChartStatus() == STAT_STALE){
-        m_buttonInstall->SetLabel(_("Update Selected Chart"));
+        m_buttonInstall->SetLabel(_("Update Selected Chart for ") + suffix);
         m_buttonInstall->Show();
     }
 #if 0    
