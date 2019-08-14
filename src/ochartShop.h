@@ -49,7 +49,7 @@
 #include <vector>
 
 wxString ProcessResponse(std::string, bool bsubAmpersand = false);
-
+int GetEditionInt(std::string edition);
 
 class shopPanel;
 class InProgressIndicator;
@@ -178,11 +178,14 @@ public:
     itemSlot(){ slotID = -1; }
     ~itemSlot(){}
     
+    int GetInstalledEditionInt(){ return GetEditionInt(installedEdition); }
+
     int slotID;
     std::string slotUuid;
     std::string assignedSystemName;
     std::string lastRequested;
     std::string installLocation;
+    std::string installedEdition;
     
     std::vector<itemDLTask> dlQueue;
     std::vector<itemTaskFileInfo *>taskFileList;
@@ -226,6 +229,7 @@ public:
     int getChartAssignmentCount();
     itemSlot *GetActiveSlot();
     bool isUUIDAssigned( wxString UUID);
+    wxString GetDisplayedChartEdition();
     
     itemSlot *GetSlotPtr( wxString UUID );
     itemSlot *GetSlotPtr(int slot, int qId);
@@ -238,7 +242,6 @@ public:
     int getChartStatus();
     wxBitmap& GetChartThumbnail(int size);
     wxString getKeytypeString( std::string slotUUID );
-    int GetInstalledEditionInt();
     int GetServerEditionInt();
 
     
@@ -247,7 +250,6 @@ public:
     std::string expDate;
     std::string chartName;
     std::string chartID;
-    std::string installedChartEdition;
     std::string serverChartEdition;
     std::string editionDate;
     std::string thumbLink;
@@ -465,7 +467,7 @@ public:
     wxString getStatusText(){ return m_staticTextStatus->GetLabel(); }
     void setStatusTextProgress( const wxString &text ){ m_staticTextStatus/*m_staticTextStatusProgress*/->SetLabel( text );  /*m_staticTextStatusProgress->Refresh();*/ }
     void MakeChartVisible(oeXChartPanel *chart);
-    int ComputeUpdates(itemChart *chart);
+    int ComputeUpdates(itemChart *chart, itemSlot *slot);
     bool GetNewSystemName();
     int processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task);
     bool validateSHA256(std::string fileName, std::string shaSum);

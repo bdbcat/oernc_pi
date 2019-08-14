@@ -776,6 +776,16 @@ wxBitmap& itemChart::GetChartThumbnail(int size)
     
 }
 
+wxString itemChart::GetDisplayedChartEdition()
+{
+    if(GetActiveSlot()){
+        return wxString(GetActiveSlot()->installedEdition.c_str());
+    }
+    else
+        return wxEmptyString;
+}
+
+
 bool itemChart::isChartsetAssignedToSystemKey(wxString key)
 {
     if(!key.Length())
@@ -983,7 +993,28 @@ int itemChart::getChartStatus()
         m_status = STAT_EXPIRED;
         return m_status;
     }
+
     
+    // We determine which, if any, assignments are valid.
+    
+    // If a dongle is present, all operations will apply to dongle assigned slot, if any
+    if(g_dongleName.Len()){
+        
+        // If chartset is not assigned to any dongle, result (for dongle) is clear
+        //  If it is already assigned to a dongle, we pass thru and determine the slot later
+        if(!isChartsetAssignedToAnyDongle()){
+            m_status = STAT_PURCHASED;
+            return m_status;
+        }
+    }
+    else{               // No dongle present
+        if(!isChartsetAssignedToSystemKey( g_systemName )){
+            m_status = STAT_PURCHASED;
+            return m_status;
+        }
+    }
+
+#if 0    
     if(!isChartsetAssignedToSystemKey( g_systemName )){
         if(!g_dongleName.Len()){
             if(!isChartsetAssignedToAnyDongle()){
@@ -998,7 +1029,8 @@ int itemChart::getChartStatus()
             }
         }
     }
-    
+#endif
+
     // We know that chart is assigned to me, so identify the slot
     m_assignedSlotIndex = -1;
     int tmpQtyID = -1;
@@ -1029,10 +1061,11 @@ int itemChart::getChartStatus()
 
     
     //  Now check for installation state
-
+    itemSlot *slot = GetActiveSlot();
+    
     // Check for update
-    if(installedChartEdition.size()){
-        if(GetServerEditionInt() > GetInstalledEditionInt())
+    if(slot->installedEdition.size()){
+        if(GetServerEditionInt() > slot->GetInstalledEditionInt())
             m_status = STAT_STALE;
         else
             m_status = STAT_CURRENT;
@@ -1184,11 +1217,6 @@ int GetEditionInt(std::string edition)
     smin.ToLong(&minor);
     
     return (major * 100) + minor;
-}
-
-int itemChart::GetInstalledEditionInt()
-{
-    return GetEditionInt(installedChartEdition);
 }
 
 int itemChart::GetServerEditionInt()
@@ -1611,11 +1639,10 @@ void loadShopConfig()
             wxString chartConfigIdent = chartIDArray[i];
             pConf->SetPath ( _T ( "/PlugIns/oernc/charts/" ) + chartConfigIdent );
             
-            wxString orderRef, chartName, installedChartEdition, overrideChartEdition, chartID;
+            wxString orderRef, chartName, overrideChartEdition, chartID;
             pConf->Read( _T("chartID"), &chartID);
             pConf->Read( _T("orderRef"), &orderRef);
             pConf->Read( _T("chartName"), &chartName);
-            pConf->Read( _T("installedChartEdition"), &installedChartEdition);
             pConf->Read( _T("overrideChartEdition"), &overrideChartEdition);
 
 
@@ -1627,7 +1654,7 @@ void loadShopConfig()
                 chart->orderRef = orderRef.mb_str();
                 chart->chartID = chartID.mb_str();
                 chart->chartName = chartName.mb_str();
-                chart->installedChartEdition = installedChartEdition.mb_str();
+                //chart->installedChartEdition = installedChartEdition.mb_str();
                 chart->overrideChartEdition = overrideChartEdition.mb_str();
                 ChartVector.push_back(chart);
             }
@@ -1648,6 +1675,7 @@ void loadShopConfig()
                         wxString slotUUID = tkz.GetNextToken();
                         wxString assignedSystemName = tkz.GetNextToken();
                         wxString installLocation = tkz.GetNextToken();
+                        wxString installedEdition = tkz.GetNextToken();
                         
                         // Make a new "quantity" clause if necessary
                         long nqid = -1;
@@ -1661,7 +1689,8 @@ void loadShopConfig()
                                 slot->installLocation = std::string(installLocation.mb_str());
                                 slot->assignedSystemName = std::string(assignedSystemName.mb_str());
                                 slot->slotUuid = std::string(slotUUID.mb_str());
-
+                                slot->installedEdition = std::string(installedEdition.mb_str());
+                                
                                 new_qty.slotList.push_back(slot);
                                 chart->quantityList.push_back(new_qty);
                             }
@@ -1674,16 +1703,13 @@ void loadShopConfig()
                                 slot->installLocation = std::string(installLocation.mb_str());
                                 slot->assignedSystemName = std::string(assignedSystemName.mb_str());
                                 slot->slotUuid = std::string(slotUUID.mb_str());
+                                slot->installedEdition = std::string(installedEdition.mb_str());
 
                                 exist_qty->slotList.push_back(slot);
                             }
                         }
                     }
 
-
-                        
-                    int yyp = 4;
-                    
                 }
                 bContk = pConf->GetNextEntry( strk, dummyval );
 
@@ -1726,7 +1752,7 @@ void saveShopConfig()
           pConf->Write( _T("chartID"), wxString(chart->chartID) );
           pConf->Write( _T("chartName"), wxString(chart->chartName) );
           pConf->Write( _T("orderRef"), wxString(chart->orderRef) );
-          pConf->Write( _T("installedChartEdition"), wxString(chart->installedChartEdition) );
+          //pConf->Write( _T("installedChartEdition"), wxString(chart->installedChartEdition) );
           if(chart->overrideChartEdition.size())
             pConf->Write( _T("overrideChartEdition"), wxString(chart->overrideChartEdition) );
 
@@ -1753,6 +1779,7 @@ void saveShopConfig()
                     val += slot->slotUuid + _T(";");
                     val += slot->assignedSystemName + _T(";");
                     val += slot->installLocation + _T(";");
+                    val += slot->installedEdition + _T(";");
                   }
               }
               if(val.Length())
@@ -3230,7 +3257,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         // Create and populate the current chart information
         tx = _("Installed Chart Edition:");
         dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->installedChartEdition;
+        tx = m_pChart->GetDisplayedChartEdition();
         dc.DrawText( tx, text_x_val, yPos);
         yPos += yPitch;
         
@@ -3910,9 +3937,9 @@ bool shopPanel::GetNewSystemName()
 }
 
 
-int shopPanel::ComputeUpdates(itemChart *chart)
+int shopPanel::ComputeUpdates(itemChart *chart, itemSlot *slot)
 {
-    int installedEdition = chart->GetInstalledEditionInt();
+    int installedEdition = slot->GetInstalledEditionInt();
     int serverEdition = chart->GetServerEditionInt();
  
     // Debugging/testing?
@@ -3928,7 +3955,7 @@ int shopPanel::ComputeUpdates(itemChart *chart)
         else{
             chart->taskRequestedFile = _T("update");
             chart->taskRequestedEdition = chart->overrideChartEdition;
-            chart->taskCurrentEdition = chart->installedChartEdition;
+            chart->taskCurrentEdition = slot->installedEdition;
             chart->taskAction = TASK_UPDATE;
         
             return 0;               // no error
@@ -3940,7 +3967,7 @@ int shopPanel::ComputeUpdates(itemChart *chart)
     if(serverEdition == installedEdition){
         chart->taskRequestedFile = _T("base");
         chart->taskRequestedEdition = chart->serverChartEdition;
-        chart->taskCurrentEdition = chart->installedChartEdition;
+        chart->taskCurrentEdition = slot->installedEdition;
         chart->taskAction = TASK_REPLACE;
         
         return 0;               // no error
@@ -3951,7 +3978,7 @@ int shopPanel::ComputeUpdates(itemChart *chart)
     if(serverEdition/100 > installedEdition / 100){
         chart->taskRequestedFile = _T("base");
         chart->taskRequestedEdition = chart->serverChartEdition;
-        chart->taskCurrentEdition = chart->installedChartEdition;
+        chart->taskCurrentEdition = slot->installedEdition;
         chart->taskAction = TASK_REPLACE;
         
         return 0;               // no error
@@ -4633,7 +4660,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             }
 
             // If no error, finalize the contract
-            gtargetChart->installedChartEdition = gtargetChart->taskRequestedEdition;
+            gtargetSlot->installedEdition = gtargetChart->taskRequestedEdition;
         }
         
 
@@ -4699,7 +4726,6 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     if(!chart)
         return;
 
-    ComputeUpdates(chart);
     
     g_LastErrorMessage.Clear();
     SetErrorMessage();
@@ -4835,7 +4861,9 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         return;
     }
 
-        
+    // Slot is know, now determine what edition to request
+    ComputeUpdates(chart, activeSlot);
+
     bool bNeedRequestWait = true;
     
     int request_return;
