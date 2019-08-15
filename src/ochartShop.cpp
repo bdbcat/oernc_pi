@@ -4618,11 +4618,33 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
         // Parse the task definitions, decide what to do
     
-        // the simple case of inital load, or full base update
+        //Get the basic chartset name from the first task in the tasklist
+        wxString ChartsetNormalName;
+        if(gtargetSlot->taskFileList.size()){
+            itemTaskFileInfo *pTask = gtargetSlot->taskFileList[0];
+            if(pTask)
+                ChartsetNormalName = GetNormalizedChartsetName( pTask->cacheLinkLocn);
+        }
+
+        // the simple case of initial load, or full base update
         if( (gtargetChart->taskAction == TASK_REPLACE) || (gtargetChart->taskAction == TASK_UPDATE) ){
             
             // Is there a known install directory?
             wxString installDir = gtargetSlot->installLocation;
+            
+            if(installDir.Length()){
+                // Is there are ChartList.XML file in the config-stored install location?
+                // If not, we assume that user moved the charts manually, so we ask for a new install directory
+                wxString fTest = installDir;
+                if(!fTest.EndsWith(wxFileName::GetPathSeparator()))
+                    fTest += wxFileName::GetPathSeparator();
+                if(ChartsetNormalName.Length())
+                    fTest += ChartsetNormalName + wxFileName::GetPathSeparator();
+                fTest +=_T("ChartList.XML");
+                
+                if(!wxFileExists(fTest))
+                    installDir.Clear();
+            }
             
             // Update, or initial load?
             if(!gtargetChart->taskCurrentEdition.Length() || !installDir.Length()){             // initial load
@@ -4638,7 +4660,13 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         
                 if(result == wxID_OK)
                     gtargetSlot->installLocation = dirSelector.GetPath().mb_str();
-
+                else{
+                    g_statusOverride.Clear();
+                    setStatusText( _("Status: Ready"));
+                    UpdateChartList();
+                    UpdateActionControls();
+                    return;
+                }                    
             }
             
             //Presumably there is an install directory, and a current Edition, so this is an update
