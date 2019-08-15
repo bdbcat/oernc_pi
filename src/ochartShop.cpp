@@ -2633,6 +2633,9 @@ bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool
         }
         wxZipInputStream zip(in);
         ret = false;
+
+        if(g_ipGauge)
+            g_ipGauge->Start();
         
         while( entry.reset(zip.GetNextEntry()), entry.get() != NULL )
         {
@@ -2717,7 +2720,10 @@ bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool
     
     if( aRemoveZip )
         wxRemoveFile(aZipFile);
-    
+   
+    if(g_ipGauge)
+        g_ipGauge->Stop();
+
     return ret;
 }
 
@@ -4903,11 +4909,9 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         ::wxEndBusyCursor();
 
         if(request_return != 0){
-//             wxString ec;
-//             ec.Printf(_T(" { %d }"), request_return);     
-//             setStatusText( _("Status: Communications error.") + ec);
             if(g_ipGauge)
-                g_ipGauge->SetValue(0);
+                g_ipGauge->Stop();
+
             m_buttonCancelOp->Hide();
             g_statusOverride.Clear();
             
@@ -4989,7 +4993,8 @@ int shopPanel::doPrepareGUI(itemSlot *targetSlot)
 //             ec.Printf(_T(" { %d }"), err_code);     
 //             setStatusText( _("Status: Communications error.") + ec);
             if(g_ipGauge)
-                g_ipGauge->SetValue(0);
+                g_ipGauge->Stop();
+
             m_prepareTimer.Stop();
             g_statusOverride.Clear();
 
@@ -5027,13 +5032,13 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
 {
     if(m_prepareTimer.IsRunning()){
         m_prepareTimer.Stop();
-        g_ipGauge->SetValue(0);
+        g_ipGauge->Stop();
     }
     
     if(g_curlDownloadThread){
         m_bAbortingDownload = true;
         g_curlDownloadThread->Abort();
-        g_ipGauge->SetValue(0);
+        g_ipGauge->Stop();
         setStatusTextProgress(_T(""));
         m_binstallChain = true;
     }
@@ -5160,6 +5165,9 @@ void shopPanel::OnPrepareTimer(wxTimerEvent &evt)
 
 void shopPanel::UpdateChartList( )
 {
+    if(g_ipGauge)
+        g_ipGauge->Stop();
+
     // Capture the state of any selected chart
      if(m_ChartPanelSelected){
          itemChart *chart = m_ChartPanelSelected->GetSelectedChart();
@@ -5726,7 +5734,7 @@ void OESENC_CURL_EvtHandler::onEndEvent(wxCurlEndPerformEvent &evt)
 {
  //   OCPNMessageBox_PlugIn(NULL, _("DLEnd."), _("oeSENC_PI Message"), wxOK);
     
-    g_ipGauge->SetValue(0);
+    g_ipGauge->Stop();
     g_shopPanel->setStatusTextProgress(_T(""));
     g_shopPanel->setStatusText( _("Status: OK"));
     g_shopPanel->m_buttonCancelOp->Hide();
