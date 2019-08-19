@@ -199,8 +199,6 @@ SET(SRC_OERNC
             src/ellipse.c
             src/base64.h
             src/base64.c
-            src/lodepng/lodepng.cpp
-            src/lodepng/lodepng.h
             src/ochartShop.cpp
             src/ochartShop.h
             src/fpr.cpp

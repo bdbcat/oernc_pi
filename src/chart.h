@@ -64,6 +64,7 @@ void DistanceBearingMercator(double lat0, double lon0, double lat1, double lon1,
 int Georef_Calculate_Coefficients(struct GeoRef *cp, int nlin_lon);
 int Georef_Calculate_Coefficients_Proj(struct GeoRef *cp);
 
+int ocpn_decode_image(unsigned char *in, unsigned char *out, size_t in_size, size_t out_size, int Size_X, int Size_Y, int nColors);
 
 
 typedef enum PaletteDir

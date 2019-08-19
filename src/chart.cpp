@@ -37,8 +37,7 @@
 #include "oernc_pi.h"
 #include "chart.h"
 #include "oernc_inStream.h"
-#include "lodepng.h"
-
+#include <zlib.h>
 
 #ifdef __WXMSW__
 #include <wx/msw/registry.h>
@@ -873,13 +872,12 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
             free (m_imageComp);
             return INIT_FAIL_REMOVE;
         }
-        
-        m_imageMap = (unsigned char *)malloc(ifs_hdr->m_lenIDat);             // initial allocation
-        m_lenImageMap = ifs_hdr->m_lenIDat;
-        
-        unsigned inflate_err = lodepng_inflate( &m_imageMap, &m_lenImageMap,
-                        m_imageComp + 2, ifs_hdr->m_lenIDat- 2, &lodepng_default_decompress_settings);
-        
+        unsigned inflate_err = 0;
+        m_imageMap = (unsigned char *)malloc(Size_X * Size_Y);             
+        m_lenImageMap = Size_X * Size_Y;
+
+        inflate_err = ocpn_decode_image( m_imageComp, m_imageMap, ifs_hdr->m_lenIDat, m_lenImageMap, Size_X, Size_Y, m_nColors);
+
 #ifdef __WXGTK__
         printf("Inflate: %g\n", sw.GetTime());
 #endif
@@ -3538,8 +3536,7 @@ int   Chart_oeRNC::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int x
             xl = Size_X;
 
       if(m_nColors < 16){                       // imageMap is 4 bits per pixel
-            /* + 1 for the filter byte, and possibly plus padding bits per line */
-          size_t lineLengthBytes = ((size_t)(Size_X / 8) * 4) + 1 + ((Size_X & 7) * 4 + 7) / 8;
+          size_t lineLengthBytes = ((size_t)(Size_X / 8) * 4) /*+ 1*/ + ((Size_X & 7) * 4 + 7) / 8;
 
           int offset = lineLengthBytes * y;
           int dest_inc_val_bytes = (BPP/8) * sub_samp;
@@ -3563,10 +3560,8 @@ int   Chart_oeRNC::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int x
       }
 
       else{                                     // imageMap is 8 bits per pixel
-        size_t lineLengthBytes = ((size_t)(Size_X / 8) * 8) + 1 + ((Size_X & 7) * 8 + 7) / 8;
-        pCL = &m_imageMap[((Size_X + 5) * y) + xs];
+        size_t lineLengthBytes = ((size_t)(Size_X / 8) * 8) /*+ 1*/ + ((Size_X & 7) * 8 + 7) / 8;
         pCL = &m_imageMap[((lineLengthBytes) * y) + xs];
-        //pCL = &m_imageMap[((Size_X + 4) * y) + xs];
 
       //    Optimization for most usual case
         if((BPP == 24) && (1 == sub_samp))
@@ -6672,5 +6667,163 @@ double lm_enorm( int n, double *x )
     }
 
     return x3max*sqrt(s3);
+}
+
+
+//  Image decompression support
+
+static int read_scanline_bytes( z_stream *stream, unsigned char *dest, size_t len)
+{
+    if( stream == NULL || dest == NULL) return 1;
+
+    int ret;
+    uint32_t bytes_read;
+
+    stream->avail_out = len;
+    stream->next_out = dest;
+
+    if(!stream->avail_in)
+        return 1;
+
+    do
+    {
+        ret = inflate(stream, Z_SYNC_FLUSH);
+
+        if(ret != Z_OK){
+            if( ret == Z_STREAM_END)
+                return 0;
+            else
+                return 1;
+        }
+
+    }while(stream->avail_out != 0);
+
+    return 0;
+}
+
+int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, size_t out_size, int Size_X, int Size_Y, int nColors)
+{
+
+    int ret;
+    size_t out_size_required, out_width;
+
+    out_size_required = out_size;
+    
+    out_width = out_size_required / Size_Y;
+
+    //uint8_t channels = 1; 
+
+    uint8_t bytes_per_pixel = 1;
+
+    int bit_depth = 8;
+    if(nColors <= 16)
+        bit_depth = 4;
+
+    z_stream stream;
+    stream.zalloc = Z_NULL;
+    stream.zfree = Z_NULL;
+    stream.opaque = Z_NULL;
+
+    if(inflateInit(&stream) != Z_OK)
+        return 1;
+
+    int apply_trns = 0;
+    int apply_gamma = 0;
+    int use_sbit = 0;
+    int indexed = 1;
+    int do_scaling = 0;
+
+    int interlaced = 0;
+
+    uint32_t i, k, scanline_idx, width;
+   
+    const uint8_t samples_per_byte = 8 / bit_depth;
+    const uint8_t mask = (uint16_t)(1 << bit_depth) - 1;
+    const uint8_t initial_shift = 8 - bit_depth;
+    size_t pixel_size = 1;
+    size_t pixel_offset = 0;
+    
+    unsigned char *pixel;
+    unsigned processing_depth = bit_depth;
+
+    size_t scanline_width = 0;
+
+    /* Calculate scanline width in bits, round up to the nearest byte */
+    scanline_width = bit_depth;
+    scanline_width = scanline_width * Size_X;
+    scanline_width += 8; /* Filter byte */
+        /* Round up */
+    if(scanline_width % 8 != 0){
+        scanline_width = scanline_width + 8;
+        scanline_width -= (scanline_width % 8);
+    }
+    scanline_width /= 8;
+
+    unsigned char *row = out;
+    unsigned char *scanline = (unsigned char *)malloc(scanline_width);
+
+    stream.avail_in = in_size;
+    stream.next_in = in; 
+
+    {
+
+        /* Read the first filter byte, offsetting all reads by 1 byte.
+           The scanlines will be aligned with the start of the array with
+           the next scanline's filter byte at the end,
+           the last scanline will end up being 1 byte "shorter". */
+        unsigned char filter;
+        ret = read_scanline_bytes( &stream, &filter, 1);
+        if(ret)
+            goto decode_err;
+
+        for(scanline_idx=0; scanline_idx < (unsigned int)Size_Y; scanline_idx++)
+        {
+            /* The last scanline is 1 byte "shorter" */
+            if(scanline_idx == (unsigned int)(Size_Y - 1))
+                ret = read_scanline_bytes( &stream, scanline, scanline_width - 1);
+            else
+                ret = read_scanline_bytes( &stream, scanline, scanline_width);
+
+            if(ret)
+                goto decode_err;
+
+            pixel_offset = 0;
+            width = Size_X;
+
+            uint8_t shift_amount = initial_shift;
+
+            if(bit_depth == 8){
+                memcpy( row, scanline, width);
+            }
+            else{
+                for(k=0; k < width; k++){
+                    pixel = row + pixel_offset;
+                    pixel_offset += pixel_size;
+
+                    uint8_t entry = 0;
+                    memcpy(&entry, scanline + k / samples_per_byte, 1);
+
+                    if(shift_amount > 8)
+                        shift_amount = initial_shift;
+
+                    entry = (entry >> shift_amount) & mask;
+                    shift_amount -= bit_depth;
+
+                    *pixel = entry;
+                }
+            }
+
+            row += out_width;
+
+        }/* for(scanline_idx */
+    }
+
+
+decode_err:
+
+    inflateEnd(&stream);
+    free( scanline );
+
+    return ret;
 }
 
