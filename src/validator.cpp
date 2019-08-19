@@ -255,6 +255,9 @@ void ocValidator::LogMessage( wxString msg)
 
 void ocValidator::startValidation()
 {
+    installedChartListData.clear();
+    installedKeyFileData.clear();
+    
     if(!m_chart){
         LogMessage(_("No chartset selected.\n"));
         return;
