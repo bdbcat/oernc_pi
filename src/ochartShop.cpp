@@ -997,6 +997,15 @@ int itemChart::getChartStatus()
     
     // We determine which, if any, assignments are valid.
     
+    // All slots consumed?
+    int assignedCount = getChartAssignmentCount();
+    int availCount = quantityList.size() * maxSlots;
+    if(assignedCount >= availCount){
+        m_status = STAT_PURCHASED_NOSLOT;
+        return m_status;
+    }
+        
+
     // If a dongle is present, all operations will apply to dongle assigned slot, if any
     if(g_dongleName.Len()){
         
@@ -1013,23 +1022,6 @@ int itemChart::getChartStatus()
             return m_status;
         }
     }
-
-#if 0    
-    if(!isChartsetAssignedToSystemKey( g_systemName )){
-        if(!g_dongleName.Len()){
-            if(!isChartsetAssignedToAnyDongle()){
-                m_status = STAT_PURCHASED;
-                return m_status;
-            }
-        }
-        else{
-            if(!isChartsetAssignedToAnyDongle()){
-                m_status = STAT_PURCHASED;
-                return m_status;
-            }
-        }
-    }
-#endif
 
     // We know that chart is assigned to me, so identify the slot
     m_assignedSlotIndex = -1;
@@ -1136,6 +1128,10 @@ wxString itemChart::getStatusString()
     switch(m_status){
         
         case STAT_UNKNOWN:
+            break;
+        
+        case STAT_PURCHASED_NOSLOT:
+            sret = _("Fully Assigned.");
             break;
             
         case STAT_PURCHASED:

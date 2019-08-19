@@ -68,7 +68,8 @@ enum{
         STAT_PREPARING,
         STAT_READY_DOWNLOAD,
         STAT_REQUESTABLE,
-        STAT_NEED_REFRESH
+        STAT_NEED_REFRESH,
+        STAT_PURCHASED_NOSLOT
 };
 
 enum{
