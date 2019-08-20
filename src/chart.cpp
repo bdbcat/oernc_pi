@@ -468,6 +468,7 @@ Chart_oeRNC::Chart_oeRNC()
       m_pBMPThumb = NULL;
       m_nColors = 0;
       m_imageMap = NULL;
+      m_bImageReady = false;
  
 }
 
@@ -862,9 +863,7 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
       if(ifs_hdr->m_lenIDat){
         m_imageComp = (unsigned char *)malloc(ifs_hdr->m_lenIDat);
         ifs_hdr->readPayload(m_imageComp);
-#ifdef __WXGTK__
-        printf("\nRead: %g\n", sw.GetTime());
-#endif        
+
         if(!ifs_hdr->Ok()){
             wxString msg(_T("   OERNC_PI: chart local server payload error, final: "));
             msg.Append(m_FullPath);
@@ -872,25 +871,17 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
             free (m_imageComp);
             return INIT_FAIL_REMOVE;
         }
-        unsigned inflate_err = 0;
-        m_imageMap = (unsigned char *)malloc(Size_X * Size_Y);             
-        m_lenImageMap = Size_X * Size_Y;
-
-        inflate_err = ocpn_decode_image( m_imageComp, m_imageMap, ifs_hdr->m_lenIDat, m_lenImageMap, Size_X, Size_Y, m_nColors);
-
-#ifdef __WXGTK__
-        printf("Inflate: %g\n", sw.GetTime());
-#endif
-        if(inflate_err){
-            wxString msg(_T("   OERNC_PI: chart local server inflate error, final: "));
-            msg.Append(m_FullPath);
-            wxLogMessage(msg);
-            free (m_imageComp);
-            return INIT_FAIL_REMOVE;
-        }
         
-        free(m_imageComp);              // Done with compressed buffer
-    
+//         int inflate_err = DecodeImage();
+// 
+//         if(inflate_err){
+//             wxString msg(_T("   OERNC_PI: chart local server inflate error, final: "));
+//             msg.Append(m_FullPath);
+//             wxLogMessage(msg);
+//             free (m_imageComp);
+//             return INIT_FAIL_REMOVE;
+//         }
+        
       }
 
 //    Perform common post-init actions in ChartBaseBSB
@@ -902,6 +893,31 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
       else
             return INIT_OK;
 }
+
+int Chart_oeRNC::DecodeImage( void )
+{
+        int inflate_err = 0;
+        m_imageMap = (unsigned char *)malloc(Size_X * Size_Y);             
+        m_lenImageMap = Size_X * Size_Y;
+
+        inflate_err = ocpn_decode_image( m_imageComp, m_imageMap, ifs_hdr->m_lenIDat, m_lenImageMap, Size_X, Size_Y, m_nColors);
+
+        free(m_imageComp);              // Done with compressed buffer
+
+//#ifdef __WXGTK__
+//        printf("Inflate: %g\n", sw.GetTime());
+//#endif
+        if(inflate_err){
+            wxString msg(_T("   OERNC_PI: chart local server inflate error, final: "));
+            msg.Append(m_FullPath);
+            wxLogMessage(msg);
+        }
+        
+        m_bImageReady = true;
+        
+        return inflate_err;
+}
+
 
 
 wxString Chart_oeRNC::GetFileSearchMask(void)
@@ -3089,6 +3105,8 @@ bool Chart_oeRNC::GetChartBits(wxRect& source, unsigned char *pPix, int sub_samp
 
 bool Chart_oeRNC::GetChartBits_Internal(wxRect& source, unsigned char *pPix, int sub_samp)
 {
+    if(!m_bImageReady)
+        DecodeImage();
 
       int iy;
 #define FILL_BYTE 0

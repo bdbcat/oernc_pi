@@ -369,6 +369,7 @@ protected:
       
       void FreeLineCacheRows(int start=0, int end=-1);
 
+      int DecodeImage();
 
 //    Protected Data
       PIPixelCache        *pPixCache;
@@ -465,6 +466,7 @@ protected:
 
 
       int               m_global_color_scheme;
+      bool      m_bImageReady;
 
 
       //    Chart region coverage information
