@@ -1000,10 +1000,24 @@ int itemChart::getChartStatus()
     // All slots consumed?
     int assignedCount = getChartAssignmentCount();
     int availCount = quantityList.size() * maxSlots;
-    if(assignedCount >= availCount){
-        m_status = STAT_PURCHASED_NOSLOT;
-        return m_status;
+    if(assignedCount >= availCount){            // fully assigned
+                                                // so chartset must be assigned to dongle
+                                                // or system to be processed further.
+                                                // If not, then report "Fully assigned"
+        bool bAvail = false;
+        if(g_dongleName.Len()){
+            if(isChartsetAssignedToAnyDongle())
+                bAvail = true;
+        }
+        if(isChartsetAssignedToSystemKey( g_systemName ))
+            bAvail = true;
+        
+        if(!bAvail){
+            m_status = STAT_PURCHASED_NOSLOT;
+            return m_status;
+        }
     }
+     
         
 
     // If a dongle is present, all operations will apply to dongle assigned slot, if any
