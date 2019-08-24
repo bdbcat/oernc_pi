@@ -291,7 +291,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
                             if (dwError == ERROR_CANCELLED)
                             {
                                 // The user refused to allow privileges elevation.
-                                OCPNMessageBox_PlugIn(NULL, _("Administrator priveleges are required to copy fpr.\n  Please try again...."), _("oeSENC_pi Message"), wxOK);
+                                OCPNMessageBox_PlugIn(NULL, _("Administrator priveleges are required to copy fpr.\n  Please try again...."), _("oeRNC_pi Message"), wxOK);
                                 berror = true;
                             }
                         }
@@ -315,15 +315,15 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
 #endif
                 
                 
-                wxLogMessage(_T("oeSENC fpr file created as: ") + fpr_file);
+                wxLogMessage(_T("oeRNC fpr file created as: ") + fpr_file);
                 if(bCopyToDesktop && bcopy)
-                    wxLogMessage(_T("oeSENC fpr file created in desktop folder: ") + sdesktop_path);
+                    wxLogMessage(_T("oeRNC fpr file created in desktop folder: ") + sdesktop_path);
                 
                 if(bcopy)
                     bCopyOK = true;
         }
         else if(berr){
-            wxLogMessage(_T("oesenc_pi: oeaserverd results:"));
+            wxLogMessage(_T("oernc_pi: oeaserverd results:"));
             for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
                 wxString line = ret_array[i];
                 wxLogMessage( line );

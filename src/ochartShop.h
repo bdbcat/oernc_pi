@@ -506,7 +506,7 @@ class oeRNCGETSystemName: public wxDialog
 public:
     oeRNCGETSystemName( );
     oeRNCGETSystemName( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                         const wxString& caption =  _("OpenCPN oeSENC System Name"),
+                         const wxString& caption =  _("OpenCPN oeRNC System Name"),
                           const wxPoint& pos = SYMBOL_GETIP_POSITION,
                           const wxSize& size = SYMBOL_GETIP_SIZE,
                           long style = SYMBOL_GETIP_STYLE );
@@ -514,7 +514,7 @@ public:
     ~oeRNCGETSystemName();
     
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                 const wxString& caption =  _("OpenCPN oeSENC System Name"),
+                 const wxString& caption =  _("OpenCPN oeRNC System Name"),
                  const wxPoint& pos = SYMBOL_GETIP_POSITION,
                  const wxSize& size = SYMBOL_GETIP_SIZE, long style = SYMBOL_GETIP_STYLE );
     
@@ -543,7 +543,7 @@ class oeRNCSystemNameSelector: public wxDialog
 public:
     oeRNCSystemNameSelector( );
     oeRNCSystemNameSelector( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                         const wxString& caption =  _("Select OpenCPN/oeSENC System Name"),
+                         const wxString& caption =  _("Select OpenCPN/oeRNC System Name"),
                          const wxPoint& pos = wxDefaultPosition,
                          const wxSize& size = wxSize(500, 200),
                          long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
@@ -551,7 +551,7 @@ public:
     ~oeRNCSystemNameSelector();
     
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                 const wxString& caption =  _("Select OpenCPN/oeSENC System Name"),
+                 const wxString& caption =  _("Select OpenCPN/oeRNC System Name"),
                  const wxPoint& pos = wxDefaultPosition,
                  const wxSize& size = wxSize(500, 200), long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
     
@@ -615,7 +615,7 @@ class oeSENCLogin: public wxDialog
 public:
     oeSENCLogin( );
     oeSENCLogin( wxWindow* parent, wxWindowID id = wxID_ANY,
-                         const wxString& caption =  _("OpenCPN oeSENC Login"),
+                         const wxString& caption =  _("OpenCPN oeRNC Login"),
                         const wxPoint& pos = wxDefaultPosition,
                           const wxSize& size = wxSize(500, 200),
                         long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
@@ -623,7 +623,7 @@ public:
     ~oeSENCLogin();
     
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                 const wxString& caption =  _("OpenCPN oeSENC Login"),
+                 const wxString& caption =  _("OpenCPN oeRNC Login"),
                  const wxPoint& pos = wxDefaultPosition,
                  const wxSize& size = wxSize(500, 200), long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
     

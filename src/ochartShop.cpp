@@ -1828,7 +1828,7 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
                         break;
                 }
                 
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_pi Message"), wxOK);
+                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
             }
             return dresult;
         }
@@ -1850,7 +1850,7 @@ int checkResponseCode(int iResponseCode)
         msg1.Printf(_T("{%d}\n "), iResponseCode);
         msg += msg1;
         msg += _("Check your connection and try again.");
-        OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_pi Message"), wxOK);
+        OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
     }
     
     // The wxCURL library returns "0" as response code,
@@ -3880,34 +3880,6 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     
     if(bNeedSystemName ){
         GetNewSystemName();
-/*
-        bool sname_ok = false;
-        int itry = 0;
-        while(!sname_ok && itry < 4){
-            bool bcont = doSystemNameWizard();
-        
-            if( !bcont ){                // user "Cancel"
-                g_systemName.Clear();
-                break;
-            }
-            
-            if(!g_systemName.Len()){
-                wxString msg = _("Invalid System Name");
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_pi Message"), wxOK);
-                itry++;
-            }
-            
-            else if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
-                wxString msg = _("This System Name has been disabled\nPlease choose another SystemName");
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_pi Message"), wxOK);
-                itry++;
-            }
-            else{
-                sname_ok = true;
-            }
-                
-        }
-*/        
     }
  
     RefreshSystemName();
@@ -3934,13 +3906,13 @@ bool shopPanel::GetNewSystemName()
             
             if(!g_systemName.Len()){
                 wxString msg = _("Invalid System Name");
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_pi Message"), wxOK);
+                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
                 itry++;
             }
             
             else if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
                 wxString msg = _("This System Name has been disabled\nPlease choose another SystemName");
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_pi Message"), wxOK);
+                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
                 itry++;
             }
             else{
@@ -5067,109 +5039,6 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
 
 void shopPanel::OnPrepareTimer(wxTimerEvent &evt)
 {
-#if 0
-    m_prepareTimerCount++;
-    m_prepareProgress++;
-    
-    float progress = m_prepareProgress * 100 / m_prepareTimeout;
-    
-    if(m_ipGauge)
-        m_ipGauge->SetValue(progress);
-    
-    
-    //  Check the status every n seconds
-    
-    if((m_prepareTimerCount % 10) == 0){
-        int err_code = getChartList(false);     // Do not show error dialogs
-        
-        /*
-         * Safe to ignore errors, since this is only a status loop that will time out eventually
-        if(err_code != 0){                  // Some error
-            wxString ec;
-            ec.Printf(_T(" { %d }"), err_code);     
-            setStatusText( _("Status: Communications error.") + ec);
-            if(m_ipGauge)
-                m_ipGauge->SetValue(0);
-            m_buttonCancelOp->Hide();
-            m_prepareTimer.Stop();
-            
-            return;
-        }
-        */
-        
-        if(!m_ChartSelected) {               // No chart selected
-            setStatusText( _("Status: OK"));
-            m_buttonCancelOp->Hide();
-            m_prepareTimer.Stop();
-            
-            return;
-        }
-        
-        oitemChart *chart = m_ChartSelected->m_pChart;
-        bool bDownloadReady = false;    
-        if(m_activeSlot == 0){
-            if(chart->statusID0.IsSameAs(_T("download")))
-                bDownloadReady = true;
-        }
-        else if(m_activeSlot == 1){
-            if(chart->statusID1.IsSameAs(_T("download")))
-                bDownloadReady = true;
-        }
-        
-        if(1/*bDownloadReady*/){
-            UpdateChartList();
-            wxYield();
-        }
-        
-        if(bDownloadReady){
-            if(m_ipGauge)
-                m_ipGauge->SetValue(0);
-            m_buttonCancelOp->Hide();
-            m_prepareTimer.Stop();
-            
-            doDownloadGui();
-        }
-            
-    }
-        
-    if(m_prepareTimerCount >= m_prepareTimeout){
-        m_prepareTimer.Stop();
-        
-        if(m_ipGauge)
-            m_ipGauge->SetValue(100);
-        
-        wxString msg = _("Your chart preparation is not complete.");
-        msg += _T("\n");
-        msg += _("You may continue to wait, or return to this screen later to complete the download.");
-        msg += _T("\n");
-        msg += _("You will receive an email message when preparation for download is complete");
-        msg += _T("\n\n");
-        msg += _("Continue waiting?");
-        msg += _T("\n\n");
-        
-        int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeSENC_PI Message"), wxYES_NO);
-        
-        if(ret == wxID_YES){
-            m_prepareTimerCount = 0;
-            m_prepareProgress = 0;
-            m_prepareTimeout = 60;
-            if(m_ipGauge)
-                m_ipGauge->SetValue(0);
-            
-            m_prepareTimer.Start( 1000 );
-        }
-        else{
-            if(m_ipGauge)
-                m_ipGauge->SetValue(0);
-            setStatusText( _("Status: OK"));
-            m_buttonCancelOp->Hide();
-            m_prepareTimer.Stop();
-            
-            
-            return;
-        }
-    }
-#endif    
 }    
 
 
@@ -5448,7 +5317,7 @@ END_EVENT_TABLE()
      wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
      SetFont( *qFont );
      
-     SetTitle( _("New OpenCPN oeSENC System Name"));
+     SetTitle( _("New OpenCPN oeRNC System Name"));
      
      CreateControls(  );
      Centre();
@@ -5578,7 +5447,7 @@ END_EVENT_TABLE()
      wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
      SetFont( *qFont );
      
-     SetTitle( _("Select OpenCPN/oeSENC System Name"));
+     SetTitle( _("Select OpenCPN/oeRNC System Name"));
      
      CreateControls(  );
      Centre();
