@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oernc_pi 0.2.821\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-23 22:03-0400\n"
+"POT-Creation-Date: 2019-08-25 11:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -660,26 +660,6 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: src/piScreenLog.cpp:169
-msgid "Log backchannel could not listen at the specified port !\n"
-msgstr ""
-
-#: src/piScreenLog.cpp:173
-msgid ""
-"Log backchannel server listening.\n"
-"\n"
-msgstr ""
-
-#: src/piScreenLog.cpp:253 src/piScreenLog.cpp:303
-msgid "Unexpected event !\n"
-msgstr ""
-
-#: src/piScreenLog.cpp:272
-msgid ""
-"Error: couldn't accept a new connection\n"
-"\n"
-msgstr ""
-
 #: src/validator.cpp:262
 msgid "No chartset selected.\n"
 msgstr ""
@@ -753,7 +733,7 @@ msgid "  ProcessingChartList.XML"
 msgstr ""
 
 #: src/validator.cpp:360
-msgid "    Checking for ChartList.XML as: "
+msgid "    Checking for ChartList.XML at: "
 msgstr ""
 
 #: src/validator.cpp:365
