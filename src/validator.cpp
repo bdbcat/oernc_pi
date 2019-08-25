@@ -357,7 +357,7 @@ void ocValidator::startValidation()
 
     wxString ChartListFile = chartsetBaseDirectory + _T("ChartList.XML");
             
-    LogMessage(_("    Checking for ChartList.XML as: ") + ChartListFile );
+    LogMessage(_("    Checking for ChartList.XML at: ") + ChartListFile );
     
     //  Verify the existence of ChartList.XML
 

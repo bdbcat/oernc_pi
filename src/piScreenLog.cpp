@@ -166,11 +166,11 @@ void piScreenLog::StartServer( unsigned int port)
     // We use Ok() here to see if the server is really listening
     if (! m_server->Ok())
     {
-        m_plogtc->AppendText(_("Log backchannel could not listen at the specified port !\n"));
+        m_plogtc->AppendText(_T("Log backchannel could not listen at the specified port !\n"));
     }
     else
     {
-        m_plogtc->AppendText(_("Log backchannel server listening.\n\n"));
+        m_plogtc->AppendText(_T("Log backchannel server listening.\n\n"));
     }
     
     // Setup the event handler and subscribe to connection events
@@ -250,7 +250,7 @@ void piScreenLog::OnServerEvent(wxSocketEvent& event)
 //            s.Append(_("wxSOCKET_CONNECTION\n"));
             break;
         default                  :
-            s.Append(_("Unexpected event !\n"));
+            s.Append(_T("Unexpected event !\n"));
             break;
     }
     
@@ -269,7 +269,7 @@ void piScreenLog::OnServerEvent(wxSocketEvent& event)
     }
     else
     {
-        m_plogtc->AppendText(_("Error: couldn't accept a new connection\n\n"));
+        m_plogtc->AppendText(_T("Error: couldn't accept a new connection\n\n"));
         return;
     }
     
@@ -300,7 +300,7 @@ void piScreenLog::OnSocketEvent(wxSocketEvent& event)
 //            s.Append(_("wxSOCKET_LOST\n"));
             break;
         default             :
-            s.Append(_("Unexpected event !\n"));
+            s.Append(_T("Unexpected event !\n"));
             break;
     }
     
