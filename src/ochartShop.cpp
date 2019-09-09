@@ -1834,7 +1834,7 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
         }
     }
     else{
-        OCPNMessageBox_PlugIn(NULL, _("Unrecognized error\n") + result, _("oeRNC_pi Message"), wxOK);
+        OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + _("Operation cancelled"), _("oeRNC_pi Message"), wxOK);
     }
      
     g_LastErrorMessage = result;
@@ -4643,6 +4643,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                 else if(g_lastInstallDir.Length())
                     installLocn = g_lastInstallDir;
         
+                //Need better default here, lik c:\Charts, if it exists.
                 wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
                 int result = dirSelector.ShowModal();
         
@@ -4767,21 +4768,20 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     
 
 
-    // Is this systemName known to the server?
-    // If not, need to upload XFPR first
+    // Create and upload an XFPR and selected systemName to the server.
+    // If the systemName is already known, and the XFPR matches no harm done.
+    // Or, if the systemName is new, it will be registered with the shop.
+    // Otherwise, an error is shown, and the operation cancels.
     
     // Prefer to use the dongle, if present
     if(g_dongleName.Len()){
-        if(g_systemNameServerArray.Index(g_dongleName) == wxNOT_FOUND){
-            if( doUploadXFPR( true ) != 0){
-                g_dongleName.Clear();
-                g_statusOverride.Clear();
-                setStatusText( _("Status: Dongle FPR upload error"));
+        if( doUploadXFPR( true ) != 0){
+            g_dongleName.Clear();
+            g_statusOverride.Clear();
+            setStatusText( _("Status: Dongle FPR upload error"));
 
-                UpdateActionControls();
-
-                return;
-            }
+            UpdateActionControls();
+            return;
         }
     }
     else{
@@ -4797,18 +4797,16 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
                 return;
         }
 
-        if(g_systemNameServerArray.Index(g_systemName) == wxNOT_FOUND){
-            if( doUploadXFPR( false ) != 0){
-                g_systemName.Clear();
-                g_statusOverride.Clear();
-                setStatusText( _("Status: System FPR upload error"));
-                saveShopConfig();       // record blank system name.
-                RefreshSystemName();
+        if( doUploadXFPR( false ) != 0){
+            g_systemName.Clear();
+            g_statusOverride.Clear();
+            setStatusText( _("Status: System FPR upload error"));
+            saveShopConfig();       // record blank system name.
+            RefreshSystemName();
                 
-                UpdateActionControls();
+            UpdateActionControls();
 
-                return;
-            }
+            return;
         }
     }
 
