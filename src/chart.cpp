@@ -548,6 +548,7 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
           
             return INIT_FAIL_REMOVE;
           }
+          SwapKeyHashes();          // interchanges hashes, so next time will be faster
       }
 
       bool bHeaderOnly = false;

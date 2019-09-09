@@ -100,6 +100,41 @@ oernc_pi *g_pi;
 
 #include "default_pi.xpm"
 
+
+wxString getChartInstallBase( wxString chartFileFullPath )
+{
+    //  Given a chart file full path, try to find the entry in the current core chart directory list that matches.
+    //  If not found, return empty string
+    
+    wxString rv;
+    wxArrayString chartDirsArray = GetChartDBDirArrayString();
+    
+    wxFileName fn(chartFileFullPath);
+    bool bdone = false;
+    while(!bdone){
+        if(fn.GetDirCount() <= 2){
+            return rv;
+        }
+        
+        wxString val = fn.GetPath();
+        
+        for(unsigned int i=0 ; i < chartDirsArray.GetCount() ; i++){
+            if(val.IsSameAs(chartDirsArray.Item(i))){
+                rv = val;
+                bdone = true;
+                break;
+            }
+        }
+        fn.RemoveLastDir();
+
+    }
+        
+    return rv;
+}    
+        
+        
+        
+        
 bool parseKeyFile( wxString kfile, bool bDongle )
 {
     FILE *iFile = fopen(kfile.mb_str(), "rb");
@@ -186,12 +221,17 @@ bool parseKeyFile( wxString kfile, bool bDongle )
 
 bool loadKeyMaps( wxString file )
 {
-    // Make a list of all XML or xml files found in the parent directory of the chart itself.
-    wxFileName fn(file);
+    wxString installBase = getChartInstallBase( file );
+    
+    // Make a list of all XML or xml files found in the installBase directory of the chart itself.
+    if(installBase.IsEmpty()){
+        wxFileName fn(file);
+        installBase = fn.GetPath();
+    }
 
     wxArrayString xmlFiles;
-    int nFiles = wxDir::GetAllFiles(fn.GetPath(), &xmlFiles, _T("*.XML"));
-    nFiles += wxDir::GetAllFiles(fn.GetPath(), &xmlFiles, _T("*.xml"));
+    int nFiles = wxDir::GetAllFiles(installBase, &xmlFiles, _T("*.XML"));
+    nFiles += wxDir::GetAllFiles(installBase, &xmlFiles, _T("*.xml"));
         
     //  Read and parse them all
     for(unsigned int i=0; i < xmlFiles.GetCount(); i++){
@@ -217,7 +257,6 @@ wxString getPrimaryKey(wxString file)
         if (search != pPrimaryKey->end()) {
             return search->second;
         }
-
         loadKeyMaps(file);
 
         search = pPrimaryKey->find(fn.GetName());
