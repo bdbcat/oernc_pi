@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-25 11:19-0400\n"
-"PO-Revision-Date: 2019-08-29 14:14\n"
+"POT-Creation-Date: 2019-09-09 10:32-0400\n"
+"PO-Revision-Date: 2019-09-11 00:39\n"
 "Last-Translator: Pavel Kalian (nohal)\n"
 "Language-Team: Norwegian Bokmal\n"
 "Language: nb_NO\n"
@@ -20,187 +20,187 @@ msgstr ""
 msgid "oeRNC_PI Information"
 msgstr "oeRNC_PI Informasjon"
 
-#: src/oernc_pi.h:122 src/oernc_pi.cpp:459
+#: src/oernc_pi.h:122 src/oernc_pi.cpp:498
 msgid "oeRNC_PI Preferences"
 msgstr "oeRNC_PI Innstillinger"
 
-#: src/oernc_pi.cpp:389 src/oernc_pi.cpp:416 src/oernc_pi.cpp:431
+#: src/oernc_pi.cpp:428 src/oernc_pi.cpp:455 src/oernc_pi.cpp:470
 msgid "oeRNC Charts"
 msgstr "oeRNC Karter"
 
-#: src/oernc_pi.cpp:395
+#: src/oernc_pi.cpp:434
 msgid "oeRNC Charts PlugIn for OpenCPN"
 msgstr "oeRNC kartutvidelse for OpenCPN"
 
-#: src/oernc_pi.cpp:401
+#: src/oernc_pi.cpp:440
 msgid "oeRNC Charts PlugIn for OpenCPN\n"
 "Provides support for oeRNC raster charts.\n\n"
 msgstr "oeRNC kartutvidelse for OpenCPN\n"
 "Tilføyer støtte for oeRNC raster karter.\n\n"
 
-#: src/oernc_pi.cpp:544
+#: src/oernc_pi.cpp:583
 msgid "Cannot find the oernc_pi server utility at \n"
 msgstr "Kan ikke finne oernc_pi server verktøyet på \n"
 
-#: src/oernc_pi.cpp:548 src/oernc_pi.cpp:655
+#: src/oernc_pi.cpp:587 src/oernc_pi.cpp:694
 msgid "oernc_pi Message"
 msgstr "oernc_pi Melding"
 
-#: src/oernc_pi.cpp:650
+#: src/oernc_pi.cpp:689
 msgid "serverd utility at \n"
 msgstr "serverd verktøy på \n"
 
-#: src/oernc_pi.cpp:654
+#: src/oernc_pi.cpp:693
 msgid " could not be started.\n\n"
 msgstr " kunne ikke startes.\n\n"
 
-#: src/oernc_pi.cpp:704
+#: src/oernc_pi.cpp:743
 msgid " oeRNC Version: "
 msgstr " oeRNC Versjon: "
 
-#: src/oernc_pi.cpp:709
+#: src/oernc_pi.cpp:748
 msgid "Show EULA"
 msgstr "Vis EULA"
 
-#: src/oernc_pi.cpp:717
+#: src/oernc_pi.cpp:756
 msgid "System Identification"
 msgstr "System identifikasjon"
 
-#: src/oernc_pi.cpp:727
+#: src/oernc_pi.cpp:766
 msgid "Create System Identifier file..."
 msgstr "Opprett en system identifikasjons fil..."
 
-#: src/oernc_pi.cpp:735
+#: src/oernc_pi.cpp:774
 msgid "Create USB key dongle System ID file..."
 msgstr "Opprett USB-nøkkel system ID fil..."
 
-#: src/oernc_pi.cpp:744
+#: src/oernc_pi.cpp:783
 msgid "Show In Finder"
 msgstr "Vis i søker"
 
-#: src/oernc_pi.cpp:746
+#: src/oernc_pi.cpp:785
 msgid "Show on disk"
 msgstr "Vis på disk"
 
-#: src/oernc_pi.cpp:758 src/ochartShop.cpp:3608 src/ochartShop.cpp:3729
+#: src/oernc_pi.cpp:797 src/ochartShop.cpp:3608 src/ochartShop.cpp:3729
 #: src/ochartShop.cpp:3735
 msgid "System Name:"
 msgstr "Systemnavn:"
 
-#: src/oernc_pi.cpp:767
+#: src/oernc_pi.cpp:806
 msgid "Reset System Name"
 msgstr "Nullstill System Navn"
 
-#: src/oernc_pi.cpp:777
+#: src/oernc_pi.cpp:816
 msgid "Reset o-charts credentials"
 msgstr "Tilbakestill o-charts identitet"
 
-#: src/oernc_pi.cpp:784
+#: src/oernc_pi.cpp:823
 msgid "Clear file download cache"
 msgstr "Tøm fil-nedlastings cache"
 
-#: src/oernc_pi.cpp:896
+#: src/oernc_pi.cpp:935
 msgid "System name RESET shall be performed only by request from o-charts technical support staff."
 msgstr "Nullstilling av System navn skal bare utføres på forespørsel fra o-chart's tekniske service stab."
 
-#: src/oernc_pi.cpp:898
+#: src/oernc_pi.cpp:937
 msgid "Proceed to RESET?"
 msgstr "Gå videre med NULLSTILLING?"
 
-#: src/oernc_pi.cpp:899 src/oernc_pi.cpp:936 src/oernc_pi.cpp:962
-#: src/oernc_pi.cpp:976 src/oernc_pi.cpp:986 src/oernc_pi.cpp:997
-#: src/oernc_pi.cpp:1003 src/oernc_pi.cpp:1023 src/oernc_pi.cpp:1038
-#: src/oernc_pi.cpp:1044 src/ochartShop.cpp:2345 src/ochartShop.cpp:4537
-#: src/ochartShop.cpp:4550 src/ochartShop.cpp:4671 src/ochartShop.cpp:4717
+#: src/oernc_pi.cpp:938 src/oernc_pi.cpp:975 src/oernc_pi.cpp:1001
+#: src/oernc_pi.cpp:1015 src/oernc_pi.cpp:1025 src/oernc_pi.cpp:1036
+#: src/oernc_pi.cpp:1042 src/oernc_pi.cpp:1062 src/oernc_pi.cpp:1077
+#: src/oernc_pi.cpp:1083 src/ochartShop.cpp:2345 src/ochartShop.cpp:4537
+#: src/ochartShop.cpp:4550 src/ochartShop.cpp:4672 src/ochartShop.cpp:4718
 msgid "oeRNC_PI Message"
 msgstr "oeRNC_PI Melding"
 
-#: src/oernc_pi.cpp:935
+#: src/oernc_pi.cpp:974
 msgid "Download file cache cleared."
 msgstr "Fil-nedlastings cache ble tømt."
 
-#: src/oernc_pi.cpp:962
+#: src/oernc_pi.cpp:1001
 msgid "Credential Reset Successful"
 msgstr "Vellykket tilbakestilling av Identitet"
 
-#: src/oernc_pi.cpp:969 src/oernc_pi.cpp:1017
+#: src/oernc_pi.cpp:1008 src/oernc_pi.cpp:1056
 msgid "To obtain a chart set, you must generate a Unique System Identifier File.\n"
 msgstr "For å skaffe et kartsett, så må du generere en unik system identifiserings fil.\n"
 
-#: src/oernc_pi.cpp:970 src/oernc_pi.cpp:1018
+#: src/oernc_pi.cpp:1009 src/oernc_pi.cpp:1057
 msgid "This file is also known as a\"fingerprint\" file.\n"
 msgstr "Denne filen er også kjent som en \"fingeravtrykks\" fil.\n"
 
-#: src/oernc_pi.cpp:971
+#: src/oernc_pi.cpp:1010
 msgid "The fingerprint file contains information related to a connected USB key dongle.\n\n"
 msgstr "Fingeravtrykksfilen inneholder informasjon relatert til en tilkoblet USB nøkkel (dungle).\n\n"
 
-#: src/oernc_pi.cpp:972 src/oernc_pi.cpp:1020
+#: src/oernc_pi.cpp:1011 src/oernc_pi.cpp:1059
 msgid "After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n"
 msgstr "Etter opprettelse av denne filen, må du skaffe kartsettene i nettbutikken o-charts.org.\n\n"
 
-#: src/oernc_pi.cpp:973 src/oernc_pi.cpp:1021
+#: src/oernc_pi.cpp:1012 src/oernc_pi.cpp:1060
 msgid "Proceed to create Fingerprint file?"
 msgstr "Fortsette for å opprette en fingeravtrykks fil?"
 
-#: src/oernc_pi.cpp:986
+#: src/oernc_pi.cpp:1025
 msgid "ERROR Creating Fingerprint file\n"
 " USB key dongle not detected."
 msgstr "FEIL ved opprettelsen av fingeravtrykk fil. USB-nøkkel ble ikke oppdaget."
 
-#: src/oernc_pi.cpp:991 src/oernc_pi.cpp:1032
+#: src/oernc_pi.cpp:1030 src/oernc_pi.cpp:1071
 msgid "Fingerprint file created.\n"
 msgstr "Fingeravtrykk fil ble opprettet.\n"
 
-#: src/oernc_pi.cpp:995 src/oernc_pi.cpp:1036
+#: src/oernc_pi.cpp:1034 src/oernc_pi.cpp:1075
 msgid "\n\n"
 " Fingerprint file is also copied to desktop."
 msgstr "\n\n"
 "Fingeravtrykk fil ble også kopiert til skrivebordet."
 
-#: src/oernc_pi.cpp:1003
+#: src/oernc_pi.cpp:1042
 msgid "ERROR Creating Fingerprint file\n"
 " Check OpenCPN log file."
 msgstr "FEIL ved opprettelsen av fingeravtrykk fil.\n"
 " Sjekk OpenCPN loggfil."
 
-#: src/oernc_pi.cpp:1019
+#: src/oernc_pi.cpp:1058
 msgid "The fingerprint file contains information to uniquely identify this computer.\n\n"
 msgstr "Fingeravtrykksfilen inneholder informasjon som unikt identifiserer denne datamaskinen.\n\n"
 
-#: src/oernc_pi.cpp:1453 src/oernc_pi.cpp:1516 src/oernc_pi.cpp:1682
+#: src/oernc_pi.cpp:1492 src/oernc_pi.cpp:1555 src/oernc_pi.cpp:1721
 #: src/ochartShop.cpp:2907 src/ochartShop.cpp:2981 src/ochartShop.cpp:3108
 #: src/ochartShop.cpp:3250 src/ochartShop.cpp:3345 src/ochartShop.cpp:3472
-#: src/ochartShop.cpp:5288 src/ochartShop.cpp:5317 src/ochartShop.cpp:5422
-#: src/ochartShop.cpp:5447 src/ochartShop.cpp:5698 src/ochartShop.cpp:5726
+#: src/ochartShop.cpp:5286 src/ochartShop.cpp:5315 src/ochartShop.cpp:5420
+#: src/ochartShop.cpp:5445 src/ochartShop.cpp:5696 src/ochartShop.cpp:5724
 msgid "Dialog"
 msgstr "Dialog"
 
-#: src/oernc_pi.cpp:1606
+#: src/oernc_pi.cpp:1645
 msgid "Could not open requested EULA: "
 msgstr "Kunne ikke åpne forespurt EULA: "
 
-#: src/oernc_pi.cpp:1679
+#: src/oernc_pi.cpp:1718
 msgid "oeRNC PlugIn for OpenCPN"
 msgstr "oeRNC utvidelse for OpenCPN"
 
-#: src/oernc_pi.cpp:1742
+#: src/oernc_pi.cpp:1781
 msgid "License"
 msgstr "Lisens"
 
-#: src/oernc_pi.cpp:1767
+#: src/oernc_pi.cpp:1806
 msgid "Accept"
 msgstr "Godta"
 
-#: src/oernc_pi.cpp:1772
+#: src/oernc_pi.cpp:1811
 msgid "Reject"
 msgstr "Avvis"
 
-#: src/chart.cpp:4122
+#: src/chart.cpp:4123
 msgid "---<<< Warning:  Chart georef accuracy may be poor. >>>---"
 msgstr "---<<< Advarsel:  Georeferanse for kart kan være dårlig. >>>---"
 
-#: src/chart.cpp:4205 src/chart.cpp:4269
+#: src/chart.cpp:4206 src/chart.cpp:4270
 msgid "---<<< Warning:  Chart georef accuracy is poor. >>>---"
 msgstr "---<<< Advarsel:  Georeferanse nøyaktighet for kart er dårlig. >>>---"
 
@@ -241,7 +241,7 @@ msgid "Ready for Download Request."
 msgstr "Klar for nedlastings forespørsel."
 
 #: src/ochartShop.cpp:1203 src/ochartShop.cpp:2339 src/ochartShop.cpp:3731
-#: src/ochartShop.cpp:5120 src/ochartShop.cpp:5483 src/ochartShop.cpp:5496
+#: src/ochartShop.cpp:5118 src/ochartShop.cpp:5481 src/ochartShop.cpp:5494
 msgid "USB Key Dongle"
 msgstr "USB nøkkel"
 
@@ -274,8 +274,12 @@ msgid "oeRNC_pi Message"
 msgstr "oeRNC_pi Melding"
 
 #: src/ochartShop.cpp:1837
-msgid "Unrecognized error\n"
-msgstr "Ukjent feil\n"
+msgid "o-Charts shop interface error"
+msgstr ""
+
+#: src/ochartShop.cpp:1837
+msgid "Operation cancelled"
+msgstr ""
 
 #: src/ochartShop.cpp:1848
 msgid "internet communications error code: "
@@ -445,8 +449,8 @@ msgstr "Status: Vennligst oppfrisk kartlisten."
 msgid "Last Error Message: "
 msgstr "Forrige feilmelding: "
 
-#: src/ochartShop.cpp:3722 src/ochartShop.cpp:3887 src/ochartShop.cpp:4653
-#: src/ochartShop.cpp:4670 src/ochartShop.cpp:4715
+#: src/ochartShop.cpp:3722 src/ochartShop.cpp:3887 src/ochartShop.cpp:4654
+#: src/ochartShop.cpp:4671 src/ochartShop.cpp:4716
 msgid "Status: Ready"
 msgstr "Status: Klar"
 
@@ -508,119 +512,119 @@ msgstr "Ingen kartsett er valgt."
 msgid "Chart download cancelled."
 msgstr "Nedlasting av kart avbrutt."
 
-#: src/ochartShop.cpp:4646
+#: src/ochartShop.cpp:4647
 msgid "Choose chart install location."
 msgstr "Velg installasjons sted for kart."
 
-#: src/ochartShop.cpp:4671
+#: src/ochartShop.cpp:4672
 msgid "Chart installation ERROR."
 msgstr "Kartinstallasjon FEIL."
 
-#: src/ochartShop.cpp:4717
+#: src/ochartShop.cpp:4718
 msgid "Chart installation complete."
 msgstr "Installasjon av kart er fullført."
 
-#: src/ochartShop.cpp:4750
+#: src/ochartShop.cpp:4751
 msgid "Checking dongle..."
 msgstr "Sjekker dungle..."
 
-#: src/ochartShop.cpp:4779
+#: src/ochartShop.cpp:4781
 msgid "Status: Dongle FPR upload error"
 msgstr "Status: Opplastingsfeil av USB nøkkelens fingeravtrykk"
 
-#: src/ochartShop.cpp:4804
+#: src/ochartShop.cpp:4803
 msgid "Status: System FPR upload error"
 msgstr "Status: Opplastingsfeil av System fingeravtrykk"
 
-#: src/ochartShop.cpp:4962
+#: src/ochartShop.cpp:4960
 msgid "Requesting License Keys..."
 msgstr "Etterspør lisensnøkler..."
 
-#: src/ochartShop.cpp:4993
+#: src/ochartShop.cpp:4991
 msgid "Status: Downloading..."
 msgstr "Status: Laster ned..."
 
-#: src/ochartShop.cpp:4998
+#: src/ochartShop.cpp:4996
 msgid "Downloading..."
 msgstr "Laster ned..."
 
-#: src/ochartShop.cpp:5028 src/ochartShop.cpp:5618
+#: src/ochartShop.cpp:5026 src/ochartShop.cpp:5616
 msgid "Status: OK"
 msgstr "Status: OK"
 
-#: src/ochartShop.cpp:5125 src/ochartShop.cpp:5143 src/ochartShop.cpp:5147
+#: src/ochartShop.cpp:5123 src/ochartShop.cpp:5141 src/ochartShop.cpp:5145
 msgid "Download Selected Chart"
 msgstr "Last ned valgte kart"
 
-#: src/ochartShop.cpp:5130
+#: src/ochartShop.cpp:5128
 msgid "Install Selected Chart for "
 msgstr "Installer valgte kart for "
 
-#: src/ochartShop.cpp:5134
+#: src/ochartShop.cpp:5132
 msgid "Reinstall Selected Chart for "
 msgstr "Installer valgte kart på nytt for "
 
-#: src/ochartShop.cpp:5138
+#: src/ochartShop.cpp:5136
 msgid "Update Selected Chart for "
 msgstr "Oppdater valgte kart for "
 
-#: src/ochartShop.cpp:5320
+#: src/ochartShop.cpp:5318
 msgid "New OpenCPN oeRNC System Name"
 msgstr "Nytt OpenCPN oeRNC systemnavn"
 
-#: src/ochartShop.cpp:5337
+#: src/ochartShop.cpp:5335
 msgid "Enter New System Name"
 msgstr "Skriv inn nytt systemnavn"
 
-#: src/ochartShop.cpp:5348
+#: src/ochartShop.cpp:5346
 msgid "A valid System Name is 3 to 15 characters in length."
 msgstr "Et gyldig systemnavn er 3 til 15 tegn langt."
 
-#: src/ochartShop.cpp:5354
+#: src/ochartShop.cpp:5352
 msgid "No symbols or spaces are allowed."
 msgstr "Symboler eller mellomrom er ikke tillatt."
 
-#: src/ochartShop.cpp:5362 src/ochartShop.cpp:5512 src/ochartShop.cpp:5779
+#: src/ochartShop.cpp:5360 src/ochartShop.cpp:5510 src/ochartShop.cpp:5777
 msgid "Cancel"
 msgstr "Avbryt"
 
-#: src/ochartShop.cpp:5367 src/ochartShop.cpp:5515 src/ochartShop.cpp:5782
+#: src/ochartShop.cpp:5365 src/ochartShop.cpp:5513 src/ochartShop.cpp:5780
 msgid "OK"
 msgstr "OK"
 
-#: src/ochartShop.cpp:5450 src/ochartShop.h:546 src/ochartShop.h:554
+#: src/ochartShop.cpp:5448 src/ochartShop.h:546 src/ochartShop.h:554
 msgid "Select OpenCPN/oeRNC System Name"
 msgstr "Velg OpenCPN/oeRNC systemnavn"
 
-#: src/ochartShop.cpp:5466
+#: src/ochartShop.cpp:5464
 msgid "Select your System Name from the following list, or "
 msgstr "Velg ditt systemnavn fra følgende liste, eller "
 
-#: src/ochartShop.cpp:5471
+#: src/ochartShop.cpp:5469
 msgid " create a new System Name for this computer."
 msgstr " opprett et nytt systemnavn for denne enheten."
 
-#: src/ochartShop.cpp:5499
+#: src/ochartShop.cpp:5497
 msgid "new..."
 msgstr "ny..."
 
-#: src/ochartShop.cpp:5501
+#: src/ochartShop.cpp:5499
 msgid "System Names"
 msgstr "Systemnavn"
 
-#: src/ochartShop.cpp:5667
+#: src/ochartShop.cpp:5665
 msgid "Downloaded:  "
 msgstr "Nedlastet:  "
 
-#: src/ochartShop.cpp:5745
+#: src/ochartShop.cpp:5743
 msgid "Login to o-charts.org"
 msgstr "Logg inn hos o-charts.org"
 
-#: src/ochartShop.cpp:5762
+#: src/ochartShop.cpp:5760
 msgid "email address:"
 msgstr "epost adresse:"
 
-#: src/ochartShop.cpp:5769
+#: src/ochartShop.cpp:5767
 msgid "Password:"
 msgstr "Passord:"
 

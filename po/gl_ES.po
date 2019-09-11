@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-25 11:19-0400\n"
-"PO-Revision-Date: 2019-08-29 14:14\n"
+"POT-Creation-Date: 2019-09-09 10:32-0400\n"
+"PO-Revision-Date: 2019-09-11 00:38\n"
 "Last-Translator: Pavel Kalian (nohal)\n"
 "Language-Team: Galician\n"
 "Language: gl_ES\n"
@@ -20,184 +20,184 @@ msgstr ""
 msgid "oeRNC_PI Information"
 msgstr ""
 
-#: src/oernc_pi.h:122 src/oernc_pi.cpp:459
+#: src/oernc_pi.h:122 src/oernc_pi.cpp:498
 msgid "oeRNC_PI Preferences"
 msgstr ""
 
-#: src/oernc_pi.cpp:389 src/oernc_pi.cpp:416 src/oernc_pi.cpp:431
+#: src/oernc_pi.cpp:428 src/oernc_pi.cpp:455 src/oernc_pi.cpp:470
 msgid "oeRNC Charts"
 msgstr ""
 
-#: src/oernc_pi.cpp:395
+#: src/oernc_pi.cpp:434
 msgid "oeRNC Charts PlugIn for OpenCPN"
 msgstr ""
 
-#: src/oernc_pi.cpp:401
+#: src/oernc_pi.cpp:440
 msgid "oeRNC Charts PlugIn for OpenCPN\n"
 "Provides support for oeRNC raster charts.\n\n"
 msgstr ""
 
-#: src/oernc_pi.cpp:544
+#: src/oernc_pi.cpp:583
 msgid "Cannot find the oernc_pi server utility at \n"
 msgstr ""
 
-#: src/oernc_pi.cpp:548 src/oernc_pi.cpp:655
+#: src/oernc_pi.cpp:587 src/oernc_pi.cpp:694
 msgid "oernc_pi Message"
 msgstr ""
 
-#: src/oernc_pi.cpp:650
+#: src/oernc_pi.cpp:689
 msgid "serverd utility at \n"
 msgstr ""
 
-#: src/oernc_pi.cpp:654
+#: src/oernc_pi.cpp:693
 msgid " could not be started.\n\n"
 msgstr ""
 
-#: src/oernc_pi.cpp:704
+#: src/oernc_pi.cpp:743
 msgid " oeRNC Version: "
 msgstr ""
 
-#: src/oernc_pi.cpp:709
+#: src/oernc_pi.cpp:748
 msgid "Show EULA"
 msgstr ""
 
-#: src/oernc_pi.cpp:717
+#: src/oernc_pi.cpp:756
 msgid "System Identification"
 msgstr ""
 
-#: src/oernc_pi.cpp:727
+#: src/oernc_pi.cpp:766
 msgid "Create System Identifier file..."
 msgstr ""
 
-#: src/oernc_pi.cpp:735
+#: src/oernc_pi.cpp:774
 msgid "Create USB key dongle System ID file..."
 msgstr ""
 
-#: src/oernc_pi.cpp:744
+#: src/oernc_pi.cpp:783
 msgid "Show In Finder"
 msgstr ""
 
-#: src/oernc_pi.cpp:746
+#: src/oernc_pi.cpp:785
 msgid "Show on disk"
 msgstr ""
 
-#: src/oernc_pi.cpp:758 src/ochartShop.cpp:3608 src/ochartShop.cpp:3729
+#: src/oernc_pi.cpp:797 src/ochartShop.cpp:3608 src/ochartShop.cpp:3729
 #: src/ochartShop.cpp:3735
 msgid "System Name:"
 msgstr ""
 
-#: src/oernc_pi.cpp:767
+#: src/oernc_pi.cpp:806
 msgid "Reset System Name"
 msgstr ""
 
-#: src/oernc_pi.cpp:777
+#: src/oernc_pi.cpp:816
 msgid "Reset o-charts credentials"
 msgstr ""
 
-#: src/oernc_pi.cpp:784
+#: src/oernc_pi.cpp:823
 msgid "Clear file download cache"
 msgstr ""
 
-#: src/oernc_pi.cpp:896
+#: src/oernc_pi.cpp:935
 msgid "System name RESET shall be performed only by request from o-charts technical support staff."
 msgstr ""
 
-#: src/oernc_pi.cpp:898
+#: src/oernc_pi.cpp:937
 msgid "Proceed to RESET?"
 msgstr ""
 
-#: src/oernc_pi.cpp:899 src/oernc_pi.cpp:936 src/oernc_pi.cpp:962
-#: src/oernc_pi.cpp:976 src/oernc_pi.cpp:986 src/oernc_pi.cpp:997
-#: src/oernc_pi.cpp:1003 src/oernc_pi.cpp:1023 src/oernc_pi.cpp:1038
-#: src/oernc_pi.cpp:1044 src/ochartShop.cpp:2345 src/ochartShop.cpp:4537
-#: src/ochartShop.cpp:4550 src/ochartShop.cpp:4671 src/ochartShop.cpp:4717
+#: src/oernc_pi.cpp:938 src/oernc_pi.cpp:975 src/oernc_pi.cpp:1001
+#: src/oernc_pi.cpp:1015 src/oernc_pi.cpp:1025 src/oernc_pi.cpp:1036
+#: src/oernc_pi.cpp:1042 src/oernc_pi.cpp:1062 src/oernc_pi.cpp:1077
+#: src/oernc_pi.cpp:1083 src/ochartShop.cpp:2345 src/ochartShop.cpp:4537
+#: src/ochartShop.cpp:4550 src/ochartShop.cpp:4672 src/ochartShop.cpp:4718
 msgid "oeRNC_PI Message"
 msgstr ""
 
-#: src/oernc_pi.cpp:935
+#: src/oernc_pi.cpp:974
 msgid "Download file cache cleared."
 msgstr ""
 
-#: src/oernc_pi.cpp:962
+#: src/oernc_pi.cpp:1001
 msgid "Credential Reset Successful"
 msgstr ""
 
-#: src/oernc_pi.cpp:969 src/oernc_pi.cpp:1017
+#: src/oernc_pi.cpp:1008 src/oernc_pi.cpp:1056
 msgid "To obtain a chart set, you must generate a Unique System Identifier File.\n"
 msgstr ""
 
-#: src/oernc_pi.cpp:970 src/oernc_pi.cpp:1018
+#: src/oernc_pi.cpp:1009 src/oernc_pi.cpp:1057
 msgid "This file is also known as a\"fingerprint\" file.\n"
 msgstr ""
 
-#: src/oernc_pi.cpp:971
+#: src/oernc_pi.cpp:1010
 msgid "The fingerprint file contains information related to a connected USB key dongle.\n\n"
 msgstr ""
 
-#: src/oernc_pi.cpp:972 src/oernc_pi.cpp:1020
+#: src/oernc_pi.cpp:1011 src/oernc_pi.cpp:1059
 msgid "After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n"
 msgstr ""
 
-#: src/oernc_pi.cpp:973 src/oernc_pi.cpp:1021
+#: src/oernc_pi.cpp:1012 src/oernc_pi.cpp:1060
 msgid "Proceed to create Fingerprint file?"
 msgstr ""
 
-#: src/oernc_pi.cpp:986
+#: src/oernc_pi.cpp:1025
 msgid "ERROR Creating Fingerprint file\n"
 " USB key dongle not detected."
 msgstr ""
 
-#: src/oernc_pi.cpp:991 src/oernc_pi.cpp:1032
+#: src/oernc_pi.cpp:1030 src/oernc_pi.cpp:1071
 msgid "Fingerprint file created.\n"
 msgstr ""
 
-#: src/oernc_pi.cpp:995 src/oernc_pi.cpp:1036
+#: src/oernc_pi.cpp:1034 src/oernc_pi.cpp:1075
 msgid "\n\n"
 " Fingerprint file is also copied to desktop."
 msgstr ""
 
-#: src/oernc_pi.cpp:1003
+#: src/oernc_pi.cpp:1042
 msgid "ERROR Creating Fingerprint file\n"
 " Check OpenCPN log file."
 msgstr ""
 
-#: src/oernc_pi.cpp:1019
+#: src/oernc_pi.cpp:1058
 msgid "The fingerprint file contains information to uniquely identify this computer.\n\n"
 msgstr ""
 
-#: src/oernc_pi.cpp:1453 src/oernc_pi.cpp:1516 src/oernc_pi.cpp:1682
+#: src/oernc_pi.cpp:1492 src/oernc_pi.cpp:1555 src/oernc_pi.cpp:1721
 #: src/ochartShop.cpp:2907 src/ochartShop.cpp:2981 src/ochartShop.cpp:3108
 #: src/ochartShop.cpp:3250 src/ochartShop.cpp:3345 src/ochartShop.cpp:3472
-#: src/ochartShop.cpp:5288 src/ochartShop.cpp:5317 src/ochartShop.cpp:5422
-#: src/ochartShop.cpp:5447 src/ochartShop.cpp:5698 src/ochartShop.cpp:5726
+#: src/ochartShop.cpp:5286 src/ochartShop.cpp:5315 src/ochartShop.cpp:5420
+#: src/ochartShop.cpp:5445 src/ochartShop.cpp:5696 src/ochartShop.cpp:5724
 msgid "Dialog"
 msgstr ""
 
-#: src/oernc_pi.cpp:1606
+#: src/oernc_pi.cpp:1645
 msgid "Could not open requested EULA: "
 msgstr ""
 
-#: src/oernc_pi.cpp:1679
+#: src/oernc_pi.cpp:1718
 msgid "oeRNC PlugIn for OpenCPN"
 msgstr ""
 
-#: src/oernc_pi.cpp:1742
+#: src/oernc_pi.cpp:1781
 msgid "License"
 msgstr ""
 
-#: src/oernc_pi.cpp:1767
+#: src/oernc_pi.cpp:1806
 msgid "Accept"
 msgstr ""
 
-#: src/oernc_pi.cpp:1772
+#: src/oernc_pi.cpp:1811
 msgid "Reject"
 msgstr ""
 
-#: src/chart.cpp:4122
+#: src/chart.cpp:4123
 msgid "---<<< Warning:  Chart georef accuracy may be poor. >>>---"
 msgstr ""
 
-#: src/chart.cpp:4205 src/chart.cpp:4269
+#: src/chart.cpp:4206 src/chart.cpp:4270
 msgid "---<<< Warning:  Chart georef accuracy is poor. >>>---"
 msgstr ""
 
@@ -238,7 +238,7 @@ msgid "Ready for Download Request."
 msgstr ""
 
 #: src/ochartShop.cpp:1203 src/ochartShop.cpp:2339 src/ochartShop.cpp:3731
-#: src/ochartShop.cpp:5120 src/ochartShop.cpp:5483 src/ochartShop.cpp:5496
+#: src/ochartShop.cpp:5118 src/ochartShop.cpp:5481 src/ochartShop.cpp:5494
 msgid "USB Key Dongle"
 msgstr ""
 
@@ -271,7 +271,11 @@ msgid "oeRNC_pi Message"
 msgstr ""
 
 #: src/ochartShop.cpp:1837
-msgid "Unrecognized error\n"
+msgid "o-Charts shop interface error"
+msgstr ""
+
+#: src/ochartShop.cpp:1837
+msgid "Operation cancelled"
 msgstr ""
 
 #: src/ochartShop.cpp:1848
@@ -442,8 +446,8 @@ msgstr ""
 msgid "Last Error Message: "
 msgstr ""
 
-#: src/ochartShop.cpp:3722 src/ochartShop.cpp:3887 src/ochartShop.cpp:4653
-#: src/ochartShop.cpp:4670 src/ochartShop.cpp:4715
+#: src/ochartShop.cpp:3722 src/ochartShop.cpp:3887 src/ochartShop.cpp:4654
+#: src/ochartShop.cpp:4671 src/ochartShop.cpp:4716
 msgid "Status: Ready"
 msgstr ""
 
@@ -504,119 +508,119 @@ msgstr ""
 msgid "Chart download cancelled."
 msgstr ""
 
-#: src/ochartShop.cpp:4646
+#: src/ochartShop.cpp:4647
 msgid "Choose chart install location."
 msgstr ""
 
-#: src/ochartShop.cpp:4671
+#: src/ochartShop.cpp:4672
 msgid "Chart installation ERROR."
 msgstr ""
 
-#: src/ochartShop.cpp:4717
+#: src/ochartShop.cpp:4718
 msgid "Chart installation complete."
 msgstr ""
 
-#: src/ochartShop.cpp:4750
+#: src/ochartShop.cpp:4751
 msgid "Checking dongle..."
 msgstr ""
 
-#: src/ochartShop.cpp:4779
+#: src/ochartShop.cpp:4781
 msgid "Status: Dongle FPR upload error"
 msgstr ""
 
-#: src/ochartShop.cpp:4804
+#: src/ochartShop.cpp:4803
 msgid "Status: System FPR upload error"
 msgstr ""
 
-#: src/ochartShop.cpp:4962
+#: src/ochartShop.cpp:4960
 msgid "Requesting License Keys..."
 msgstr ""
 
-#: src/ochartShop.cpp:4993
+#: src/ochartShop.cpp:4991
 msgid "Status: Downloading..."
 msgstr ""
 
-#: src/ochartShop.cpp:4998
+#: src/ochartShop.cpp:4996
 msgid "Downloading..."
 msgstr ""
 
-#: src/ochartShop.cpp:5028 src/ochartShop.cpp:5618
+#: src/ochartShop.cpp:5026 src/ochartShop.cpp:5616
 msgid "Status: OK"
 msgstr ""
 
-#: src/ochartShop.cpp:5125 src/ochartShop.cpp:5143 src/ochartShop.cpp:5147
+#: src/ochartShop.cpp:5123 src/ochartShop.cpp:5141 src/ochartShop.cpp:5145
 msgid "Download Selected Chart"
 msgstr ""
 
-#: src/ochartShop.cpp:5130
+#: src/ochartShop.cpp:5128
 msgid "Install Selected Chart for "
 msgstr ""
 
-#: src/ochartShop.cpp:5134
+#: src/ochartShop.cpp:5132
 msgid "Reinstall Selected Chart for "
 msgstr ""
 
-#: src/ochartShop.cpp:5138
+#: src/ochartShop.cpp:5136
 msgid "Update Selected Chart for "
 msgstr ""
 
-#: src/ochartShop.cpp:5320
+#: src/ochartShop.cpp:5318
 msgid "New OpenCPN oeRNC System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:5337
+#: src/ochartShop.cpp:5335
 msgid "Enter New System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:5348
+#: src/ochartShop.cpp:5346
 msgid "A valid System Name is 3 to 15 characters in length."
 msgstr ""
 
-#: src/ochartShop.cpp:5354
+#: src/ochartShop.cpp:5352
 msgid "No symbols or spaces are allowed."
 msgstr ""
 
-#: src/ochartShop.cpp:5362 src/ochartShop.cpp:5512 src/ochartShop.cpp:5779
+#: src/ochartShop.cpp:5360 src/ochartShop.cpp:5510 src/ochartShop.cpp:5777
 msgid "Cancel"
 msgstr ""
 
-#: src/ochartShop.cpp:5367 src/ochartShop.cpp:5515 src/ochartShop.cpp:5782
+#: src/ochartShop.cpp:5365 src/ochartShop.cpp:5513 src/ochartShop.cpp:5780
 msgid "OK"
 msgstr ""
 
-#: src/ochartShop.cpp:5450 src/ochartShop.h:546 src/ochartShop.h:554
+#: src/ochartShop.cpp:5448 src/ochartShop.h:546 src/ochartShop.h:554
 msgid "Select OpenCPN/oeRNC System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:5466
+#: src/ochartShop.cpp:5464
 msgid "Select your System Name from the following list, or "
 msgstr ""
 
-#: src/ochartShop.cpp:5471
+#: src/ochartShop.cpp:5469
 msgid " create a new System Name for this computer."
 msgstr ""
 
-#: src/ochartShop.cpp:5499
+#: src/ochartShop.cpp:5497
 msgid "new..."
 msgstr ""
 
-#: src/ochartShop.cpp:5501
+#: src/ochartShop.cpp:5499
 msgid "System Names"
 msgstr ""
 
-#: src/ochartShop.cpp:5667
+#: src/ochartShop.cpp:5665
 msgid "Downloaded:  "
 msgstr ""
 
-#: src/ochartShop.cpp:5745
+#: src/ochartShop.cpp:5743
 msgid "Login to o-charts.org"
 msgstr ""
 
-#: src/ochartShop.cpp:5762
+#: src/ochartShop.cpp:5760
 msgid "email address:"
 msgstr ""
 
-#: src/ochartShop.cpp:5769
+#: src/ochartShop.cpp:5767
 msgid "Password:"
 msgstr ""
 

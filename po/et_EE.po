@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-25 11:19-0400\n"
-"PO-Revision-Date: 2019-08-29 14:14\n"
+"POT-Creation-Date: 2019-09-09 10:32-0400\n"
+"PO-Revision-Date: 2019-09-11 00:39\n"
 "Last-Translator: Pavel Kalian (nohal)\n"
 "Language-Team: Estonian\n"
 "Language: et_EE\n"
@@ -18,249 +18,253 @@ msgstr ""
 
 #: src/oernc_pi.h:51
 msgid "oeRNC_PI Information"
-msgstr ""
+msgstr "oeRNC_PI informatsioon"
 
-#: src/oernc_pi.h:122 src/oernc_pi.cpp:459
+#: src/oernc_pi.h:122 src/oernc_pi.cpp:498
 msgid "oeRNC_PI Preferences"
-msgstr ""
+msgstr "oeRNC_PI eelistused"
 
-#: src/oernc_pi.cpp:389 src/oernc_pi.cpp:416 src/oernc_pi.cpp:431
+#: src/oernc_pi.cpp:428 src/oernc_pi.cpp:455 src/oernc_pi.cpp:470
 msgid "oeRNC Charts"
-msgstr ""
+msgstr "oeRNC-kaardid"
 
-#: src/oernc_pi.cpp:395
+#: src/oernc_pi.cpp:434
 msgid "oeRNC Charts PlugIn for OpenCPN"
-msgstr ""
+msgstr "oeRNC-kaartide plugIn OpenCPN'i jaoks"
 
-#: src/oernc_pi.cpp:401
+#: src/oernc_pi.cpp:440
 msgid "oeRNC Charts PlugIn for OpenCPN\n"
 "Provides support for oeRNC raster charts.\n\n"
-msgstr ""
+msgstr "oeRNC-kaartide plugIn OpenCPN'le\n"
+"Pakub toetust oeRNC-rasterkaartidele.\n\n"
 
-#: src/oernc_pi.cpp:544
+#: src/oernc_pi.cpp:583
 msgid "Cannot find the oernc_pi server utility at \n"
-msgstr ""
+msgstr "Ei suuda leida oernc_pi serveri utiliiti asukohas\n"
 
-#: src/oernc_pi.cpp:548 src/oernc_pi.cpp:655
+#: src/oernc_pi.cpp:587 src/oernc_pi.cpp:694
 msgid "oernc_pi Message"
-msgstr ""
+msgstr "oeRNC_pi teade"
 
-#: src/oernc_pi.cpp:650
+#: src/oernc_pi.cpp:689
 msgid "serverd utility at \n"
-msgstr ""
+msgstr "serverd utiliit asukohas \n"
 
-#: src/oernc_pi.cpp:654
+#: src/oernc_pi.cpp:693
 msgid " could not be started.\n\n"
-msgstr ""
+msgstr " ei saa käivitada.\n\n"
 
-#: src/oernc_pi.cpp:704
+#: src/oernc_pi.cpp:743
 msgid " oeRNC Version: "
-msgstr ""
+msgstr " oeRNC versioon: "
 
-#: src/oernc_pi.cpp:709
+#: src/oernc_pi.cpp:748
 msgid "Show EULA"
-msgstr ""
+msgstr "Näita EULA"
 
-#: src/oernc_pi.cpp:717
+#: src/oernc_pi.cpp:756
 msgid "System Identification"
-msgstr ""
+msgstr "Süsteemi tuvastamine"
 
-#: src/oernc_pi.cpp:727
+#: src/oernc_pi.cpp:766
 msgid "Create System Identifier file..."
-msgstr ""
+msgstr "Loo süsteemi tuvastusfaili..."
 
-#: src/oernc_pi.cpp:735
+#: src/oernc_pi.cpp:774
 msgid "Create USB key dongle System ID file..."
-msgstr ""
+msgstr "Loo USB-dongli süsteemi tuvastusfail..."
 
-#: src/oernc_pi.cpp:744
+#: src/oernc_pi.cpp:783
 msgid "Show In Finder"
-msgstr ""
+msgstr "Näita leidjas"
 
-#: src/oernc_pi.cpp:746
+#: src/oernc_pi.cpp:785
 msgid "Show on disk"
-msgstr ""
+msgstr "Näita kettal"
 
-#: src/oernc_pi.cpp:758 src/ochartShop.cpp:3608 src/ochartShop.cpp:3729
+#: src/oernc_pi.cpp:797 src/ochartShop.cpp:3608 src/ochartShop.cpp:3729
 #: src/ochartShop.cpp:3735
 msgid "System Name:"
-msgstr ""
+msgstr "Süsteemi nimi:"
 
-#: src/oernc_pi.cpp:767
+#: src/oernc_pi.cpp:806
 msgid "Reset System Name"
-msgstr ""
+msgstr "Süsteemi nime lähtestamine"
 
-#: src/oernc_pi.cpp:777
+#: src/oernc_pi.cpp:816
 msgid "Reset o-charts credentials"
-msgstr ""
+msgstr "Lähtesta o-chart volitused"
 
-#: src/oernc_pi.cpp:784
+#: src/oernc_pi.cpp:823
 msgid "Clear file download cache"
-msgstr ""
-
-#: src/oernc_pi.cpp:896
-msgid "System name RESET shall be performed only by request from o-charts technical support staff."
-msgstr ""
-
-#: src/oernc_pi.cpp:898
-msgid "Proceed to RESET?"
-msgstr ""
-
-#: src/oernc_pi.cpp:899 src/oernc_pi.cpp:936 src/oernc_pi.cpp:962
-#: src/oernc_pi.cpp:976 src/oernc_pi.cpp:986 src/oernc_pi.cpp:997
-#: src/oernc_pi.cpp:1003 src/oernc_pi.cpp:1023 src/oernc_pi.cpp:1038
-#: src/oernc_pi.cpp:1044 src/ochartShop.cpp:2345 src/ochartShop.cpp:4537
-#: src/ochartShop.cpp:4550 src/ochartShop.cpp:4671 src/ochartShop.cpp:4717
-msgid "oeRNC_PI Message"
-msgstr ""
+msgstr "Tühjenda faili allalaadimaste vahemälu"
 
 #: src/oernc_pi.cpp:935
+msgid "System name RESET shall be performed only by request from o-charts technical support staff."
+msgstr "Süsteemi nime lähtestamine peab toimuma ainult o-charts tehnilise toe palvel."
+
+#: src/oernc_pi.cpp:937
+msgid "Proceed to RESET?"
+msgstr "Jätkata lähtestamisega?"
+
+#: src/oernc_pi.cpp:938 src/oernc_pi.cpp:975 src/oernc_pi.cpp:1001
+#: src/oernc_pi.cpp:1015 src/oernc_pi.cpp:1025 src/oernc_pi.cpp:1036
+#: src/oernc_pi.cpp:1042 src/oernc_pi.cpp:1062 src/oernc_pi.cpp:1077
+#: src/oernc_pi.cpp:1083 src/ochartShop.cpp:2345 src/ochartShop.cpp:4537
+#: src/ochartShop.cpp:4550 src/ochartShop.cpp:4672 src/ochartShop.cpp:4718
+msgid "oeRNC_PI Message"
+msgstr "oeRNC_PI teade"
+
+#: src/oernc_pi.cpp:974
 msgid "Download file cache cleared."
-msgstr ""
+msgstr "Faili allalaadimste vahemälu on puhastatud."
 
-#: src/oernc_pi.cpp:962
+#: src/oernc_pi.cpp:1001
 msgid "Credential Reset Successful"
-msgstr ""
+msgstr "Volituste lähtestamine õnnestus"
 
-#: src/oernc_pi.cpp:969 src/oernc_pi.cpp:1017
+#: src/oernc_pi.cpp:1008 src/oernc_pi.cpp:1056
 msgid "To obtain a chart set, you must generate a Unique System Identifier File.\n"
-msgstr ""
+msgstr "Kaardikomplekti saamiseks pead genereerima unikaalse süsteemi tuvastusfaili.\n"
 
-#: src/oernc_pi.cpp:970 src/oernc_pi.cpp:1018
+#: src/oernc_pi.cpp:1009 src/oernc_pi.cpp:1057
 msgid "This file is also known as a\"fingerprint\" file.\n"
-msgstr ""
+msgstr "Seda faili tuntakse ka kui \"sõrmejälje\" faili.\n"
 
-#: src/oernc_pi.cpp:971
+#: src/oernc_pi.cpp:1010
 msgid "The fingerprint file contains information related to a connected USB key dongle.\n\n"
-msgstr ""
+msgstr "Sõrmejälje fail sisaldab ühendatud USB-dongli kohta informatsiooni.\n\n"
 
-#: src/oernc_pi.cpp:972 src/oernc_pi.cpp:1020
+#: src/oernc_pi.cpp:1011 src/oernc_pi.cpp:1059
 msgid "After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n"
-msgstr ""
+msgstr "Peale selle faili loomist on sul vaja oma kaardikomplekt o-charts.org poest soetada.\n\n"
 
-#: src/oernc_pi.cpp:973 src/oernc_pi.cpp:1021
+#: src/oernc_pi.cpp:1012 src/oernc_pi.cpp:1060
 msgid "Proceed to create Fingerprint file?"
-msgstr ""
+msgstr "Jätkata sõrmejälje faili loomisega?"
 
-#: src/oernc_pi.cpp:986
+#: src/oernc_pi.cpp:1025
 msgid "ERROR Creating Fingerprint file\n"
 " USB key dongle not detected."
-msgstr ""
+msgstr "VIGA sõrmehälje faili loomisel\n"
+" USB-dongel pole tuvastatud."
 
-#: src/oernc_pi.cpp:991 src/oernc_pi.cpp:1032
+#: src/oernc_pi.cpp:1030 src/oernc_pi.cpp:1071
 msgid "Fingerprint file created.\n"
-msgstr ""
+msgstr "Sõrmejäljefail on loodud.\n"
 
-#: src/oernc_pi.cpp:995 src/oernc_pi.cpp:1036
+#: src/oernc_pi.cpp:1034 src/oernc_pi.cpp:1075
 msgid "\n\n"
 " Fingerprint file is also copied to desktop."
-msgstr ""
+msgstr "\n\n"
+"Sõrmejäljefail on samuti kopeeritud töölauale."
 
-#: src/oernc_pi.cpp:1003
+#: src/oernc_pi.cpp:1042
 msgid "ERROR Creating Fingerprint file\n"
 " Check OpenCPN log file."
-msgstr ""
+msgstr "VIGA sõrmejälje faili loomisel\n"
+" Vaata OpenCPN'i logifaili."
 
-#: src/oernc_pi.cpp:1019
+#: src/oernc_pi.cpp:1058
 msgid "The fingerprint file contains information to uniquely identify this computer.\n\n"
-msgstr ""
+msgstr "Sõrmejälje fail sisaldab informatsiooni selle kompuutri unikaalseks tuvastamiseks.\n\n"
 
-#: src/oernc_pi.cpp:1453 src/oernc_pi.cpp:1516 src/oernc_pi.cpp:1682
+#: src/oernc_pi.cpp:1492 src/oernc_pi.cpp:1555 src/oernc_pi.cpp:1721
 #: src/ochartShop.cpp:2907 src/ochartShop.cpp:2981 src/ochartShop.cpp:3108
 #: src/ochartShop.cpp:3250 src/ochartShop.cpp:3345 src/ochartShop.cpp:3472
-#: src/ochartShop.cpp:5288 src/ochartShop.cpp:5317 src/ochartShop.cpp:5422
-#: src/ochartShop.cpp:5447 src/ochartShop.cpp:5698 src/ochartShop.cpp:5726
+#: src/ochartShop.cpp:5286 src/ochartShop.cpp:5315 src/ochartShop.cpp:5420
+#: src/ochartShop.cpp:5445 src/ochartShop.cpp:5696 src/ochartShop.cpp:5724
 msgid "Dialog"
-msgstr ""
+msgstr "Dialoog"
 
-#: src/oernc_pi.cpp:1606
+#: src/oernc_pi.cpp:1645
 msgid "Could not open requested EULA: "
-msgstr ""
+msgstr "Ei suutnud valitud EULA't avada: "
 
-#: src/oernc_pi.cpp:1679
+#: src/oernc_pi.cpp:1718
 msgid "oeRNC PlugIn for OpenCPN"
-msgstr ""
+msgstr "oeRNC-plugIn OpenCPN'i jaoks"
 
-#: src/oernc_pi.cpp:1742
+#: src/oernc_pi.cpp:1781
 msgid "License"
-msgstr ""
+msgstr "Litsents"
 
-#: src/oernc_pi.cpp:1767
+#: src/oernc_pi.cpp:1806
 msgid "Accept"
-msgstr ""
+msgstr "Nõustun"
 
-#: src/oernc_pi.cpp:1772
+#: src/oernc_pi.cpp:1811
 msgid "Reject"
-msgstr ""
+msgstr "Hülga"
 
-#: src/chart.cpp:4122
+#: src/chart.cpp:4123
 msgid "---<<< Warning:  Chart georef accuracy may be poor. >>>---"
-msgstr ""
+msgstr "---<<< Hoiatus: kaardi kalibreerimise täpsus võib olla madal. >>>---"
 
-#: src/chart.cpp:4205 src/chart.cpp:4269
+#: src/chart.cpp:4206 src/chart.cpp:4270
 msgid "---<<< Warning:  Chart georef accuracy is poor. >>>---"
-msgstr ""
+msgstr "---<<< Hoiatus: kaardi kalibreerimise täpsus on madal. >>>---"
 
 #: src/ochartShop.cpp:1148
 msgid "Fully Assigned."
-msgstr ""
+msgstr "Täielikult seotud."
 
 #: src/ochartShop.cpp:1152 src/ochartShop.cpp:1480
 msgid "Available."
-msgstr ""
+msgstr "Saadaval."
 
 #: src/ochartShop.cpp:1156 src/ochartShop.cpp:1484
 msgid "Installed, Up-to-date."
-msgstr ""
+msgstr "Paigaldatud, uuendatud."
 
 #: src/ochartShop.cpp:1160 src/ochartShop.cpp:1488
 msgid "Installed, Update available."
-msgstr ""
+msgstr "Paigaldatud, uuendus saadaval."
 
 #: src/ochartShop.cpp:1165 src/ochartShop.cpp:1493
 msgid "Expired."
-msgstr ""
+msgstr "Aegunud."
 
 #: src/ochartShop.cpp:1169 src/ochartShop.cpp:1497
 msgid "Preparing your chartset."
-msgstr ""
+msgstr "Su kaardikomplekti ettevalmistamine."
 
 #: src/ochartShop.cpp:1173 src/ochartShop.cpp:1501
 msgid "Ready for download."
-msgstr ""
+msgstr "Allalaadimiseks valmis."
 
 #: src/ochartShop.cpp:1177 src/ochartShop.cpp:1505
 msgid "Please update Chart List."
-msgstr ""
+msgstr "Palun uuenda kaartide nimekiri."
 
 #: src/ochartShop.cpp:1181 src/ochartShop.cpp:1509
 msgid "Ready for Download Request."
-msgstr ""
+msgstr "Allalaadimise päringuks valmis."
 
 #: src/ochartShop.cpp:1203 src/ochartShop.cpp:2339 src/ochartShop.cpp:3731
-#: src/ochartShop.cpp:5120 src/ochartShop.cpp:5483 src/ochartShop.cpp:5496
+#: src/ochartShop.cpp:5118 src/ochartShop.cpp:5481 src/ochartShop.cpp:5494
 msgid "USB Key Dongle"
-msgstr ""
+msgstr "USB-dongel"
 
 #: src/ochartShop.cpp:1205 src/ochartShop.cpp:1526
 msgid "System Key"
-msgstr ""
+msgstr "Süsteemivõti"
 
 #: src/ochartShop.cpp:1524
 msgid "USB Dongle Key"
-msgstr ""
+msgstr "USB-võti"
 
 #: src/ochartShop.cpp:1817
 msgid "o-charts API error code: "
-msgstr ""
+msgstr "o-charts API-veakood: "
 
 #: src/ochartShop.cpp:1824
 msgid "Invalid user/email name or password."
-msgstr ""
+msgstr "Vale kasutaja-/meilinimi või parool."
 
 #: src/ochartShop.cpp:1827
 msgid "Check your configuration and try again."
-msgstr ""
+msgstr "Kontrolli oma sätteid ja proovi uuesti."
 
 #: src/ochartShop.cpp:1831 src/ochartShop.cpp:1837 src/ochartShop.cpp:1853
 #: src/ochartShop.cpp:2503 src/ochartShop.cpp:3909 src/ochartShop.cpp:3915
@@ -268,520 +272,526 @@ msgstr ""
 #: src/ochartShop.cpp:4122 src/ochartShop.cpp:4134 src/ochartShop.cpp:4140
 #: src/ochartShop.cpp:4157 src/ochartShop.cpp:4162 src/fpr.cpp:294
 msgid "oeRNC_pi Message"
-msgstr ""
+msgstr "oeRNC_pi teade"
 
 #: src/ochartShop.cpp:1837
-msgid "Unrecognized error\n"
-msgstr ""
+msgid "o-Charts shop interface error"
+msgstr "o-Charts poe liidese viga"
+
+#: src/ochartShop.cpp:1837
+msgid "Operation cancelled"
+msgstr "Toiming tühistatud"
 
 #: src/ochartShop.cpp:1848
 msgid "internet communications error code: "
-msgstr ""
+msgstr "internetiühenduse veakood: "
 
 #: src/ochartShop.cpp:1852
 msgid "Check your connection and try again."
-msgstr ""
+msgstr "Kontrolli oma ühendust ja proovi uuesti."
 
 #: src/ochartShop.cpp:1872
 msgid "Invalid Login."
-msgstr ""
+msgstr "Kehtetu sisselogimine."
 
 #: src/ochartShop.cpp:2331
 msgid "This action will PERMANENTLY assign the chart:"
-msgstr ""
+msgstr "See toiming omistab PÜSIVALT kaardi:"
 
 #: src/ochartShop.cpp:2335
 msgid "to this systemName:"
-msgstr ""
+msgstr "sellisele nimega süsteemile:"
 
 #: src/ochartShop.cpp:2343
 msgid "Proceed?"
-msgstr ""
+msgstr "Jätka?"
 
 #: src/ochartShop.cpp:2490
 msgid "  {USB Dongle not found.}"
-msgstr ""
+msgstr "  {USB-donglit pole leitud.}"
 
 #: src/ochartShop.cpp:2493
 msgid "  {fpr file not found.}"
-msgstr ""
+msgstr "  {fpr-faili pole leitud.}"
 
 #: src/ochartShop.cpp:2496
 msgid "  {fpr file not created.}"
-msgstr ""
+msgstr "  {fpr-fail pole loodud.}"
 
 #: src/ochartShop.cpp:2500
 msgid "ERROR Creating Fingerprint file"
-msgstr ""
+msgstr "VIGA sõrmejäljefaili loomisel"
 
 #: src/ochartShop.cpp:2501
 msgid "Check OpenCPN log file."
-msgstr ""
+msgstr "Vaata OpenCPN logifaili."
 
 #: src/ochartShop.cpp:2709 src/ochartShop.cpp:4098
 msgid "Unzipping chart files..."
-msgstr ""
+msgstr "Kaardifailide lahtipakkimine..."
 
 #: src/ochartShop.cpp:2931
 msgid "Chart Edition:"
-msgstr ""
+msgstr "Kaardi väljaanne:"
 
 #: src/ochartShop.cpp:2937 src/ochartShop.cpp:3286
 msgid "Order Reference:"
-msgstr ""
+msgstr "Tellimuse viide:"
 
 #: src/ochartShop.cpp:2943
 msgid "Purchase date:"
-msgstr ""
+msgstr "Ostu kuupäev:"
 
 #: src/ochartShop.cpp:2949
 msgid "Expiration date:"
-msgstr ""
+msgstr "Aegumiskuupäev:"
 
 #: src/ochartShop.cpp:2955 src/ochartShop.cpp:3298
 msgid "Status:"
-msgstr ""
+msgstr "Olek:"
 
 #: src/ochartShop.cpp:2965
 msgid "Key type:"
-msgstr ""
+msgstr "Võtme tüüp:"
 
 #: src/ochartShop.cpp:3014 src/ochartShop.cpp:3378
 msgid "Chart Edition: "
-msgstr ""
+msgstr "Kaardi väljaanne: "
 
 #: src/ochartShop.cpp:3018 src/ochartShop.cpp:3382
 msgid "Order Reference: "
-msgstr ""
+msgstr "Tellimuse viide: "
 
 #: src/ochartShop.cpp:3025 src/ochartShop.cpp:3389
 msgid "Purchase date: "
-msgstr ""
+msgstr "Ostu kuupäev: "
 
 #: src/ochartShop.cpp:3029 src/ochartShop.cpp:3393
 msgid "Expiration date: "
-msgstr ""
+msgstr "Aegumiskuupäev: "
 
 #: src/ochartShop.cpp:3042 src/ochartShop.cpp:3406
 msgid "Assigment 1"
-msgstr ""
+msgstr "1. määrang"
 
 #: src/ochartShop.cpp:3046 src/ochartShop.cpp:3069 src/ochartShop.cpp:3410
 #: src/ochartShop.cpp:3433
 msgid "System: "
-msgstr ""
+msgstr "Süsteem: "
 
 #: src/ochartShop.cpp:3050 src/ochartShop.cpp:3073 src/ochartShop.cpp:3414
 #: src/ochartShop.cpp:3437
 msgid "Installed edition: "
-msgstr ""
+msgstr "Paigaldatud versioon: "
 
 #: src/ochartShop.cpp:3058 src/ochartShop.cpp:3081 src/ochartShop.cpp:3422
 #: src/ochartShop.cpp:3445
 msgid "Status: "
-msgstr ""
+msgstr "Olek: "
 
 #: src/ochartShop.cpp:3065 src/ochartShop.cpp:3429
 msgid "Assigment 2"
-msgstr ""
+msgstr "2. määrang"
 
 #: src/ochartShop.cpp:3274
 msgid "Installed Chart Edition:"
-msgstr ""
+msgstr "Paigaldatud kaardi väljaanne:"
 
 #: src/ochartShop.cpp:3280
 msgid "Current Chart Edition:"
-msgstr ""
+msgstr "Praegune väljaanne:"
 
 #: src/ochartShop.cpp:3292
 msgid "Updates available through:"
-msgstr ""
+msgstr "Uuendused saadaval läbi:"
 
 #: src/ochartShop.cpp:3306
 msgid "Assignments:"
-msgstr ""
+msgstr "Jaotamised:"
 
 #: src/ochartShop.cpp:3314
 msgid "    None"
-msgstr ""
+msgstr "    Ühtegi"
 
 #: src/ochartShop.cpp:3325
 #, c-format
 msgid "%d) "
-msgstr ""
+msgstr "%d) "
 
 #: src/ochartShop.cpp:3615
 msgid "Refresh Chart List"
-msgstr ""
+msgstr "Uuenda kaartide nimekirja"
 
 #: src/ochartShop.cpp:3619
 msgid "My Chart Sets"
-msgstr ""
+msgstr "Mu kaardikomplektid"
 
 #: src/ochartShop.cpp:3637
 msgid "Actions"
-msgstr ""
+msgstr "Tegevused"
 
 #: src/ochartShop.cpp:3647
 msgid "Install Selected Chart Set"
-msgstr ""
+msgstr "Paigalda valitud kaardikomplekt"
 
 #: src/ochartShop.cpp:3650
 msgid "Cancel Operation"
-msgstr ""
+msgstr "Tühista toiming"
 
 #: src/ochartShop.cpp:3654
 msgid "Validate Installed Chart Set"
-msgstr ""
+msgstr "Valideeri paigaldatud kaardikomplekt"
 
 #: src/ochartShop.cpp:3662
 msgid "Status: Chart List Refresh required."
-msgstr ""
+msgstr "Olek: kaartide nimekirja uuendamine on nõutav."
 
 #: src/ochartShop.cpp:3669 src/ochartShop.cpp:3713
 msgid "Last Error Message: "
-msgstr ""
+msgstr "Viimane veateade: "
 
-#: src/ochartShop.cpp:3722 src/ochartShop.cpp:3887 src/ochartShop.cpp:4653
-#: src/ochartShop.cpp:4670 src/ochartShop.cpp:4715
+#: src/ochartShop.cpp:3722 src/ochartShop.cpp:3887 src/ochartShop.cpp:4654
+#: src/ochartShop.cpp:4671 src/ochartShop.cpp:4716
 msgid "Status: Ready"
-msgstr ""
+msgstr "Olek: valmis"
 
 #: src/ochartShop.cpp:3826
 msgid "Contacting o-charts server..."
-msgstr ""
+msgstr "O-charts serveriga ühenduse loomine..."
 
 #: src/ochartShop.cpp:3837 src/ochartShop.cpp:3852
 msgid "Status: Login error."
-msgstr ""
+msgstr "Olek: tõrge sisselogimisel."
 
 #: src/ochartShop.cpp:3856 src/ochartShop.cpp:3867
 msgid "Status: Communications error."
-msgstr ""
+msgstr "Olek: ühenduse viga."
 
 #: src/ochartShop.cpp:3908
 msgid "Invalid System Name"
-msgstr ""
+msgstr "Sobimatu süsteemi nimi"
 
 #: src/ochartShop.cpp:3914
 msgid "This System Name has been disabled\n"
 "Please choose another SystemName"
-msgstr ""
+msgstr "See süsteemi nimi on blokeeritud\n"
+"Palun vali teine süsteemi nimi"
 
 #: src/ochartShop.cpp:4024 src/ochartShop.cpp:4157
 msgid "Validation error on zip file"
-msgstr ""
+msgstr "Zip-faili valideerimise viga"
 
 #: src/ochartShop.cpp:4029 src/ochartShop.cpp:4162
 msgid "Validation error on key file"
-msgstr ""
+msgstr "Võtmefaili valideerimise viga"
 
 #: src/ochartShop.cpp:4107
 msgid "Error extracting zip file"
-msgstr ""
+msgstr "Viga zip-faili lahtipakkimisel"
 
 #: src/ochartShop.cpp:4122
 msgid "Error empty file "
-msgstr ""
+msgstr "Viga: tühi fail "
 
 #: src/ochartShop.cpp:4134
 msgid "Error copying file"
-msgstr ""
+msgstr "Tõrge faili kopeerimisel"
 
 #: src/ochartShop.cpp:4140
 msgid "Error finding file"
-msgstr ""
+msgstr "Tõrge faili leidmisel"
 
 #: src/ochartShop.cpp:4472
 msgid "Status: Validating download file..."
-msgstr ""
+msgstr "Olek: allalaadimsfaili valideerimine..."
 
 #: src/ochartShop.cpp:4537
 msgid "No chartset selected."
-msgstr ""
+msgstr "Kaardikomplekt pole valitud."
 
 #: src/ochartShop.cpp:4550
 msgid "Chart download cancelled."
-msgstr ""
+msgstr "Kaardi allalaadimine tühistatud."
 
-#: src/ochartShop.cpp:4646
+#: src/ochartShop.cpp:4647
 msgid "Choose chart install location."
-msgstr ""
+msgstr "Vali kaardi paigalduskoht."
 
-#: src/ochartShop.cpp:4671
+#: src/ochartShop.cpp:4672
 msgid "Chart installation ERROR."
-msgstr ""
+msgstr "Kaardi paigalduse VIGA."
 
-#: src/ochartShop.cpp:4717
+#: src/ochartShop.cpp:4718
 msgid "Chart installation complete."
-msgstr ""
+msgstr "Kaardi paigaldus on lõpetatud."
 
-#: src/ochartShop.cpp:4750
+#: src/ochartShop.cpp:4751
 msgid "Checking dongle..."
-msgstr ""
+msgstr "Kontrollin donglit..."
 
-#: src/ochartShop.cpp:4779
+#: src/ochartShop.cpp:4781
 msgid "Status: Dongle FPR upload error"
-msgstr ""
+msgstr "Olek: viga dongli FPR üleslaadimisel"
 
-#: src/ochartShop.cpp:4804
+#: src/ochartShop.cpp:4803
 msgid "Status: System FPR upload error"
-msgstr ""
+msgstr "Olek: viga süsteemi FPR üleslaadimisel"
 
-#: src/ochartShop.cpp:4962
+#: src/ochartShop.cpp:4960
 msgid "Requesting License Keys..."
-msgstr ""
+msgstr "Litsentsi võtme päring..."
 
-#: src/ochartShop.cpp:4993
+#: src/ochartShop.cpp:4991
 msgid "Status: Downloading..."
-msgstr ""
+msgstr "Olek: allalaadimine..."
 
-#: src/ochartShop.cpp:4998
+#: src/ochartShop.cpp:4996
 msgid "Downloading..."
-msgstr ""
+msgstr "Allalaadimine..."
 
-#: src/ochartShop.cpp:5028 src/ochartShop.cpp:5618
+#: src/ochartShop.cpp:5026 src/ochartShop.cpp:5616
 msgid "Status: OK"
-msgstr ""
+msgstr "Olek: OK"
 
-#: src/ochartShop.cpp:5125 src/ochartShop.cpp:5143 src/ochartShop.cpp:5147
+#: src/ochartShop.cpp:5123 src/ochartShop.cpp:5141 src/ochartShop.cpp:5145
 msgid "Download Selected Chart"
-msgstr ""
+msgstr "Lae valitud kaart alla"
 
-#: src/ochartShop.cpp:5130
+#: src/ochartShop.cpp:5128
 msgid "Install Selected Chart for "
-msgstr ""
+msgstr "Paigalda valitud kaardikomplekt "
 
-#: src/ochartShop.cpp:5134
+#: src/ochartShop.cpp:5132
 msgid "Reinstall Selected Chart for "
-msgstr ""
+msgstr "Paigalda valitud kaardikomplekt uuesti "
 
-#: src/ochartShop.cpp:5138
+#: src/ochartShop.cpp:5136
 msgid "Update Selected Chart for "
-msgstr ""
+msgstr "Uuenda valitud kaart "
 
-#: src/ochartShop.cpp:5320
+#: src/ochartShop.cpp:5318
 msgid "New OpenCPN oeRNC System Name"
-msgstr ""
+msgstr "Uus OpenCPN oeRNC-süsteemi nimi"
 
-#: src/ochartShop.cpp:5337
+#: src/ochartShop.cpp:5335
 msgid "Enter New System Name"
-msgstr ""
+msgstr "Sisesta uus süsteemi nimi"
 
-#: src/ochartShop.cpp:5348
+#: src/ochartShop.cpp:5346
 msgid "A valid System Name is 3 to 15 characters in length."
-msgstr ""
+msgstr "Kehtiv süsteemi nimi on 3 kuni 15 tähemärki pikk."
 
-#: src/ochartShop.cpp:5354
+#: src/ochartShop.cpp:5352
 msgid "No symbols or spaces are allowed."
-msgstr ""
+msgstr "Sümbolid või tühikud pole lubatud."
 
-#: src/ochartShop.cpp:5362 src/ochartShop.cpp:5512 src/ochartShop.cpp:5779
+#: src/ochartShop.cpp:5360 src/ochartShop.cpp:5510 src/ochartShop.cpp:5777
 msgid "Cancel"
-msgstr ""
+msgstr "Loobu"
 
-#: src/ochartShop.cpp:5367 src/ochartShop.cpp:5515 src/ochartShop.cpp:5782
+#: src/ochartShop.cpp:5365 src/ochartShop.cpp:5513 src/ochartShop.cpp:5780
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
-#: src/ochartShop.cpp:5450 src/ochartShop.h:546 src/ochartShop.h:554
+#: src/ochartShop.cpp:5448 src/ochartShop.h:546 src/ochartShop.h:554
 msgid "Select OpenCPN/oeRNC System Name"
-msgstr ""
+msgstr "Vali OpenCPN/oeRNC süsteemi nimi"
 
-#: src/ochartShop.cpp:5466
+#: src/ochartShop.cpp:5464
 msgid "Select your System Name from the following list, or "
-msgstr ""
+msgstr "Vali järgmisest loendist süsteemi nimi või "
 
-#: src/ochartShop.cpp:5471
+#: src/ochartShop.cpp:5469
 msgid " create a new System Name for this computer."
-msgstr ""
+msgstr " loo uus süsteemi nime sellele arvutile."
+
+#: src/ochartShop.cpp:5497
+msgid "new..."
+msgstr "uus..."
 
 #: src/ochartShop.cpp:5499
-msgid "new..."
-msgstr ""
-
-#: src/ochartShop.cpp:5501
 msgid "System Names"
-msgstr ""
+msgstr "Süsteemi nimed"
 
-#: src/ochartShop.cpp:5667
+#: src/ochartShop.cpp:5665
 msgid "Downloaded:  "
-msgstr ""
+msgstr "Allalaetud:  "
 
-#: src/ochartShop.cpp:5745
+#: src/ochartShop.cpp:5743
 msgid "Login to o-charts.org"
-msgstr ""
+msgstr "Logi o-charts.org'i sisse"
 
-#: src/ochartShop.cpp:5762
+#: src/ochartShop.cpp:5760
 msgid "email address:"
-msgstr ""
+msgstr "meiliaadress:"
 
-#: src/ochartShop.cpp:5769
+#: src/ochartShop.cpp:5767
 msgid "Password:"
-msgstr ""
+msgstr "Salasõna:"
 
 #: src/ochartShop.h:509 src/ochartShop.h:517
 msgid "OpenCPN oeRNC System Name"
-msgstr ""
+msgstr "OpenCPN'i oeRNC-süsteemi nimi"
 
 #: src/ochartShop.h:618 src/ochartShop.h:626
 msgid "OpenCPN oeRNC Login"
-msgstr ""
+msgstr "OpenCPN oeRNC'i sisselogimine"
 
 #: src/fpr.cpp:294
 msgid "Administrator priveleges are required to copy fpr.\n"
 "  Please try again...."
-msgstr ""
+msgstr "Fpr kopeerimiseks on vaja administraatori õiguseid.\n"
+"   Palun proovi uuesti...."
 
 #: src/piScreenLog.cpp:70
 msgid "Close"
-msgstr ""
+msgstr "Sulge"
 
 #: src/validator.cpp:262
 msgid "No chartset selected.\n"
-msgstr ""
+msgstr "Kaardikomplekti pole valitud.\n"
 
 #: src/validator.cpp:266
 msgid "Starting chartset validation.\n"
-msgstr ""
+msgstr "Kaardikomplekti valideerimise alistamine.\n"
 
 #: src/validator.cpp:268
 msgid "  Checking server installation."
-msgstr ""
+msgstr "  Kontrollin serveri paigaldust."
 
 #: src/validator.cpp:270
 msgid "  Server not installed."
-msgstr ""
+msgstr "  Server pole paigaldatud."
 
 #: src/validator.cpp:274
 msgid "  Server execute command: "
-msgstr ""
+msgstr "  Serveri käivituskäsk: "
 
 #: src/validator.cpp:278
 msgid "  Server unavailable."
-msgstr ""
+msgstr "  Server pole saadaval."
 
 #: src/validator.cpp:282
 msgid "  Server reports version:  "
-msgstr ""
+msgstr "  Serveri versioon:  "
 
 #: src/validator.cpp:289
 msgid "  Checking dongle..."
-msgstr ""
+msgstr "  Kontrollin donglit..."
 
 #: src/validator.cpp:296
 msgid "  dongle found: "
-msgstr ""
+msgstr "  leitud dongel: "
 
 #: src/validator.cpp:299
 msgid "  dongle not found: "
-msgstr ""
+msgstr "  donglit pole leitud: "
 
 #: src/validator.cpp:311
 msgid "  Validating chartset assigned to dongle: "
-msgstr ""
+msgstr "  Dongliga seotud kaardikomplekti valideerimine: "
 
 #: src/validator.cpp:317 src/validator.cpp:324
 msgid "  Validating chartset assigned to systemName: "
-msgstr ""
+msgstr "  Süsteeminimega seotud kaardikomplekti valideerimine: "
 
 #: src/validator.cpp:329
 msgid "  Unable to validate unassigned chartset."
-msgstr ""
+msgstr "  Sidumata kaardikomplekt valideerimine nurjus."
 
 #: src/validator.cpp:336
 msgid "  Unable to find slot assignment."
-msgstr ""
+msgstr "  Võimatu leida määrangukohta."
 
 #: src/validator.cpp:344
 msgid "  Selected chartset is not installed for dongle."
-msgstr ""
+msgstr "  Valitud kaardikomplekt ei ole paigaldatud dongli jaoks."
 
 #: src/validator.cpp:346
 msgid "  Selected chartset is not installed."
-msgstr ""
+msgstr "  Valitud kaardikomplekt ei ole paigaldatud."
 
 #: src/validator.cpp:352
 msgid "  Installation directory: "
-msgstr ""
+msgstr "  Paigalduskoht: "
 
 #: src/validator.cpp:356
 msgid "  ProcessingChartList.XML"
-msgstr ""
+msgstr "  ChartList.XML töötlemine"
 
 #: src/validator.cpp:360
 msgid "    Checking for ChartList.XML at: "
-msgstr ""
+msgstr "    Kintrollin ChartList.XML asukohas: "
 
 #: src/validator.cpp:365
 msgid "    ChartList.XML not found in installation directory."
-msgstr ""
+msgstr "    ChartList.XML ei ole paigalduskohas leitud."
 
 #: src/validator.cpp:369
 msgid "    Loading ChartList.XML"
-msgstr ""
+msgstr "    ChartList.XML laadimine"
 
 #: src/validator.cpp:372
 msgid "    Error loading ChartList.XML"
-msgstr ""
+msgstr "    Viga ChartList.XML laadimisel"
 
 #: src/validator.cpp:380
 msgid "    Checking ChartList for presence of each chart referenced"
-msgstr ""
+msgstr "    Iga seotud kaardi olemasolu kontoll nimekirjas"
 
 #: src/validator.cpp:387
 msgid "    Referenced chart is not present: "
-msgstr ""
+msgstr "    Puuduv seotud kaart: "
 
 #: src/validator.cpp:395
 msgid "    Checking all charts for reference in ChartList"
-msgstr ""
+msgstr "    Kõikide kaartide seotuse kontroll nimekirjaga"
 
 #: src/validator.cpp:416
 msgid "    Found chart file not referenced in ChartList: "
-msgstr ""
+msgstr "    Nimekirjaga sidumata leitud kaardifail: "
 
 #: src/validator.cpp:421
 msgid "    ChartList.XML validates OK."
-msgstr ""
+msgstr "    ChartList.XML valideerub OK."
 
 #: src/validator.cpp:425
 msgid "  Checking chart key files."
-msgstr ""
+msgstr "  Kontrollin kaardi võtme faile."
 
 #: src/validator.cpp:436
 msgid "    Loading keyFile: "
-msgstr ""
+msgstr "    Võtmefaili laadimine: "
 
 #: src/validator.cpp:439
 msgid "    Error loading keyFile: "
-msgstr ""
+msgstr "    Tõrge võtmefaili laadimisel: "
 
 #: src/validator.cpp:463
 msgid "    Key not found for chart file: "
-msgstr ""
+msgstr "    Võti pole leitud kaardifailile: "
 
 #: src/validator.cpp:469
 msgid "    Keyfiles validate OK."
-msgstr ""
+msgstr "    Võtmefail valideerub OK."
 
 #: src/validator.cpp:478
 msgid "  Starting chart test load."
-msgstr ""
+msgstr "  Kaardi testlaadimise alustamine."
 
 #: src/validator.cpp:481
 msgid "  Chart count: "
-msgstr ""
+msgstr "  Kaartide kogus: "
 
 #: src/validator.cpp:492
 msgid "  Chart load error: "
-msgstr ""
+msgstr "  Kaardi laadimise viga: "
 
 #: src/validator.cpp:497
 msgid "  Chart test load OK."
-msgstr ""
+msgstr "  Kaardi testlaadimine OK."
 
 #: src/validator.cpp:501
 msgid "Chartset installation validates OK."
-msgstr ""
+msgstr "Kaardikomplekti paigaldus valideerub OK."
 
