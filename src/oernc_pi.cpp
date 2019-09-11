@@ -222,6 +222,7 @@ bool parseKeyFile( wxString kfile, bool bDongle )
 bool loadKeyMaps( wxString file )
 {
     wxString installBase = getChartInstallBase( file );
+    wxLogMessage(_T("Computed installBase: ") + installBase);
     
     // Make a list of all XML or xml files found in the installBase directory of the chart itself.
     if(installBase.IsEmpty()){
