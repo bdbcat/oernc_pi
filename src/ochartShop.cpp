@@ -3971,8 +3971,16 @@ int shopPanel::ComputeUpdates(itemChart *chart, itemSlot *slot)
         
         return 0;               // no error
     }
+    else {                                      // must be a minor edition update
+    
+        chart->taskRequestedFile = _T("update");
+        chart->taskRequestedEdition = chart->serverChartEdition;
+        chart->taskCurrentEdition = slot->installedEdition;
+        chart->taskAction = TASK_UPDATE;
         
-    int ypp = 4;
+        return 0;               // no error
+    }
+
     
     return 1;           // General error
 }
