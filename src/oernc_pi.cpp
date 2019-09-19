@@ -49,6 +49,8 @@
 #include "qdebug.h"
 #endif
 
+bool IsDongleAvailable();
+
 // the class factories, used to create and destroy instances of the PlugIn
 
 extern "C" DECL_EXP opencpn_plugin* create_pi(void *ppimgr)
@@ -364,6 +366,11 @@ int oernc_pi::Init(void)
       
       wxLogMessage(_T("Path to serverd is: ") + g_server_bin);
       
+      if(IsDongleAvailable())
+        wxLogMessage(_T("Dongle detected"));
+      else
+        wxLogMessage(_T("No Dongle detected"));
+
       int flags = INSTALLS_PLUGIN_CHART;
 
       flags |= INSTALLS_TOOLBOX_PAGE;             // for  shop interface
