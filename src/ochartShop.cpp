@@ -1985,7 +1985,7 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
         
         itemChart *pChart = NULL;
 
-        wxString queryResult = _T("59");  // Default value, general error.
+        wxString queryResult = _T("50");  // Default value, general error.
         wxString chartOrder;
         wxString chartPurchase;
         wxString chartExpiration;
@@ -2008,8 +2008,8 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
          wxString p = wxString(body.c_str(), wxConvUTF8);
          //  wxMSW does not like trying to format this string containing "%" characters
 #ifdef __WXGTK__         
-         wxLogMessage(_T("ProcessResponse results:"));
-         wxLogMessage(p);
+//         wxLogMessage(_T("ProcessResponse results:"));
+//         wxLogMessage(p);
 #endif
         
             TiXmlElement * root = doc->RootElement();
@@ -2389,14 +2389,6 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
             return 0;
         }
         
-        if(result.IsSameAs(_T("8"))){                    // Unknown system name
-            return 0;
-        }
-
-        if(result.IsSameAs(_T("50"))){                  // General network error
-            return 0;                                   // OK
-        }
-        
         return checkResult(result);
     }
     else
@@ -2469,14 +2461,6 @@ int doUploadXFPR(bool bDongle)
             
             if(iResponseCode == 200){
                 wxString result = ProcessResponse(post.GetResponseBody());
-                
-                if(result.IsSameAs(_T("8"))){                    // Unknown system name
-                    return 0;                                   // OK
-                }
-
-                if(result.IsSameAs(_T("50"))){                  // General network error
-                    return 0;                                   // OK
-                }
                 
                 int iret = checkResult(result);
                 
@@ -2558,10 +2542,6 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     if(iResponseCode == 200){
         // Expecting complex links with embedded entities, so process the "&" correctly
         wxString result = ProcessResponse(post.GetResponseBody(), true);
-        
-        if(result.IsSameAs(_T("50"))){                  // General network error
-            return 0;                                   // OK
-        }
         
         return checkResult(result);
     }
