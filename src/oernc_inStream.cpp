@@ -97,7 +97,7 @@ oernc_inStream::oernc_inStream()
     
 }
 
-oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypto_key )
+oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypto_key, bool bHeaderOnly )
 {
     qDebug() << "oernc_inStream::ctor()";
     
@@ -110,7 +110,7 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
     qDebug() << "oernc_inStream::calling open()";
     m_OK = Open( );
     if(m_OK){
-        if(!Load()){
+        if(!Load(bHeaderOnly)){
             printf("%s\n", err);
             m_OK = false;
         }
@@ -156,29 +156,25 @@ void oernc_inStream::Init()
 {
     qDebug() << "oernc_inStream::Init()";
     
-    phdr = 0;
-    pPalleteBlock = 0;
-    pRefBlock = 0;
-    pPlyBlock = 0;
-    pline_table = NULL;           // pointer to Line offset table
+    publicSocket = -1;
     
     privatefifo = -1;
     publicfifo = -1;
-    m_OK = true;
+    m_OK = false;
     m_lastBytesRead = 0;
     m_lastBytesReq = 0;
+    m_lenIDat = 0;
     m_uncrypt_stream = 0;
-    publicSocket = -1;
-    
-    strcpy(publicsocket_name,"com.opencpn.ofc_pi");
+
+    strcpy(publicsocket_name,"com.opencpn.oernc_pi");
     
     if (makeAddr(publicsocket_name, &sockAddr, &sockLen) < 0){
-        wxLogMessage(_T("ofc_pi: Could not makeAddr for PUBLIC socket"));
+        wxLogMessage(_T("oernc_pi: Could not makeAddr for PUBLIC socket"));
     }
     
     publicSocket = socket(AF_LOCAL, SOCK_STREAM, PF_UNIX);
     if (publicSocket < 0) {
-        wxLogMessage(_T("ofc_pi: Could not make PUBLIC socket"));
+        wxLogMessage(_T("oernc_pi: Could not make PUBLIC socket"));
     }
     
 }
@@ -209,19 +205,7 @@ void oernc_inStream::Close()
         publicSocket = -1;
     }
     
-    
-    free(phdr);
-    free(pPalleteBlock);
-    free(pRefBlock);
-    free(pPlyBlock);
-    free(pline_table);
-    
-    phdr = 0;
-    pPalleteBlock = 0;
-    pRefBlock = 0;
-    pPlyBlock = 0;
-    pline_table = NULL;           // pointer to Line offset table
-    
+
     Init();             // In case it want to be used again
     
 }
@@ -242,11 +226,11 @@ bool oernc_inStream::Open( )
     return true;
 }
 
-bool oernc_inStream::Load( )
+bool oernc_inStream::Load( bool bHeaderOnly )
 { 
     //printf("LOAD()\n");
     //wxLogMessage(_T("ofc_pi: LOAD"));
-    qDebug() << "ofc_pi: LOAD";
+    qDebug() << "oernc_pi: LOAD";
     
     if(m_cryptoKey.Length() && m_fileName.length()){
         
@@ -263,11 +247,87 @@ bool oernc_inStream::Load( )
         if(buf.data()) 
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
         
-        msg.cmd = CMD_OPEN;
-        
+        msg.cmd = CMD_OPEN_RNC_FULL;
+        if(bHeaderOnly)
+            msg.cmd =CMD_OPEN_RNC;
+                
         write(publicSocket, (char*) &msg, sizeof(msg));
+ 
+                // Read the function return code
+        char frcbuf[4];
+        if(!Read(frcbuf, 1).IsOk()){
+            strncpy(err, "Load:  READ error PFC", sizeof(err));
+            return false;
+        }
+        if(frcbuf[0] == '1'){
+            strncpy(err, "Load:  READ error PFCDC", sizeof(err));
+            return false;
+        }
+
+        // Read response, by steps...
+        // 1.  The composite length string
+        char lbuf[100];
         
-       
+        if(!Read(lbuf, 41).IsOk()){
+            strncpy(err, "Load:  READ error PL", sizeof(err));
+            return false;
+        }
+        int lp1, lp2, lp3, lp4, lp5, lpl;
+        sscanf(lbuf, "%d;%d;%d;%d;%d;%d;", &lp1, &lp2, &lp3, &lp4, &lp5, &lpl);
+        m_lenIDat = lpl;
+        
+        int maxLen = wxMax(lp1, lp2); 
+        maxLen = wxMax(maxLen, lp3);
+        maxLen = wxMax(maxLen, lp4);
+        maxLen = wxMax(maxLen, lp5);
+        char *work = (char *)calloc(maxLen+1, sizeof(char));
+        
+        // 5 strings
+        // 1
+        if(!Read(work, lp1).IsOk()){
+            strncpy(err, "Load:  READ error P1", sizeof(err));
+            return false;
+        }
+        work[lp1] = 0;
+        m_ep1 =std::string(work);
+        
+        // 2
+        if(!Read(work, lp2).IsOk()){
+            strncpy(err, "Load:  READ error P2", sizeof(err));
+            return false;
+        }
+        work[lp2] = 0;
+        m_ep2 =std::string(work);
+        
+        // 3
+        if(!Read(work, lp3).IsOk()){
+            strncpy(err, "Load:  READ error P3", sizeof(err));
+            return false;
+        }
+        work[lp3] = 0;
+        m_ep3 =std::string(work);
+        
+        // 4
+        if(!Read(work, lp4).IsOk()){
+            strncpy(err, "Load:  READ error P4", sizeof(err));
+            return false;
+        }
+        work[lp4] = 0;
+        m_ep4 =std::string(work);
+        
+        // 5
+        if(!Read(work, lp5).IsOk()){
+            strncpy(err, "Load:  READ error P5", sizeof(err));
+            return false;
+        }
+        work[lp5] = 0;
+        m_ep5 =std::string(work);
+        
+        free(work);
+
+#if 0       
+  
+/////////////////        
         // Read response, by steps...
         // 1.  The composite length string
         char lbuf[100];
@@ -295,7 +355,6 @@ bool oernc_inStream::Load( )
         }
         work[lp1] = 0;
         m_ep1 =std::string(work);
-        
         
         
         
@@ -361,7 +420,7 @@ bool oernc_inStream::Load( )
         //          for(int i=0 ; i < phdr->Size_Y+1 ; i++)
         //              printf("Offset %d:   %d\n", i, pline_table[i]);
         
-        
+#endif        
         return true;
     }
     
@@ -502,30 +561,6 @@ void oernc_inStream::Shutdown()
     }
 }
 
-compressedHeader *oernc_inStream::GetCompressedHeader()
-{
-    return phdr;
-}
-
-char *oernc_inStream::GetPalleteBlock()
-{ 
-    return pPalleteBlock;
-}
-
-char *oernc_inStream::GetRefBlock()
-{ 
-    return pRefBlock;
-}
-
-char *oernc_inStream::GetPlyBlock()
-{ 
-    return pPlyBlock;
-}
-
-off_t oernc_inStream::GetBitmapOffset( unsigned int y )
-{
-    return pline_table[y];
-}
 
 oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 {

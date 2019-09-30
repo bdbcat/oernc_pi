@@ -32,6 +32,7 @@
 #endif //precompiled headers
 
 #include <wx/dir.h>
+#include <wx/filename.h>
 
 #include <string>
 #include "ochartShop.h"

@@ -45,8 +45,16 @@
 #include <tinyxml.h>
 
 #ifdef __OCPN__ANDROID__
-#include "androidSupport.h"
+#include <QtAndroidExtras/QAndroidJniObject>
 #include "qdebug.h"
+wxString callActivityMethod_vs(const char *method);
+wxString callActivityMethod_ss(const char *method, wxString parm);
+wxString callActivityMethod_s4s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4);
+wxString callActivityMethod_s5s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4, wxString parm5);
+wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4, wxString parm5, wxString parm6);
+wxString callActivityMethod_s2s(const char *method, wxString parm1, wxString parm2);
+void androidShowBusyIcon();
+void androidHideBusyIcon();
 #endif
 
 bool IsDongleAvailable();
@@ -469,11 +477,11 @@ void oernc_pi::OnSetupOptions( void )
     wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
     m_pOptionsPage->SetSizer( sizer );
     
-    m_oesencpanel = new oesencPanel( this, m_pOptionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE );
+    m_shoppanel = new shopPanel( m_pOptionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE );
 
     m_pOptionsPage->InvalidateBestSize();
-    sizer->Add( m_oesencpanel, 1, wxALL | wxEXPAND );
-    m_oesencpanel->FitInside();
+    sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
+    m_shoppanel->FitInside();
 #else
     m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeRNC Charts") );
     if( ! m_pOptionsPage )
@@ -729,6 +737,9 @@ BEGIN_EVENT_TABLE( oerncPrefsDialog, wxDialog )
 EVT_BUTTON( wxID_OK, oerncPrefsDialog::OnPrefsOkClick )
 END_EVENT_TABLE()
 
+#define ANDROID_DIALOG_BACKGROUND_COLOR    wxColour(_T("#7cb0e9"))
+#define ANDROID_DIALOG_BODY_COLOR         wxColour(192, 192, 192)
+
 oerncPrefsDialog::oerncPrefsDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style )
 {
     wxDialog::Create( parent, id, title, pos, size, style );
@@ -742,7 +753,7 @@ oerncPrefsDialog::oerncPrefsDialog( wxWindow* parent, wxWindowID id, const wxStr
         wxBoxSizer* bSizerTop = new wxBoxSizer( wxVERTICAL );
         
         wxPanel *content = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBG_STYLE_ERASE );
-        bSizerTop->Add(content, 0, wxALL|wxEXPAND, WXC_FROM_DIP(10));
+        bSizerTop->Add(content, 0, wxALL|wxEXPAND, 10/*WXC_FROM_DIP(10)*/);
         
         wxBoxSizer* bSizer2 = new wxBoxSizer( wxVERTICAL );
         content->SetSizer(bSizer2);
@@ -1098,7 +1109,7 @@ void oernc_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
 
         // Get XFPR from the oeserverda helper utility.
         //  The target binary executable
-        wxString cmd = g_sencutil_bin;
+        wxString cmd = g_server_bin;
 
 //  Set up the parameter passed as the local app storage directory, and append "cache/" to it
         wxString dataLoc = *GetpPrivateApplicationDataLocation();
@@ -1109,7 +1120,7 @@ void oernc_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
         wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
         
         //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
-        // This will be {dir of g_sencutil_bin}/lib
+        // This will be {dir of g_server_bin}/lib
         wxFileName fnl(cmd);
         wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
         
@@ -1222,7 +1233,7 @@ void oernc_pi_event_handler::OnManageShopClick( wxCommandEvent &event )
 
         // Get XFPR from the oeserverda helper utility.
         //  The target binary executable
-        wxString cmd = g_sencutil_bin;
+        wxString cmd = g_server_bin;
 
 //  Set up the parameter passed as the local app storage directory, and append "cache/" to it
         wxString dataLoc = *GetpPrivateApplicationDataLocation();
@@ -1233,7 +1244,7 @@ void oernc_pi_event_handler::OnManageShopClick( wxCommandEvent &event )
         wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
         
         //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
-        // This will be {dir of g_sencutil_bin}/lib
+        // This will be {dir of g_server_bin}/lib
         wxFileName fnl(cmd);
         wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
         
@@ -1345,7 +1356,7 @@ void oernc_pi_event_handler::OnGetHWIDClick( wxCommandEvent &event )
 
         // Get XFPR from the oeserverda helper utility.
         //  The target binary executable
-        wxString cmd = g_sencutil_bin;
+        wxString cmd = g_server_bin;
 
 //  Set up the parameter passed as the local app storage directory, and append "cache/" to it
         wxString dataLoc = *GetpPrivateApplicationDataLocation();
@@ -1355,7 +1366,7 @@ void oernc_pi_event_handler::OnGetHWIDClick( wxCommandEvent &event )
         wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
         
         //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
-        // This will be {dir of g_sencutil_bin}/lib
+        // This will be {dir of g_server_bin}/lib
         wxFileName fnl(cmd);
         wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
         

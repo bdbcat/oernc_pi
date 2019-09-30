@@ -35,16 +35,24 @@
 
 #include <wx/statline.h>
 //#include <../../wxWidgets/wxWidgets-3.0.2/wxWidgets-3.0.2/include/wx/gtk/gauge.h>
-#include "wxcurl/wx/curl/http.h"
+
+#ifndef __OCPN__ANDROID__
+ #include "wxcurl/wx/curl/http.h"
+#endif
 
 #ifdef WXC_FROM_DIP
 #undef WXC_FROM_DIP
 #endif
-#if wxVERSION_NUMBER >= 3100
-#define WXC_FROM_DIP(x) wxWindow::FromDIP(x, NULL)
-#else
-#define WXC_FROM_DIP(x) x
-#endif
+
+#ifdef __OCPN__ANDROID__
+    #define WXC_FROM_DIP(x) x
+#else    
+    #if wxVERSION_NUMBER >= 3100
+        #define WXC_FROM_DIP(x) wxWindow::FromDIP(x, NULL)
+    #else
+        #define WXC_FROM_DIP(x) x
+    #endif
+#endif    
 
 #include <vector>
 
@@ -594,6 +602,7 @@ public:
 };
 
 
+#ifndef __OCPN__ANDROID__
 class OESENC_CURL_EvtHandler : public wxEvtHandler
 {
 public:
@@ -606,6 +615,7 @@ public:
     
     
 };
+#endif
 
 class oeSENCLogin: public wxDialog
 {

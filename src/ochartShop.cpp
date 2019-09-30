@@ -39,8 +39,10 @@
 #include <wx/dir.h>
 #include "ochartShop.h"
 #include "ocpn_plugin.h"
-#include "wxcurl/wx/curl/http.h"
-#include "wxcurl/wx/curl/thread.h"
+#ifdef __OCPN_USE_CURL__
+    #include "wxcurl/wx/curl/http.h"
+    #include "wxcurl/wx/curl/thread.h"
+#endif    
 #include <tinyxml.h>
 #include "wx/wfstream.h"
 #include <wx/zipstrm.h>
@@ -78,9 +80,13 @@ wxString g_PrivateDataDir;
 wxString g_debugShop;
 
 shopPanel *g_shopPanel;
-OESENC_CURL_EvtHandler *g_CurlEventHandler;
-wxCurlDownloadThread *g_curlDownloadThread;
-wxFFileOutputStream *downloadOutStream;
+
+#ifdef __OCPN_USE_CURL__
+    OESENC_CURL_EvtHandler *g_CurlEventHandler;
+    wxCurlDownloadThread *g_curlDownloadThread;
+    wxFFileOutputStream *downloadOutStream;
+#endif
+    
 bool g_chartListUpdatedOK;
 wxString g_statusOverride;
 wxString g_lastInstallDir;
@@ -106,7 +112,7 @@ extern oernc_pi *g_pi;
 
 
 // Private class implementations
-
+#ifdef __OCPN_USE_CURL__
 size_t wxcurl_string_write_UTF8(void* ptr, size_t size, size_t nmemb, void* pcharbuf)
 {
     size_t iRealSize = size * nmemb;
@@ -247,6 +253,7 @@ std::string wxCurlHTTPNoZIP::GetResponseBody() const
 #endif
     
 }
+#endif          //__OCPN_USE_CURL__
 
 
 //    ChartSetData()
@@ -738,14 +745,33 @@ wxBitmap& itemChart::GetChartThumbnail(int size)
             m_ChartImage = wxImage( file, wxBITMAP_TYPE_ANY);
         }
         else{
+            int iResponseCode;
             if(g_chartListUpdatedOK && thumbLink.length()){  // Do not access network until after first "getList"
+#ifndef __OCPN__ANDROID__                
                 wxCurlHTTP get;
                 get.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
                 bool getResult = get.Get(file, wxString(thumbLink));
 
             // get the response code of the server
-                int iResponseCode;
+                
                 get.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
+#else
+                wxString file_URI = _T("file://") + file;
+                    
+                _OCPN_DLStatus ret = OCPN_downloadFile( wxString(thumbLink), file_URI, _T(""), _T(""), wxNullBitmap, g_shopPanel, OCPN_DLDS_DEFAULT_STYLE, 5);
+
+//OCPN_DLDS_ELAPSED_TIME|OCPN_DLDS_ESTIMATED_TIME|OCPN_DLDS_REMAINING_TIME|OCPN_DLDS_SPEED|OCPN_DLDS_SIZE|OCPN_DLDS_URL|OCPN_DLDS_CAN_PAUSE|OCPN_DLDS_CAN_ABORT|OCPN_DLDS_AUTO_CLOSE,
+
+                wxLogMessage(_T("DLRET"));
+                
+                if(OCPN_DL_NO_ERROR == ret)
+                    iResponseCode = 200;
+                else{
+                    iResponseCode = ret;
+                    //m_thumbRetry++;
+                }
+#endif
+                
             
                 if(iResponseCode == 200){
                     if(::wxFileExists(file)){
@@ -1868,7 +1894,7 @@ int doLogin()
 {
     oeSENCLogin login(g_shopPanel);
     login.ShowModal();
-    if(!login.GetReturnCode() == 0){
+    if(!(login.GetReturnCode() == 0)){
         g_shopPanel->setStatusText( _("Invalid Login."));
         wxYield();
         return 55;
@@ -1890,21 +1916,27 @@ int doLogin()
     if(g_debugShop.Len())
         loginParms += _T("&debug=") + g_debugShop;
     
+    int iResponseCode =0;
+    TiXmlDocument *doc = 0;
+    size_t res = 0;
+#ifdef __OCPN_USE_CURL__    
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-    size_t res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
     // get the response code of the server
-    int iResponseCode;
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
+    if(iResponseCode == 200)
+        doc = new TiXmlDocument();
+
+#else
+#endif
     
     if(iResponseCode == 200){
-        TiXmlDocument * doc = new TiXmlDocument();
-        const char *rr = doc->Parse( post.GetResponseBody().c_str());
-        
-        wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
-        wxLogMessage(_T("doLogin results:"));
-        wxLogMessage(p);
+//        const char *rr = doc->Parse( post.GetResponseBody().c_str());
+//         wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
+//         wxLogMessage(_T("doLogin results:"));
+//         wxLogMessage(p);
         
         wxString queryResult;
         wxString loginKey;
@@ -2192,9 +2224,9 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                             TiXmlNode *childVal = childChart->FirstChild();
                             if(childVal){
                                 wxString mxSlots = wxString::FromUTF8(childVal->Value());
-                                long slots;
-                                mxSlots.ToLong(&slots);
-                                pChart->maxSlots = slots;
+                                long cslots = -1;
+                                mxSlots.ToLong(&cslots);
+                                pChart->maxSlots = cslots;
                             }
                         }
 
@@ -2297,27 +2329,35 @@ int getChartList( bool bShowErrorDialogs = true){
     if(g_debugShop.Len())
         loginParms += _T("&debug=") + g_debugShop;
 
+
+    int iResponseCode = 0;
+    size_t res = 0;
+    std::string responseBody;
     
+#ifdef __OCPN_USE_CURL__    
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
     
-    size_t res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
     // get the response code of the server
-    int iResponseCode;
+    
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
     
     std::string a = post.GetDetailedErrorString();
     std::string b = post.GetErrorString();
     std::string c = post.GetResponseBody();
     
+    responseBody = post.GetResponseBody();
     //printf("%s", post.GetResponseBody().c_str());
     
-    wxString tt(post.GetResponseBody().data(), wxConvUTF8);
+    //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
     //wxLogMessage(tt);
+#else
+#endif    
     
     if(iResponseCode == 200){
-        wxString result = ProcessResponse(post.GetResponseBody());
+        wxString result = ProcessResponse(responseBody);
         
         return checkResult( result, bShowErrorDialogs );
     }
@@ -2368,17 +2408,25 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     wxString sqid;
     sqid.Printf(_T("%1d"), chart->quantityList[qtyIndex].quantityId);
     loginParms += _T("&quantityId=") + sqid;
-    
+
+    int iResponseCode =0;
+    size_t res = 0;
+    std::string responseBody;
+
+#ifdef __OCPN_USE_CURL__    
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-    size_t res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
     // get the response code of the server
-    int iResponseCode;
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
+    if(iResponseCode == 200)
+        responseBody= post.GetResponseBody();
+#else
+#endif
     
     if(iResponseCode == 200){
-        wxString result = ProcessResponse(post.GetResponseBody());
+        wxString result = ProcessResponse(responseBody);
 
         if(result.IsSameAs(_T("1"))){                    // Good result
             // Create a new slot and record the assigned slotUUID, etc
@@ -2450,17 +2498,25 @@ int doUploadXFPR(bool bDongle)
             loginParms += _T("&xfprName=") + fprName;
             
             wxLogMessage(loginParms);
+
+            int iResponseCode = 0;
+            size_t res = 0;
+            std::string responseBody;
             
+#ifdef __OCPN_USE_CURL__            
             wxCurlHTTPNoZIP post;
             post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-            size_t res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+            res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
             
             // get the response code of the server
-            int iResponseCode;
             post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
-            
+            if(iResponseCode == 200)
+                responseBody = post.GetResponseBody();
+
+#else
+#endif            
             if(iResponseCode == 200){
-                wxString result = ProcessResponse(post.GetResponseBody());
+                wxString result = ProcessResponse(responseBody);
                 
                 int iret = checkResult(result);
                 
@@ -2531,17 +2587,26 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     
     wxLogMessage(loginParms);
     
+    int iResponseCode = 0;
+    size_t res = 0;
+    std::string responseBody;
+            
+#ifdef __OCPN_USE_CURL__            
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-    size_t res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
     // get the response code of the server
     int iResponseCode;
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
+    if(iResponseCode == 200)
+        responseBody = post.GetResponseBody();
+#else
+#endif
     
     if(iResponseCode == 200){
         // Expecting complex links with embedded entities, so process the "&" correctly
-        wxString result = ProcessResponse(post.GetResponseBody(), true);
+        wxString result = ProcessResponse(responseBody, true);
         
         return checkResult(result);
     }
@@ -3570,7 +3635,9 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     
     loadShopConfig();
     
+#ifdef __OCPN_USE_CURL__
     g_CurlEventHandler = new OESENC_CURL_EvtHandler;
+#endif
     
     g_shopPanel = this;
     m_binstallChain = false;
@@ -4570,13 +4637,14 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             }
         }
 
+#ifdef __OCPN_USE_CURL__        
         g_curlDownloadThread = new wxCurlDownloadThread(g_CurlEventHandler);
         downloadOutStream = new wxFFileOutputStream(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
         g_curlDownloadThread->SetURL(gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
         g_curlDownloadThread->SetOutputStream(downloadOutStream);
         //wxLogMessage(_T("Downloading: ") + gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
         g_curlDownloadThread->Download();
-
+#endif
         gtargetSlot->idlQueue++;        // next
         
         return;
@@ -5002,7 +5070,8 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
         m_prepareTimer.Stop();
         g_ipGauge->Stop();
     }
-    
+
+#ifdef __OCPN_USE_CURL__    
     if(g_curlDownloadThread){
         m_bAbortingDownload = true;
         g_curlDownloadThread->Abort();
@@ -5010,6 +5079,7 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
         setStatusTextProgress(_T(""));
         m_binstallChain = true;
     }
+#endif    
     
     setStatusText( _("Status: OK"));
     m_buttonCancelOp->Hide();
@@ -5161,7 +5231,7 @@ bool shopPanel::doSystemNameWizard(  )
     
     
     #ifdef __OCPN__ANDROID__
-    androidHideBusyIcon();
+//    androidHideBusyIcon();
     #endif             
     int ret = dlg.ShowModal();
     
@@ -5573,6 +5643,7 @@ void InProgressIndicator::Stop()
      SetValue(0);
 }
 
+#ifdef __OCPN_USE_CURL__
 
 //-------------------------------------------------------------------------------------------
 OESENC_CURL_EvtHandler::OESENC_CURL_EvtHandler()
@@ -5662,6 +5733,8 @@ void OESENC_CURL_EvtHandler::onProgressEvent(wxCurlDownloadEvent &evt)
     }
     
 }
+#endif   //__OCPN_USE_CURL__
+
 
 //IMPLEMENT_DYNAMIC_CLASS( oeSENCLogin, wxDialog )
 BEGIN_EVENT_TABLE( oeSENCLogin, wxDialog )

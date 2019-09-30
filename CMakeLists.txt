@@ -136,6 +136,8 @@ IF(_wx_selected_config MATCHES "androideabi-qt")
   SET(QT_ANDROID "ON")
   SET(QT_LINUX "OFF")
   SET(QT "ON")
+  ADD_DEFINITIONS("-Wno-inconsistent-missing-override -Wno-potentially-evaluated-expression")
+  SET(CMAKE_SKIP_BUILD_RPATH  TRUE)
 ENDIF(_wx_selected_config MATCHES "androideabi-qt")
 
 ENDIF(DEFINED _wx_selected_config)
@@ -161,8 +163,10 @@ IF(NOT WIN32)
  ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
 
  IF(NOT APPLE)
-  SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-Bsymbolic")
-  ADD_DEFINITIONS( "-rdynamic" )
+  SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-Bsymbolic ")
+  IF(NOT QT_ANDROID)
+   ADD_DEFINITIONS( "-rdynamic" )
+  ENDIF(NOT QT_ANDROID)
  ELSE(NOT APPLE)
   SET(CMAKE_SHARED_LINKER_FLAGS "-Wl -undefined dynamic_lookup")
   ADD_DEFINITIONS( "-Wno-overloaded-virtual" )
@@ -209,9 +213,9 @@ SET(SRC_OERNC
             src/validator.h
      )
 
-IF(QT_ANDROID)
-    SET( SRC_OERNC ${SRC_OERNC} src/androidSupport.cpp )
-ENDIF(QT_ANDROID)
+#IF(QT_ANDROID)
+#    SET( SRC_OERNC ${SRC_OERNC} src/androidSupport.cpp )
+#ENDIF(QT_ANDROID)
 
 
 IF(NOT QT_ANDROID)
@@ -290,8 +294,9 @@ ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRC_OERNC} ${SRC_WXCURL} ${SRC_LTINYXML})
 
 IF (QT_ANDROID )
     TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${OCPN_Core_LIBRARIES} )
-    TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} "-lgnustl_shared")
+    TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} "-lc++_shared")
     TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} "-lz" )
+    TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} "${OCPN_Base}/${OCPN_Build}/libgorp.so" )
 ENDIF(QT_ANDROID)
 
 IF(WIN32)

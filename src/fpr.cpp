@@ -31,18 +31,20 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 #include "wx/filename.h"
+#include "wx/tokenzr.h"
 
 #ifdef __MSVC__
 #include <windows.h>
 #include <Shlobj.h>
 #endif
 
-
+#include "fpr.h"
 #include "ocpn_plugin.h"
 
 
 extern wxString g_server_bin;
-
+extern wxString g_deviceInfo;
+extern wxString g_systemName;
 
 #ifdef __OCPN__ANDROID__
 void androidGetDeviceName()
