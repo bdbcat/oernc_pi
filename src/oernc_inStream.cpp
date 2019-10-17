@@ -103,15 +103,13 @@ oernc_inStream::oernc_inStream()
 
 oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypto_key, bool bHeaderOnly )
 {
-    qDebug() << "oernc_inStream::ctor()";
+    //qDebug() << "oernc_inStream::ctor()";
     
     Init();
-    qDebug() << "oernc_inStream::init back";
     
     m_fileName = file_name;
     m_cryptoKey = crypto_key;
     
-    qDebug() << "oernc_inStream::calling open()";
     m_OK = Open( );
     if(m_OK){
         if(!Load(bHeaderOnly)){
@@ -127,15 +125,6 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
 //         publicSocket = -1;
 //     }
     
-    // Done with the private FIFO
-    
-/*    if(-1 != privatefifo){
-        if(g_debugLevel)printf("   Close private fifo: %s \n", privatefifo_name);
-        close(privatefifo);
-        if(g_debugLevel)printf("   unlink private fifo: %s \n", privatefifo_name);
-        unlink(privatefifo_name);
-    }
- */   
     privatefifo = -1;
     m_lastBytesRead = 0;
     m_lastBytesReq = 0;
@@ -158,7 +147,7 @@ oernc_inStream::~oernc_inStream()
 
 void oernc_inStream::Init()
 {
-    qDebug() << "oernc_inStream::Init()";
+    //qDebug() << "oernc_inStream::Init()";
     
     publicSocket = -1;
     
@@ -187,7 +176,7 @@ void oernc_inStream::Init()
 void oernc_inStream::Close()
 {
     wxLogMessage(_T("oernc_inStream::Close()"));
-    qDebug() << "oernc_inStream::Close()";
+    //qDebug() << "oernc_inStream::Close()";
     
     if(-1 != privatefifo){
         if(g_debugLevel)printf("   Close private fifo: %s \n", privatefifo_name);
@@ -218,13 +207,12 @@ void oernc_inStream::Close()
 bool oernc_inStream::Open( )
 {
     wxLogMessage(_T("oernc_inStream::Open()"));
-    qDebug() << "oernc_inStream::Open()";
-    qDebug() << "sockLen: " << sockLen;
+    //qDebug() << "oernc_inStream::Open()";
+    //qDebug() << "sockLen: " << sockLen;
     //qDebug() << "sockName: [" << (const char *)sockAddr.sun_path+1 << "]"; 
     
     if (connect(publicSocket, (const struct sockaddr*) &sockAddr, sockLen) < 0) {
         wxLogMessage(_T("oernc_pi: Could not connect to PUBLIC socket"));
-        qDebug() << "oernc_pi::Open() Could not connect to PUBLIC socket";
         return false;
     }
     
@@ -233,7 +221,6 @@ bool oernc_inStream::Open( )
 
 bool oernc_inStream::readPayload( unsigned char *p )
 {
-    qDebug() << "RPL";
     if(!Read(p, m_lenIDat).IsOk()){
         strncpy(err, "Load:  READ error Payload1", sizeof(err));
         return false;
@@ -245,7 +232,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
 { 
     //printf("LOAD()\n");
     //wxLogMessage(_T("ofc_pi: LOAD"));
-    qDebug() << "oernc_pi: LOAD";
+    //qDebug() << "oernc_pi: LOAD";
     
     if(m_cryptoKey.Length() && m_fileName.length()){
         
@@ -294,7 +281,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         sscanf(lbuf, "%d;%d;%d;%d;%d;%d;", &lp1, &lp2, &lp3, &lp4, &lp5, &lpl);
         m_lenIDat = lpl;
         
-        qDebug() << "read41 " << lp1 << lp2 << lp3 << lp4 << lp5 << lpl;
+        //qDebug() << "read41 " << lp1 << lp2 << lp3 << lp4 << lp5 << lpl;
         
         int maxLen = wxMax(lp1, lp2); 
         maxLen = wxMax(maxLen, lp3);
@@ -311,7 +298,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp1] = 0;
         m_ep1 =std::string(work);
-        qDebug() << "ep1: " << m_ep1.c_str();
+        //qDebug() << "ep1: " << m_ep1.c_str();
 
         // 2
         if(!Read(work, lp2).IsOk()){
@@ -321,7 +308,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp2] = 0;
         m_ep2 =std::string(work);
-        qDebug() << "ep2: " << m_ep2.c_str();
+        //qDebug() << "ep2: " << m_ep2.c_str();
         
         // 3
         if(!Read(work, lp3).IsOk()){
@@ -352,102 +339,6 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         
         free(work);
 
-#if 0       
-  
-/////////////////        
-        // Read response, by steps...
-        // 1.  The composite length string
-        char lbuf[100];
-        
-        if(!Read(lbuf, 41).IsOk()){
-            strncpy(err, "Load:  READ error PL", sizeof(err));
-            return false;
-        }
-        int lp1, lp2, lp3, lp4, lp5, lIdat;
-        sscanf(lbuf, "%X;%X;%X;%X;%X;", &lp1, &lp2, &lp3, &lp4, &lp5, &lIdat);
-        
-        m_lenIDat = lIdat;
-        
-        int maxLen = wxMax(lp1, lp2); 
-        maxlen = wxMax(maxLen, lp3);
-        maxlen = wxMax(maxLen, lp4);
-        maxlen = wxMax(maxLen, lp5);
-        char *work = (char *)calloc(maxLen, sizeof(char));
-        
- 
-        // 5 strings
-        if(!Read(work, lp1).IsOk()){
-            strncpy(err, "Load:  READ error P1", sizeof(err));
-            return false;
-        }
-        work[lp1] = 0;
-        m_ep1 =std::string(work);
-        
-        
-        
-        
-        // 1.  Compressed Header
-        if(NULL == phdr){
-            phdr = (compressedHeader *)calloc(1, sizeof(compressedHeader));
-            if(NULL == phdr){
-                strncpy(err, "Load:  cannot allocate memory", sizeof(err));
-                return false;
-            }
-        }
-        if(!Read(phdr, sizeof(compressedHeader)).IsOk()){
-            strncpy(err, "Load:  READ error chdr", sizeof(err));
-            return false;
-        }
-        
-        // 2.  Palette Block
-        if(phdr->nPalleteLines){
-            pPalleteBlock = (char *)calloc( phdr->nPalleteLines,  PALLETE_LINE_SIZE);
-            if(!Read(pPalleteBlock, phdr->nPalleteLines * PALLETE_LINE_SIZE).IsOk()){
-                strncpy(err, "Load:  READ error pal", sizeof(err));
-                return false;
-            }
-        }
-        
-        for(int i=0 ; i < phdr->nPalleteLines ; i++){
-            char *pl = &pPalleteBlock[i * PALLETE_LINE_SIZE];
-            int yyp = 4;
-            //              printf("Offset %d:   %d\n", i, pline_table[i]);
-        }
-        
-        // 3.  Ref Block
-        if(phdr->nRefLines){
-            pRefBlock = (char *)calloc( phdr->nRefLines,  REF_LINE_SIZE);
-            if(!Read(pRefBlock, phdr->nRefLines * REF_LINE_SIZE).IsOk()){
-                strncpy(err, "Load:  READ error ref", sizeof(err));
-                return false;
-            }
-        }
-        
-        // 4.  Ply Block
-        if(phdr->nPlyLines){
-            pPlyBlock = (char *)calloc( phdr->nPlyLines,  PLY_LINE_SIZE);
-            if(!Read(pPlyBlock, phdr->nPlyLines * PLY_LINE_SIZE).IsOk()){
-                strncpy(err, "Load:  READ error ply", sizeof(err));
-                return false;
-            }
-        }
-        
-        // 5.  Line offset Block
-        pline_table = NULL;
-        pline_table = (int *)malloc((phdr->Size_Y+1) * sizeof(int) );               
-        if(!pline_table){
-            strncpy(err, "Load:  cannot allocate memory, pline", sizeof(err));
-            return false;
-        }
-        if(!Read(pline_table, (phdr->Size_Y+1) * sizeof(int)).IsOk()){
-            strncpy(err, "Load:  READ error off", sizeof(err));
-            return false;
-        }
-        
-        //          for(int i=0 ; i < phdr->Size_Y+1 ; i++)
-        //              printf("Offset %d:   %d\n", i, pline_table[i]);
-        
-#endif        
         return true;
     }
     
@@ -494,29 +385,29 @@ bool oernc_inStream::Ok()
 
 bool oernc_inStream::isAvailable(wxString user_key)
 {
-    qDebug() << "\nTestAvail";
+    //qDebug() << "\nTestAvail";
                         
                         if(m_uncrypt_stream){
                             return m_uncrypt_stream->IsOk();
                         }
                         else{
                             if(!Open()){
-                                qDebug() << "TestAvail Open FAILED\n";
-                        return false;
+                                //qDebug() << "TestAvail Open FAILED\n";
+                                return false;
                             }
                             
-                            if( SendServerCommand(CMD_TEST_AVAIL) ){
-                                qDebug() << "TestAvail SendServerCommand OK" ;
+                      if( SendServerCommand(CMD_TEST_AVAIL) ){
+                        //qDebug() << "TestAvail SendServerCommand OK" ;
                         char response[8];
                         memset( response, 0, 8);
                         int nTry = 5;
                         do{
                             if( Read(response, 2).IsOk() ){
-                                qDebug() << "TestAvail Response Got" << response ;
-                        return( !strncmp(response, "OK", 2) );
+                                //qDebug() << "TestAvail Response Got" << response ;
+                                return( !strncmp(response, "OK", 2) );
                             }
                             
-                            qDebug() << "Sleep on TestAvail: %d", nTry;
+                            //qDebug() << "Sleep on TestAvail: %d", nTry;
                         wxMilliSleep(100);
                         nTry--;
                         }while(nTry);
@@ -524,8 +415,8 @@ bool oernc_inStream::isAvailable(wxString user_key)
                         return false;
                             }
                             else{
-                                qDebug() << "TestAvail Open Error" ;
-                        return false;
+                                //qDebug() << "TestAvail Open Error" ;
+                                return false;
                             }
                         }
                         
@@ -652,17 +543,16 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
                     bufRun += bytesRead;
                     totalBytesRead += bytesRead;
                 }
-                qDebug() << "remains" << nLoop << remains;
             } while( (remains > 0) && (nLoop) );
             
-            qDebug() << " done nLoop" << nLoop;
             m_OK = ((size_t)totalBytesRead == size);
 
             m_lastBytesRead = totalBytesRead;
             m_lastBytesReq = size;
         }
         else{
-            qDebug() << "socket gone";
+            //qDebug() << "socket gone";
+            m_OK=false;
         }
         
         return *this;
@@ -900,7 +790,6 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp1] = 0;
         m_ep1 =std::string(work);
-        qDebug() << "ep1: " << m_ep1.c_str();
         
         // 2
         if(!Read(work, lp2).IsOk()){
@@ -909,7 +798,6 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp2] = 0;
         m_ep2 =std::string(work);
-        qDebug() << "ep2: " << m_ep2.c_str();
         
         // 3
         if(!Read(work, lp3).IsOk()){

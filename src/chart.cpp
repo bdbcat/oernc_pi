@@ -745,14 +745,12 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
         m_nColors = ptmp;
         pp->nFwd = m_nColors;
         pp->nRev = m_nColors;
-        //qDebug() << "m_nColors: " << m_nColors;
         pp->FwdPalette = (int *)realloc(pp->FwdPalette, (pp->nFwd + 1) * sizeof(int));
         pp->RevPalette = (int *)realloc(pp->RevPalette, (pp->nRev + 1) * sizeof(int));
         
         for(int j=0 ; j < m_nColors ; j++){
             token = tkpz.GetNextToken();      
             token.ToLong(&ptmp, 16);            //  a color
-            //qDebug() << "color " << i << j << token.mb_str() << ptmp;
             //wxString msg;
             //msg.Printf(_T("Pallette %d: nColors %d: Color %d: "), i, m_nColors, j);
             //if(i == 0) wxLogMessage(msg + token);
@@ -864,20 +862,8 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
       // Get the image payload
       if(ifs_hdr->m_lenIDat){
         m_imageComp = (unsigned char *)malloc(ifs_hdr->m_lenIDat);
-        memset(m_imageComp, 0x55, 16);
-        bool rple = ifs_hdr->readPayload(m_imageComp);
+        ifs_hdr->readPayload(m_imageComp);
 
-        
-        qDebug() << "m_imageComp:" << rple << ifs_hdr->m_lenIDat;
-        qDebug() << m_imageComp[0];
-        qDebug() << m_imageComp[1];
-        qDebug() << m_imageComp[2];
-        qDebug() << m_imageComp[3];
-        qDebug() << m_imageComp[4];
-        qDebug() << m_imageComp[5];
-        qDebug() << m_imageComp[6];
-        qDebug() << m_imageComp[7];
-        
         if(!ifs_hdr->Ok()){
             wxString msg(_T("   OERNC_PI: chart local server payload error, final: "));
             msg.Append(m_FullPath);
@@ -886,8 +872,8 @@ int Chart_oeRNC::Init( const wxString& name, int init_flags )
             return INIT_FAIL_REMOVE;
         }
         
-         int inflate_err = DecodeImage();
-// 
+//         int inflate_err = DecodeImage();
+ 
 //         if(inflate_err){
 //             wxString msg(_T("   OERNC_PI: chart local server inflate error, final: "));
 //             msg.Append(m_FullPath);
@@ -922,7 +908,6 @@ int Chart_oeRNC::DecodeImage( void )
 //        printf("Inflate: %g\n", sw.GetTime());
 //#endif
         if(inflate_err){
-            qDebug() << "inflate_err: " << inflate_err;
             wxString msg(_T("   OERNC_PI: chart local server inflate error, final: "));
             msg.Append(m_FullPath);
             wxLogMessage(msg);
@@ -3096,8 +3081,6 @@ bool Chart_oeRNC::GetAndScaleData(unsigned char *ppn, wxRect& source, int source
 
 }
 
-//#define __NEED_PALETTE_REV__ 1
-
 bool Chart_oeRNC::GetChartBits(wxRect& source, unsigned char *pPix, int sub_samp)
 {
     wxCriticalSectionLocker locker(m_critSect);
@@ -3553,8 +3536,6 @@ do { \
 int   Chart_oeRNC::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int xl, int sub_samp)
 
 {
-   // qDebug() << "BSBGetScanline" << m_nColors << y << BPP << sub_samp;
-    
       unsigned char *prgb = pLineBuf;
 //      int nValueShift, iPixel = 0;
 //      unsigned char byValueMask, byCountMask;
@@ -3606,9 +3587,7 @@ int   Chart_oeRNC::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int x
             while(ix < xl-1)
             {
                   unsigned char cur_by = *pCL;
-                  //qDebug() << "cur_by" << y << xl-ix << cur_by;
                   rgbval = (int)(pPalette[cur_by]);
-                  //qDebug() << "rgbval" << y << rgbval;
                   while((ix < xl-1))
                   {
                         if(cur_by != *pCL)
@@ -6764,7 +6743,6 @@ int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, si
 
     int ec = inflateInit(&stream);
     if(ec != Z_OK){
-        qDebug() << "inflateInit fail" << ec; 
         return ec;
     }
 
@@ -6813,17 +6791,12 @@ int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, si
            the next scanline's filter byte at the end,
            the last scanline will end up being 1 byte "shorter". */
         unsigned char filter;
-        qDebug() << "First InflateLine:" ;
         ret = read_scanline_bytes( &stream, &filter, 1);
         if(ret)
             goto decode_err;
 
-        qDebug() << "InflateLineFilter:" << filter;
-
         for(scanline_idx=0; scanline_idx < (unsigned int)Size_Y; scanline_idx++)
         {
-            qDebug() << "InflateLine:" << scanline_idx << Size_Y;
-            
             /* The last scanline is 1 byte "shorter" */
             if(scanline_idx == (unsigned int)(Size_Y - 1))
                 ret = read_scanline_bytes( &stream, scanline, scanline_width - 1);
@@ -6869,9 +6842,6 @@ decode_err:
 
     inflateEnd(&stream);
     free( scanline );
-
-    if(ret)
-        qDebug() << "inflate fail" << ret; 
 
     return ret;
 }
