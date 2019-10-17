@@ -60,8 +60,9 @@ int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
     int nameLen = strlen(name);
     if (nameLen >= (int) sizeof(pAddr->sun_path) -1)  /* too long? */
         return -1;
+    memset(pAddr, 'x', sizeof(pAddr));
     pAddr->sun_path[0] = '\0';  /* abstract namespace */
-    strcpy(pAddr->sun_path+1, name);
+    strncpy(pAddr->sun_path+1, name, nameLen);
     pAddr->sun_family = AF_LOCAL;
     *pSockLen = 1 + nameLen + offsetof(struct sockaddr_un, sun_path);
     return 0;
@@ -84,10 +85,13 @@ int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
     int nameLen = strlen(name);
     if (nameLen >= (int) sizeof(pAddr->sun_path) -1)  /* too long? */
         return -1;
+    //memset(pAddr, 'x', sizeof(pAddr));
     pAddr->sun_path[0] = '\0';  /* abstract namespace */
-    strcpy(pAddr->sun_path+1, name);
+    strncpy(pAddr->sun_path+1, name, nameLen);
     pAddr->sun_family = AF_LOCAL;
     *pSockLen = 1 + nameLen + offsetof(struct sockaddr_un, sun_path);
+    //qDebug() << "makeAddr::sockName: [" << pAddr->sun_path[1] << "]"; 
+
     return 0;
 }
 
@@ -117,11 +121,11 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
     }
     
     
-    if(-1 != publicSocket){
-        //qDebug() << "Close() Close Socket" << publicSocket;
-        close( publicSocket );
-        publicSocket = -1;
-    }
+//     if(-1 != publicSocket){
+//         //qDebug() << "Close() Close Socket" << publicSocket;
+//         close( publicSocket );
+//         publicSocket = -1;
+//     }
     
     // Done with the private FIFO
     
@@ -215,7 +219,8 @@ bool oernc_inStream::Open( )
 {
     wxLogMessage(_T("oernc_inStream::Open()"));
     qDebug() << "oernc_inStream::Open()";
-    //qDebug() << publicSocket;
+    qDebug() << "sockLen: " << sockLen;
+    //qDebug() << "sockName: [" << (const char *)sockAddr.sun_path+1 << "]"; 
     
     if (connect(publicSocket, (const struct sockaddr*) &sockAddr, sockLen) < 0) {
         wxLogMessage(_T("oernc_pi: Could not connect to PUBLIC socket"));
@@ -223,6 +228,16 @@ bool oernc_inStream::Open( )
         return false;
     }
     
+    return true;
+}
+
+bool oernc_inStream::readPayload( unsigned char *p )
+{
+    qDebug() << "RPL";
+    if(!Read(p, m_lenIDat).IsOk()){
+        strncpy(err, "Load:  READ error Payload1", sizeof(err));
+        return false;
+    }
     return true;
 }
 
@@ -257,10 +272,12 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         char frcbuf[4];
         if(!Read(frcbuf, 1).IsOk()){
             strncpy(err, "Load:  READ error PFC", sizeof(err));
+            qDebug() << err;
             return false;
         }
         if(frcbuf[0] == '1'){
             strncpy(err, "Load:  READ error PFCDC", sizeof(err));
+            qDebug() << err;
             return false;
         }
 
@@ -270,11 +287,14 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         
         if(!Read(lbuf, 41).IsOk()){
             strncpy(err, "Load:  READ error PL", sizeof(err));
-            return false;
+             qDebug() << err;
+           return false;
         }
         int lp1, lp2, lp3, lp4, lp5, lpl;
         sscanf(lbuf, "%d;%d;%d;%d;%d;%d;", &lp1, &lp2, &lp3, &lp4, &lp5, &lpl);
         m_lenIDat = lpl;
+        
+        qDebug() << "read41 " << lp1 << lp2 << lp3 << lp4 << lp5 << lpl;
         
         int maxLen = wxMax(lp1, lp2); 
         maxLen = wxMax(maxLen, lp3);
@@ -286,22 +306,27 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         // 1
         if(!Read(work, lp1).IsOk()){
             strncpy(err, "Load:  READ error P1", sizeof(err));
+            qDebug() << err;
             return false;
         }
         work[lp1] = 0;
         m_ep1 =std::string(work);
-        
+        qDebug() << "ep1: " << m_ep1.c_str();
+
         // 2
         if(!Read(work, lp2).IsOk()){
             strncpy(err, "Load:  READ error P2", sizeof(err));
-            return false;
+             qDebug() << err;
+           return false;
         }
         work[lp2] = 0;
         m_ep2 =std::string(work);
+        qDebug() << "ep2: " << m_ep2.c_str();
         
         // 3
         if(!Read(work, lp3).IsOk()){
             strncpy(err, "Load:  READ error P3", sizeof(err));
+            qDebug() << err;
             return false;
         }
         work[lp3] = 0;
@@ -310,6 +335,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         // 4
         if(!Read(work, lp4).IsOk()){
             strncpy(err, "Load:  READ error P4", sizeof(err));
+            qDebug() << err;
             return false;
         }
         work[lp4] = 0;
@@ -318,6 +344,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         // 5
         if(!Read(work, lp5).IsOk()){
             strncpy(err, "Load:  READ error P5", sizeof(err));
+            qDebug() << err;
             return false;
         }
         work[lp5] = 0;
@@ -607,7 +634,7 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
                 bytesRead = read(publicSocket, bufRun, bytes_to_read );
                 #endif                
                 
-                qDebug() << "Bytes Read " << bytesRead;
+                //qDebug() << "Bytes Read " << bytesRead;
                 
                 // Server may not have opened the Write end of the FIFO yet
                 if(bytesRead == 0){
@@ -625,12 +652,17 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
                     bufRun += bytesRead;
                     totalBytesRead += bytesRead;
                 }
+                qDebug() << "remains" << nLoop << remains;
             } while( (remains > 0) && (nLoop) );
             
+            qDebug() << " done nLoop" << nLoop;
             m_OK = ((size_t)totalBytesRead == size);
 
             m_lastBytesRead = totalBytesRead;
             m_lastBytesReq = size;
+        }
+        else{
+            qDebug() << "socket gone";
         }
         
         return *this;
@@ -868,6 +900,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp1] = 0;
         m_ep1 =std::string(work);
+        qDebug() << "ep1: " << m_ep1.c_str();
         
         // 2
         if(!Read(work, lp2).IsOk()){
@@ -876,6 +909,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp2] = 0;
         m_ep2 =std::string(work);
+        qDebug() << "ep2: " << m_ep2.c_str();
         
         // 3
         if(!Read(work, lp3).IsOk()){

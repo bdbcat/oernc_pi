@@ -48,7 +48,7 @@ piScreenLogContainer::piScreenLogContainer()
 
 piScreenLogContainer::piScreenLogContainer( wxWindow *parent, wxString title, wxSize size )
 {
-    wxSize tsize = wxSize(500,400);
+    wxSize tsize = wxSize(100,100);
     if( (size.x >0) && (size.y > 0) )
         tsize = size;
         

@@ -36,6 +36,8 @@
 #include <wx/statline.h>
 //#include <../../wxWidgets/wxWidgets-3.0.2/wxWidgets-3.0.2/include/wx/gtk/gauge.h>
 
+#include "ocpn_plugin.h"
+
 #ifndef __OCPN__ANDROID__
  #include "wxcurl/wx/curl/http.h"
 #endif
@@ -481,6 +483,8 @@ public:
     int processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task);
     bool validateSHA256(std::string fileName, std::string shaSum);
 
+    void onDLEvent(OCPN_downloadEvent &evt);
+
     int m_prepareTimerCount;
     int m_prepareTimeout;
     int m_prepareProgress;
@@ -492,6 +496,9 @@ public:
     bool m_binstallChain;
     bool m_bAbortingDownload;
     bool m_startedDownload;
+    bool m_bTransferComplete;
+    bool m_bTransferSuccess;
+    bool m_bconnected;
     
     ocValidator *m_validator;
 };

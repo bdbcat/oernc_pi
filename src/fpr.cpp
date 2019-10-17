@@ -32,6 +32,7 @@
 #endif //precompiled headers
 #include "wx/filename.h"
 #include "wx/tokenzr.h"
+#include "wx/dir.h"
 
 #ifdef __MSVC__
 #include <windows.h>
@@ -41,6 +42,9 @@
 #include "fpr.h"
 #include "ocpn_plugin.h"
 
+#ifdef __OCPN__ANDROID__
+#include "androidSupport.h"
+#endif
 
 extern wxString g_server_bin;
 extern wxString g_deviceInfo;
@@ -70,6 +74,7 @@ void androidGetDeviceName()
 
 bool IsDongleAvailable()
 {
+#ifndef __OCPN__ANDROID__    
     wxString cmd = g_server_bin;
     cmd += _T(" -s ");                  // Available?
 
@@ -92,6 +97,7 @@ bool IsDongleAvailable()
     }
 
     g_server_bin.Clear();
+#endif
     
     return false;
 }
@@ -99,7 +105,8 @@ bool IsDongleAvailable()
 unsigned int GetDongleSN()
 {
     unsigned int rv = 0;
-    
+ 
+#ifndef __OCPN__ANDROID__    
     wxString cmd = g_server_bin;
     cmd += _T(" -t ");                  // SN
 
@@ -112,7 +119,7 @@ unsigned int GetDongleSN()
         line.ToLong(&sn, 10);
         rv = sn;
     }
-    
+#endif    
     return rv;
 }
     
@@ -139,6 +146,7 @@ wxString GetServerVersionString()
 
 wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
 {
+#ifndef __OCPN__ANDROID__    
             
             wxString msg1;
             wxString fpr_file;
@@ -338,5 +346,57 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
         else
             return fpr_file;
         
+#else   // android
+
+        // Get XFPR from the oeserverda helper utility.
+        //  The target binary executable
+        wxString cmd = g_server_bin;
+
+//  Set up the parameter passed as the local app storage directory, and append "cache/" to it
+        wxString dataLoc = *GetpPrivateApplicationDataLocation();
+        wxFileName fn(dataLoc);
+        wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        dataDir += _T("cache/");
+
+        wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        
+        //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
+        // This will be {dir of g_server_bin}
+        wxFileName fnl(cmd);
+        wxString libDir = fnl.GetPath();
+        
+        wxLogMessage(_T("oernc_pi: Getting XFPR: Starting: ") + cmd );
+        wxLogMessage(_T("oernc_pi: Getting XFPR: Parms: ") + rootDir + _T(" ") + dataDir + _T(" ") + libDir );
+
+        wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-g"), dataDir, libDir);
+
+        wxLogMessage(_T("oernc_pi: Start Result: ") + result);
+
+        bool berror = true;            //TODO
+        
+        // Find the file...
+        wxArrayString files;
+        wxString lastFile = _T("NOT_FOUND");
+        time_t tmax = -1;
+        size_t nf = wxDir::GetAllFiles(dataDir, &files, _T("*.fpr"), wxDIR_FILES);
+        if(nf){
+            for(size_t i = 0 ; i < files.GetCount() ; i++){
+                qDebug() << "looking at FPR file: " << files[i].mb_str();
+                time_t t = ::wxFileModificationTime(files[i]);
+                if(t > tmax){
+                    tmax = t;
+                    lastFile = files[i];
+                }
+            }
+        }
+
+        qDebug() << "Selected FPR file: " << lastFile.mb_str();
+
+        if(::wxFileExists(lastFile))
+            return lastFile;
+        else
+            return _T("");
+
+#endif        
 }
 

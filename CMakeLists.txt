@@ -158,9 +158,9 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
 IF(NOT WIN32)
  ADD_DEFINITIONS( "-Wall -g -fexceptions -O2 -Wno-unused -fno-strict-aliasing")
 
- IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+ #IF(CMAKE_BUILD_TYPE MATCHES "Debug")
     ADD_DEFINITIONS( " -O0")
- ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
+ #ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
 
  IF(NOT APPLE)
   SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-Bsymbolic ")
@@ -213,9 +213,9 @@ SET(SRC_OERNC
             src/validator.h
      )
 
-#IF(QT_ANDROID)
-#    SET( SRC_OERNC ${SRC_OERNC} src/androidSupport.cpp )
-#ENDIF(QT_ANDROID)
+IF(QT_ANDROID)
+    SET( SRC_OERNC ${SRC_OERNC} src/androidSupport.cpp )
+ENDIF(QT_ANDROID)
 
 
 IF(NOT QT_ANDROID)

@@ -55,6 +55,13 @@ wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString par
 wxString callActivityMethod_s2s(const char *method, wxString parm1, wxString parm2);
 void androidShowBusyIcon();
 void androidHideBusyIcon();
+
+// Older Android devices do not export atof from their libc.so
+double atof(const char *nptr)
+{
+    return (strtod(nptr, NULL));
+}
+
 #endif
 
 bool IsDongleAvailable();
@@ -1381,11 +1388,12 @@ void oernc_pi_event_handler::OnGetHWIDClick( wxCommandEvent &event )
 }
 
 
-#if 0
+#if 1
 #ifdef __OCPN__ANDROID__
 
 extern JavaVM *java_vm;         // found in androidUtil.cpp, accidentally exported....
 
+/*
 bool CheckPendingJNIException()
 {
     JNIEnv* jenv;
@@ -1406,8 +1414,8 @@ bool CheckPendingJNIException()
     return false;
     
 }
-
-
+*/
+/*
 wxString callActivityMethod_s4s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4)
 {
     if(CheckPendingJNIException())
@@ -1463,6 +1471,8 @@ wxString callActivityMethod_s4s(const char *method, wxString parm1, wxString par
         return return_string;
         
 }
+
+*/
 
 #endif
 #endif

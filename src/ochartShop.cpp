@@ -57,6 +57,11 @@
 WX_DEFINE_OBJARRAY(ArrayOfCharts);
 WX_DEFINE_OBJARRAY(ArrayOfChartPanels);
 
+#ifdef __OCPN__ANDROID__
+#include "qdebug.h"
+#include "androidSupport.h"
+#endif
+
 //  Static variables
 ArrayOfCharts g_ChartArray;
 std::vector<itemChart *> ChartVector;
@@ -99,6 +104,14 @@ itemSlot        *gtargetSlot;
 itemChart       *gtargetChart;
 
 InProgressIndicator *g_ipGauge;
+
+double dl_now;
+double dl_total;
+time_t g_progressTicks;
+int g_downloadChainIdentifier;
+itemChart* g_chartProcessing;
+
+long g_FileDownloadHandle;
 
 WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
 extern OKeyHash keyMapDongle;
@@ -734,6 +747,7 @@ void itemChart::Update(itemChart *other)
 
 wxBitmap& itemChart::GetChartThumbnail(int size)
 {
+#if 0    
     if(!m_ChartImage.IsOk()){
         // Look for cached copy
         wxString fileKey = _T("ChartImage-");
@@ -781,7 +795,8 @@ wxBitmap& itemChart::GetChartThumbnail(int size)
             }
         }
     }
-    
+#endif
+
     if(m_ChartImage.IsOk()){
         int scaledHeight = size;
         int scaledWidth = m_ChartImage.GetWidth() * scaledHeight / m_ChartImage.GetHeight();
@@ -1926,10 +1941,32 @@ int doLogin()
     
     // get the response code of the server
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
-    if(iResponseCode == 200)
+    if(iResponseCode == 200){
         doc = new TiXmlDocument();
+        doc->Parse( post.GetResponseBody().c_str());
+    }
 
 #else
+
+    qDebug() << url.mb_str();
+    qDebug() << loginParms.mb_str();
+    
+    wxString postresult;
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+
+    qDebug() << "doLogin Post Stat: " << stat;
+    
+    if(stat != OCPN_DL_FAILED){
+        wxCharBuffer buf = postresult.ToUTF8();
+        std::string response(buf.data());
+        
+        qDebug() << response.c_str();
+        doc = new TiXmlDocument();
+        doc->Parse( response.c_str());
+        iResponseCode = 200;
+        res = 1;
+    }
+
 #endif
     
     if(iResponseCode == 200){
@@ -1966,10 +2003,12 @@ int doLogin()
             }
         }
         
-        if(queryResult == _T("1"))
+        if(queryResult == _T("1")){
             g_loginKey = loginKey;
-        else
+        }
+        else{
             checkResult(queryResult, true);
+        }
         
         long dresult;
         if(queryResult.ToLong(&dresult)){
@@ -2354,6 +2393,24 @@ int getChartList( bool bShowErrorDialogs = true){
     //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
     //wxLogMessage(tt);
 #else
+     wxString postresult;
+    qDebug() << url.mb_str();
+    qDebug() << loginParms.mb_str();
+
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+
+    qDebug() << "getChartList Post Stat: " << stat;
+    
+    if(stat != OCPN_DL_FAILED){
+        wxCharBuffer buf = postresult.ToUTF8();
+        std::string response(buf.data());
+        
+        qDebug() << response.c_str();
+        responseBody = response.c_str();
+        iResponseCode = 200;
+        res = 1;
+    }
+
 #endif    
     
     if(iResponseCode == 200){
@@ -2369,7 +2426,7 @@ int getChartList( bool bShowErrorDialogs = true){
 int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
 {
     wxString msg = _("This action will PERMANENTLY assign the chart:");
-    msg += _T("\n        ");
+    msg += _T("\n"); //        ");
     msg += chart->chartName;
     msg += _T("\n\n");
     msg += _("to this systemName:");
@@ -2409,7 +2466,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     sqid.Printf(_T("%1d"), chart->quantityList[qtyIndex].quantityId);
     loginParms += _T("&quantityId=") + sqid;
 
-    int iResponseCode =0;
+    int iResponseCode = 0;
     size_t res = 0;
     std::string responseBody;
 
@@ -2423,6 +2480,22 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     if(iResponseCode == 200)
         responseBody= post.GetResponseBody();
 #else
+    qDebug() << "do assign";
+    wxString postresult;
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+
+    qDebug() << "doAssign Post Stat: " << stat;
+
+    if(stat != OCPN_DL_FAILED){
+        wxCharBuffer buf = postresult.ToUTF8();
+        std::string response(buf.data());
+        
+        qDebug() << response.c_str();
+        responseBody = response.c_str();
+       
+        iResponseCode = 200;
+    }
+
 #endif
     
     if(iResponseCode == 200){
@@ -2514,6 +2587,23 @@ int doUploadXFPR(bool bDongle)
                 responseBody = post.GetResponseBody();
 
 #else
+            qDebug() << "do xfpr upload";
+            wxString postresult;
+            _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+
+            qDebug() << "doUploadXFPR Post Stat: " << stat;
+
+            
+            if(stat != OCPN_DL_FAILED){
+                wxCharBuffer buf = postresult.ToUTF8();
+                std::string response(buf.data());
+        
+                qDebug() << response.c_str();
+                responseBody = response.c_str();
+       
+                iResponseCode = 200;
+            }
+
 #endif            
             if(iResponseCode == 200){
                 wxString result = ProcessResponse(responseBody);
@@ -2597,11 +2687,29 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
     // get the response code of the server
-    int iResponseCode;
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
     if(iResponseCode == 200)
         responseBody = post.GetResponseBody();
 #else
+    wxString postresult;
+    qDebug() << url.mb_str();
+    qDebug() << loginParms.mb_str();
+
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+
+    qDebug() << "doPrepare Post Stat: " << stat;
+    
+    if(stat != OCPN_DL_FAILED){
+        wxCharBuffer buf = postresult.ToUTF8();
+        std::string response(buf.data());
+        
+        qDebug() << response.c_str();
+        responseBody = response.c_str();
+        iResponseCode = 200;
+        res = 1;
+    }
+
+
 #endif
     
     if(iResponseCode == 200){
@@ -2672,6 +2780,13 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool aStripPath, wxDateTime aMTime, bool aRemoveZip )
 {
     bool ret = true;
+#ifdef __OCPN__ANDROID__
+    int nStrip = 0;
+    if(aStripPath)
+        nStrip = 1;
+    
+    ret = AndroidUnzip(aZipFile, aTargetDir, nStrip, true);
+#else
     
     std::unique_ptr<wxZipEntry> entry(new wxZipEntry());
     
@@ -2775,7 +2890,9 @@ bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool
     
     if( aRemoveZip )
         wxRemoveFile(aZipFile);
-   
+
+#endif
+    
     if(g_ipGauge)
         g_ipGauge->Stop();
 
@@ -3632,7 +3749,8 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 {
     m_shopLog =NULL;
     m_validator = NULL;
-    
+    m_bconnected = false;
+
     loadShopConfig();
     
 #ifdef __OCPN_USE_CURL__
@@ -3657,6 +3775,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     sn += g_systemName;
     
     m_staticTextSystemName = new wxStaticText(this, wxID_ANY, sn, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    //m_staticTextSystemName->Wrap(-1);
     sysBox->Add(m_staticTextSystemName, 0, wxALL | wxALIGN_LEFT, WXC_FROM_DIP(5));
 
     m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
@@ -3688,7 +3807,8 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     staticBoxSizerAction->Add(m_staticLine121, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     
     ///Buttons
-    wxGridSizer* gridSizerActionButtons = new wxGridSizer(1, 3, 0, 0);
+    //wxGridSizer* gridSizerActionButtons = new wxGridSizer(1, 3, 0, 0);
+    wxBoxSizer* gridSizerActionButtons = new wxBoxSizer(wxVERTICAL);
     staticBoxSizerAction->Add(gridSizerActionButtons, 1, wxALL|wxEXPAND, WXC_FROM_DIP(2));
     
     m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Install Selected Chart Set"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
@@ -3707,6 +3827,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     
     ///Status
     m_staticTextStatus = new wxStaticText(this, wxID_ANY, _("Status: Chart List Refresh required."), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_staticTextStatus->Wrap(-1);
     staticBoxSizerAction->Add(m_staticTextStatus, 0, wxALL|wxALIGN_LEFT, WXC_FROM_DIP(5));
 
     g_ipGauge = new InProgressIndicator(this, wxID_ANY, 100, wxDefaultPosition, wxSize(ref_len * 12, ref_len));
@@ -3714,6 +3835,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 
     ///Last Error Message
     m_staticTextLEM = new wxStaticText(this, wxID_ANY, _("Last Error Message: "), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_staticTextLEM->Wrap(-1);
     staticBoxSizerAction->Add(m_staticTextLEM, 0, wxALL|wxALIGN_LEFT, WXC_FROM_DIP(5));
     
     m_shopLog = new piScreenLog(this);
@@ -3722,15 +3844,16 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     
     SetName(wxT("shopPanel"));
     //SetSize(500,600);
+    
     if (GetSizer()) {
         GetSizer()->Fit(this);
     }
     
     //  Turn off all buttons initially.
-    m_buttonInstall->Hide();
-    m_buttonCancelOp->Hide();
-    m_staticTextLEM->Hide();
-    m_buttonValidate->Hide();
+//     m_buttonInstall->Hide();
+//     m_buttonCancelOp->Hide();
+//     m_staticTextLEM->Hide();
+//     m_buttonValidate->Hide();
 
         // Check the dongle
     g_dongleName.Clear();
@@ -3782,9 +3905,11 @@ void shopPanel::RefreshSystemName()
         sn = _("System Name:");
         sn += _T(" ");
         sn += g_systemName;
+        qDebug() << "RefreshSystemName  new system name  " << sn.mb_str();
     }
     
     m_staticTextSystemName->SetLabel(sn);
+    m_staticTextSystemName->Refresh();
 }
 
 
@@ -4644,6 +4769,18 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         g_curlDownloadThread->SetOutputStream(downloadOutStream);
         //wxLogMessage(_T("Downloading: ") + gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
         g_curlDownloadThread->Download();
+#else
+        if(!m_bconnected){
+            Connect(wxEVT_DOWNLOAD_EVENT, (wxObjectEventFunction)(wxEventFunction)&shopPanel::onDLEvent);
+            m_bconnected = true;
+        }
+ 
+        g_downloadChainIdentifier = ID_CMD_BUTTON_INSTALL_CHAIN;
+        
+        OCPN_downloadFileBackground( gtargetSlot->dlQueue[gtargetSlot->idlQueue].url,
+                                     gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile,
+                                     this, &g_FileDownloadHandle);
+        
 #endif
         gtargetSlot->idlQueue++;        // next
         
@@ -4700,11 +4837,14 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                     installLocn = g_lastInstallDir;
         
                 //Need better default here, lik c:\Charts, if it exists.
-                wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
-                int result = dirSelector.ShowModal();
+                //wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
+                //int result = dirSelector.ShowModal();
         
+                wxString dir_spec;
+                int result = PlatformDirSelectorDialog( NULL, &dir_spec, _("Choose chart install location."), installLocn);
+               
                 if(result == wxID_OK)
-                    gtargetSlot->installLocation = dirSelector.GetPath().mb_str();
+                    gtargetSlot->installLocation = dir_spec.mb_str(); //dirSelector.GetPath().mb_str();
                 else{
                     g_statusOverride.Clear();
                     setStatusText( _("Status: Ready"));
@@ -4866,7 +5006,6 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         }
     }
 
- 
     int qtyIndex = -1;
     
     //  Check if I am already assigned to this chart
@@ -5234,9 +5373,11 @@ bool shopPanel::doSystemNameWizard(  )
 //    androidHideBusyIcon();
     #endif             
     int ret = dlg.ShowModal();
-    
-    if(ret == 0){               // OK
+    qDebug() << "ret  " << ret;
+ 
+    if(dlg.GetReturnCode() == 0){               // OK
         wxString sName = dlg.getRBSelection();
+        qDebug() << sName.mb_str();
         if(g_systemNameChoiceArray.Index(sName) == wxNOT_FOUND){
             // Is it the dongle selected?
             if(sName.Find(_T("Dongle")) != wxNOT_FOUND){
@@ -5257,6 +5398,8 @@ bool shopPanel::doSystemNameWizard(  )
     }
     else 
         return false;
+
+    qDebug() << g_systemName.mb_str();
     
     RefreshSystemName();
     
@@ -5320,7 +5463,94 @@ void shopPanel::OnGetNewSystemName( wxCommandEvent& event )
 //     doSystemNameWizard();
 // }
 
-   
+
+#ifdef __OCPN__ANDROID__
+
+void shopPanel::onDLEvent(OCPN_downloadEvent &evt)
+{
+    qDebug() << "onDLEvent";
+    
+    wxDateTime now = wxDateTime::Now();
+    
+    switch(evt.getDLEventCondition()){
+        case OCPN_DL_EVENT_TYPE_END:
+        {
+            m_bTransferComplete = true;
+            m_bTransferSuccess = (evt.getDLEventStatus() == OCPN_DL_NO_ERROR) ? true : false;
+            
+            g_ipGauge->SetValue(100);
+            setStatusTextProgress(_T(""));
+            setStatusText( _("Status: OK"));
+            GetButtonUpdate()->Enable();
+
+/*            
+            if(!g_shopPanel->m_bAbortingDownload){
+                if(g_curlDownloadThread){
+                    g_curlDownloadThread->Wait();
+                    delete g_curlDownloadThread;
+                    g_curlDownloadThread = NULL;
+                }
+            }
+            
+            if(g_shopPanel->m_bAbortingDownload){
+                if(g_shopPanel->GetSelectedChart()){
+                    itemChart *chart = g_shopPanel->GetSelectedChart()->m_pChart;
+                    if(chart){
+                        chart->downloadingFile.Clear();
+                    }
+                }
+            }
+*/            
+            //  Send an event to chain back to "Install" button
+            wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED);
+            if(g_downloadChainIdentifier){
+                event.SetId( g_downloadChainIdentifier );
+                GetEventHandler()->AddPendingEvent(event);
+            }
+            
+            break;
+        }   
+        case OCPN_DL_EVENT_TYPE_PROGRESS:
+
+            dl_now = evt.getTransferred();
+            dl_total = evt.getTotal();
+            
+            // Calculate the gauge value
+            if(dl_total > 0){
+                float progress = dl_now/dl_total;
+                
+                g_ipGauge->SetValue(progress * 100);
+                g_ipGauge->Refresh();
+                
+            }
+            
+            if(now.GetTicks() != g_progressTicks){
+                
+                //  Set text status
+                wxString tProg;
+                tProg = _("Downloaded:  ");
+                wxString msg;
+                msg.Printf( _T("(%6.1f MiB / %4.0f MiB)    "), (float)(evt.getTransferred() / 1e6), (float)(evt.getTotal() / 1e6));
+                tProg += msg;
+                
+                setStatusTextProgress( tProg );
+                
+                g_progressTicks = now.GetTicks();
+            }
+            
+            break;
+            
+        case OCPN_DL_EVENT_TYPE_START:
+        case OCPN_DL_EVENT_TYPE_UNKNOWN:    
+        default:
+            break;
+    }
+}
+
+
+#endif
+
+
 
 
 IMPLEMENT_DYNAMIC_CLASS( oeRNCGETSystemName, wxDialog )
@@ -5521,12 +5751,13 @@ END_EVENT_TABLE()
      
      wxStaticText* itemStaticText5 = new wxStaticText( itemDialog1, wxID_STATIC, _("Select your System Name from the following list, or "),
                                                        wxDefaultPosition, wxDefaultSize, 0 );
-     
+     itemStaticText5->Wrap(-1);
      itemBoxSizer2->Add( itemStaticText5, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, 5 );
  
      wxStaticText* itemStaticText6 = new wxStaticText( itemDialog1, wxID_STATIC, _(" create a new System Name for this computer."),
                                                        wxDefaultPosition, wxDefaultSize, 0 );
-                                                       
+     itemStaticText6->Wrap(-1);
+                                                  
      itemBoxSizer2->Add( itemStaticText6, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP, 5 );
                                                        
      
@@ -5700,9 +5931,6 @@ void OESENC_CURL_EvtHandler::onEndEvent(wxCurlEndPerformEvent &evt)
     
 }
 
-double dl_now;
-double dl_total;
-time_t g_progressTicks;
 
 void OESENC_CURL_EvtHandler::onProgressEvent(wxCurlDownloadEvent &evt)
 {
@@ -5734,6 +5962,7 @@ void OESENC_CURL_EvtHandler::onProgressEvent(wxCurlDownloadEvent &evt)
     
 }
 #endif   //__OCPN_USE_CURL__
+
 
 
 //IMPLEMENT_DYNAMIC_CLASS( oeSENCLogin, wxDialog )
