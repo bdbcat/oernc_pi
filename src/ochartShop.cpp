@@ -3945,6 +3945,11 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_choiceSystemName = NULL;
     int ref_len = GetCharHeight();
     
+    bool bCompact = false;
+    wxSize sz = ::wxGetDisplaySize();
+    //if((sz.x < 500) | (sz.y < 500))
+        bCompact = true;
+
     wxBoxSizer* boxSizerTop = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(boxSizerTop);
 
@@ -3952,8 +3957,8 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     sn += _T(" ");
     if(g_systemName.Length())
         sn += g_systemName;
-    else
-        sn += _T("                                            ");
+    //else
+    //    sn += _T("                                            ");
 #ifndef __OCPN__ANDROID__     
     wxFlexGridSizer *sysBox = new wxFlexGridSizer(2);
     sysBox->AddGrowableCol(0);
@@ -3971,7 +3976,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     boxSizerTop->Add(sysBox, 0, wxTOP | wxEXPAND, WXC_FROM_DIP(5));
    
     m_staticTextSystemName = new wxStaticText(this, wxID_ANY, sn, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
-    sysBox->Add(m_staticTextSystemName, 0, wxLEFT | wxALIGN_LEFT, WXC_FROM_DIP(5));
+    sysBox->Add(m_staticTextSystemName, 0, wxLEFT | wxALIGN_LEFT | wxEXPAND, WXC_FROM_DIP(5));
 
     m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
@@ -3992,9 +3997,13 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     
     boxSizerCharts = new wxBoxSizer(wxVERTICAL);
     m_scrollWinChartList->SetSizer(boxSizerCharts);
- 
-    m_scrollWinChartList->SetMinSize(wxSize(-1,15 * GetCharHeight()));
-    staticBoxSizerChartList->SetMinSize(wxSize(-1,16 * GetCharHeight()));
+
+    int size_scrollerLines = 15;
+    if(bCompact)
+        size_scrollerLines = 10;
+    
+    m_scrollWinChartList->SetMinSize(wxSize(-1,size_scrollerLines * GetCharHeight()));
+    staticBoxSizerChartList->SetMinSize(wxSize(-1,(size_scrollerLines + 1) * GetCharHeight()));
     
     wxStaticBoxSizer* staticBoxSizerAction = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Actions")), wxVERTICAL);
     boxSizerTop->Add(staticBoxSizerAction, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
@@ -4007,7 +4016,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     gridSizerActionButtons = new wxBoxSizer(wxVERTICAL);
     staticBoxSizerAction->Add(gridSizerActionButtons, 1, wxALL|wxEXPAND, WXC_FROM_DIP(2));
     
-    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Reinstall Selected Chart for ") + _T("XXXXXXXXXXXXXXX"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Reinstall Selection"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     gridSizerActionButtons->Add(m_buttonInstall, 1, wxTOP | wxBOTTOM , WXC_FROM_DIP(2));
     
     m_buttonCancelOp = new wxButton(this, wxID_ANY, _("Cancel Operation"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
@@ -4035,7 +4044,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     staticBoxSizerAction->Add(m_staticTextLEM, 0, wxALL|wxALIGN_LEFT, WXC_FROM_DIP(5));
     
     m_shopLog = new piScreenLog(this);
-    m_shopLog->SetMinSize(wxSize(-1, 16 * GetCharHeight()));
+    m_shopLog->SetMinSize(wxSize(-1, 1 * GetCharHeight()));
     boxSizerTop->Add(m_shopLog, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     
     SetName(wxT("shopPanel"));
@@ -5551,21 +5560,32 @@ void shopPanel::UpdateActionControls()
     
     itemChart *chart = m_ChartPanelSelected->GetSelectedChart();
 
+    wxString labelDownload = _("Download Selected Chart");
+    wxString labelInstall = _("Install Selected Chart for ") + suffix;
+    wxString labelReinstall = _("Reinstall Selected Chart for ") + suffix;
+    wxString labelUpdate = _("Update Selected Chart for ") + suffix;
+    
+#ifdef __OCPN__ANDROID__
+    labelDownload = _("Download Selection");
+    labelInstall = _("Install Selection");
+    labelReinstall = _("Reinstall Selection");
+    labelUpdate = _("Update Selection");
+#endif
+    
     if(chart->getChartStatus() == STAT_REQUESTABLE){
-        m_buttonInstall->SetLabel(_("Download Selected Chart"));
+        m_buttonInstall->SetLabel(labelDownload);
         m_buttonInstall->Show();
     }
-
     else if(chart->getChartStatus() == STAT_PURCHASED){
-        m_buttonInstall->SetLabel(_("Install Selected Chart for ") + suffix);
+        m_buttonInstall->SetLabel(labelInstall);
         m_buttonInstall->Show();
     }
     else if(chart->getChartStatus() == STAT_CURRENT){
-        m_buttonInstall->SetLabel(_("Reinstall Selected Chart for ") + suffix);
+        m_buttonInstall->SetLabel(labelReinstall);
         m_buttonInstall->Show();
     }
     else if(chart->getChartStatus() == STAT_STALE){
-        m_buttonInstall->SetLabel(_("Update Selected Chart for ") + suffix);
+        m_buttonInstall->SetLabel(labelUpdate);
         m_buttonInstall->Show();
     }
     //gridSizerActionButtons->Layout();
