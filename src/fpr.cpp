@@ -126,6 +126,7 @@ unsigned int GetDongleSN()
 wxString GetServerVersionString()
 {
     wxString ver;
+#ifndef __OCPN__ANDROID__    
     
     wxString cmd = g_server_bin;
     cmd += _T(" -a ");                  // Version
@@ -140,7 +141,9 @@ wxString GetServerVersionString()
             break;
         }
     }
-    
+#else
+    ver = _T("1.0");
+#endif    
     return ver;
 }
 
@@ -363,8 +366,9 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
         //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
         // This will be {dir of g_server_bin}
         wxFileName fnl(cmd);
-        wxString libDir = fnl.GetPath();
-        
+//        wxString libDir = fnl.GetPath();
+        wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
+      
         wxLogMessage(_T("oernc_pi: Getting XFPR: Starting: ") + cmd );
         wxLogMessage(_T("oernc_pi: Getting XFPR: Parms: ") + rootDir + _T(" ") + dataDir + _T(" ") + libDir );
 

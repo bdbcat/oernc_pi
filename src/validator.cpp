@@ -46,6 +46,7 @@ extern wxString         g_systemName;
 extern wxString         g_dongleName;
 extern unsigned int     g_dongleSN;
 extern wxString         g_server_bin;
+extern InProgressIndicator *g_ipGauge;
 
 
 std::vector < itemChartData *> installedChartListData;
@@ -284,7 +285,8 @@ void ocValidator::startValidation()
     }
 
     LogMessage(_T("\n"));
-    
+
+#ifndef __OCPN__ANDROID__    
     // Check the dongle
     g_dongleName.Clear();
     LogMessage(_("  Checking dongle..."));
@@ -298,7 +300,7 @@ void ocValidator::startValidation()
     }
     else
         LogMessage(_("  dongle not found: ") );
-
+#endif
     
     LogMessage(_T("\n"));
 
@@ -388,6 +390,10 @@ void ocValidator::startValidation()
             LogMessage(_("    Referenced chart is not present: ") + targetRNCFILE );
             return;
         }
+        
+        if(g_ipGauge)
+            g_ipGauge->Pulse();
+        wxYield();
 
     }
     
@@ -415,8 +421,14 @@ void ocValidator::startValidation()
             continue;
         else{
             LogMessage(_("    Found chart file not referenced in ChartList: ") + fileList.Item(i) );
+            g_ipGauge->Stop();
             return;
         }
+        
+        if(g_ipGauge)
+            g_ipGauge->Pulse();
+        wxYield();
+
     }
 
     LogMessage(_("    ChartList.XML validates OK.") );
@@ -438,6 +450,7 @@ void ocValidator::startValidation()
         installedKeyFileData.clear();
         if( !LoadKeyFile( keyFileList.Item(i) )){
             LogMessage(_("    Error loading keyFile: ")  + keyFileList.Item(i));
+            g_ipGauge->Stop();
             return;
         }
         
@@ -462,8 +475,14 @@ void ocValidator::startValidation()
                 continue;
             else{
                 LogMessage(_("    Key not found for chart file: ") + fileList.Item(i) );
+                g_ipGauge->Stop();
                 return;
             }
+            
+            if(g_ipGauge)
+                g_ipGauge->Pulse();
+            wxYield();
+
         }
     }
 
@@ -493,6 +512,11 @@ void ocValidator::startValidation()
             LogMessage(_("  Chart load error: ") + errMsg );
             //return;
         }
+        
+        if(g_ipGauge)
+            g_ipGauge->Pulse();
+        wxYield();
+
     }
 
     LogMessage(_("  Chart test load OK.") );
@@ -501,6 +525,8 @@ void ocValidator::startValidation()
     
     LogMessage(_("Chartset installation validates OK.") );
     
+    g_ipGauge->Stop();
+
 }
 
 

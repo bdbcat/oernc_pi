@@ -31,10 +31,14 @@
 
 #include "androidSupport.h"
 #include <wx/tokenzr.h>
+#include "wx/filename.h"
 
+#include "ochartShop.h"
 
 #include <QtAndroidExtras/QAndroidJniObject>
 #include "qdebug.h"
+
+extern shopPanel *g_shopPanel;
 
 extern JavaVM *java_vm;         // found in androidUtil.cpp, accidentally exported....
 extern JNIEnv* jenv;
@@ -408,17 +412,26 @@ bool AndroidUnzip(wxString zipFile, wxString destDir, int nStrip, bool bRemoveZi
     qDebug() << "unzip start";
     
     bool bDone = false;
+    wxString lastResult;
     while (!bDone){
-        wxMilliSleep(1000);
+        wxMilliSleep(500);
         //wxSafeYield(NULL, true);
-        
-        qDebug() << "unzip poll";
         
         wxString result = callActivityMethod_ss( "getUnzipStatus", _T("") );
         if(wxNOT_FOUND != result.Find(_T("DONE")))
             bDone = true;
+        else{
+            if(lastResult != result)
+            {
+                wxFileName fn(result);
+                
+                g_shopPanel->setStatusText( _("Unzipping chart files...") + fn.GetFullName());
+                lastResult = result;
+                wxYield();
+            }
+        }
+
     }
-    qDebug() << "unzip done";
     
     return true;    
     

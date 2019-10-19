@@ -37,6 +37,8 @@
 #include <wx/uri.h>
 #include "wx/tokenzr.h"
 #include <wx/dir.h>
+#include "wx/artprov.h"
+
 #include "ochartShop.h"
 #include "ocpn_plugin.h"
 #ifdef __OCPN_USE_CURL__
@@ -125,6 +127,181 @@ extern oernc_pi *g_pi;
 
 
 // Private class implementations
+
+#define ANDROID_DIALOG_BACKGROUND_COLOR    wxColour(_T("#7cb0e9"))
+#define ANDROID_DIALOG_BODY_COLOR         wxColour(192, 192, 192)
+
+
+// Private class implementations
+
+class  OERNCMessageDialog: public wxDialog
+{
+    
+public:
+    OERNCMessageDialog(wxWindow *parent, const wxString& message,
+                      const wxString& caption = wxMessageBoxCaptionStr,
+                      long style = wxOK|wxCENTRE);
+    
+    void OnYes(wxCommandEvent& event);
+    void OnNo(wxCommandEvent& event);
+    void OnCancel(wxCommandEvent& event);
+    void OnClose( wxCloseEvent& event );
+    
+private:
+    int m_style;
+    DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(OERNCMessageDialog, wxDialog)
+EVT_BUTTON(wxID_YES, OERNCMessageDialog::OnYes)
+EVT_BUTTON(wxID_NO, OERNCMessageDialog::OnNo)
+EVT_BUTTON(wxID_CANCEL, OERNCMessageDialog::OnCancel)
+EVT_CLOSE(OERNCMessageDialog::OnClose)
+END_EVENT_TABLE()
+
+
+OERNCMessageDialog::OERNCMessageDialog( wxWindow *parent,
+                                      const wxString& message,
+                                      const wxString& caption,
+                                      long style)
+: wxDialog( parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP )
+{
+    SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
+    
+    wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
+    SetSizer( topsizer );
+    
+    wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( this, wxID_ANY, caption );
+    
+    wxStaticBoxSizer* itemStaticBoxSizer4 = new wxStaticBoxSizer( itemStaticBoxSizer4Static, wxVERTICAL );
+    topsizer->Add( itemStaticBoxSizer4, 0, wxEXPAND | wxALL, 5 );
+    
+    itemStaticBoxSizer4->AddSpacer(10);
+    
+    wxStaticLine *staticLine121 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxLI_HORIZONTAL);
+    itemStaticBoxSizer4->Add(staticLine121, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    
+    
+    
+    
+    wxPanel *messagePanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
+    itemStaticBoxSizer4->Add(messagePanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    messagePanel->SetForegroundColour(wxColour(200, 200, 200));
+    
+    wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
+    messagePanel->SetSizer(boxSizercPanel);
+    
+    messagePanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
+
+    
+    m_style = style;
+    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    SetFont( *qFont );
+    
+    
+    wxBoxSizer *icon_text = new wxBoxSizer( wxHORIZONTAL );
+    boxSizercPanel->Add( icon_text, 1, wxCENTER | wxLEFT|wxRIGHT|wxTOP, 10 );
+    
+    #if wxUSE_STATBMP
+    // 1) icon
+    if (style & wxICON_MASK)
+    {
+        wxBitmap bitmap;
+        switch ( style & wxICON_MASK )
+        {
+            default:
+                wxFAIL_MSG(_T("incorrect log style"));
+                // fall through
+                
+            case wxICON_ERROR:
+                bitmap = wxArtProvider::GetIcon(wxART_ERROR, wxART_MESSAGE_BOX);
+                break;
+                
+            case wxICON_INFORMATION:
+                bitmap = wxArtProvider::GetIcon(wxART_INFORMATION, wxART_MESSAGE_BOX);
+                break;
+                
+            case wxICON_WARNING:
+                bitmap = wxArtProvider::GetIcon(wxART_WARNING, wxART_MESSAGE_BOX);
+                break;
+                
+            case wxICON_QUESTION:
+                bitmap = wxArtProvider::GetIcon(wxART_QUESTION, wxART_MESSAGE_BOX);
+                break;
+        }
+        wxStaticBitmap *icon = new wxStaticBitmap(this, wxID_ANY, bitmap);
+        icon_text->Add( icon, 0, wxCENTER );
+    }
+    #endif // wxUSE_STATBMP
+    
+    
+    wxStaticText *textMessage = new wxStaticText( messagePanel, wxID_ANY, message );
+    textMessage->Wrap(-1);
+    icon_text->Add( textMessage, 0, wxALIGN_CENTER | wxLEFT, 10 );
+    
+   
+    // 3) buttons
+    int AllButtonSizerFlags = wxOK|wxCANCEL|wxYES|wxNO|wxHELP|wxNO_DEFAULT;
+    int center_flag = wxEXPAND;
+    if (style & wxYES_NO)
+        center_flag = wxALIGN_CENTRE;
+    wxSizer *sizerBtn = CreateSeparatedButtonSizer(style & AllButtonSizerFlags);
+    if ( sizerBtn )
+        topsizer->Add(sizerBtn, 0, center_flag | wxALL, 10 );
+    
+    SetAutoLayout( true );
+    
+    topsizer->SetSizeHints( this );
+    topsizer->Fit( this );
+    Centre( wxBOTH | wxCENTER_FRAME);
+}
+
+void OERNCMessageDialog::OnYes(wxCommandEvent& WXUNUSED(event))
+{
+    SetReturnCode(wxID_YES);
+    EndModal( wxID_YES );
+}
+
+void OERNCMessageDialog::OnNo(wxCommandEvent& WXUNUSED(event))
+{
+    SetReturnCode(wxID_NO);
+    EndModal( wxID_NO );
+}
+
+void OERNCMessageDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
+{
+    // Allow cancellation via ESC/Close button except if
+    // only YES and NO are specified.
+    if ( (m_style & wxYES_NO) != wxYES_NO || (m_style & wxCANCEL) )
+    {
+        SetReturnCode(wxID_CANCEL);
+        EndModal( wxID_CANCEL );
+    }
+}
+
+void OERNCMessageDialog::OnClose( wxCloseEvent& event )
+{
+    SetReturnCode(wxID_CANCEL);
+    EndModal( wxID_CANCEL );
+}
+
+
+int ShowOERNCMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, long style = wxOK)
+{
+#ifdef __OCPN__ANDROID__
+    OERNCMessageDialog dlg( parent, message, caption, style);
+    dlg.ShowModal();
+    return dlg.GetReturnCode();
+#else
+    return OCPNMessageBox_PlugIn(parent, message, caption, style);
+#endif    
+}
+
+
+
+
+
+
 #ifdef __OCPN_USE_CURL__
 size_t wxcurl_string_write_UTF8(void* ptr, size_t size, size_t nmemb, void* pcharbuf)
 {
@@ -1671,6 +1848,9 @@ void loadShopConfig()
         pConf->Read( _T("DEBUG_SHOP"), &g_debugShop);
         pConf->Read( _T("LastEULAFile"), &g_lastEULAFile);
 
+        g_systemName = _T("");
+        g_loginKey = _T("");
+        
         // Get the list of charts
         wxArrayString chartIDArray;
         
@@ -1869,13 +2049,13 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
                         break;
                 }
                 
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
             }
             return dresult;
         }
     }
     else{
-        OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + _("Operation cancelled"), _("oeRNC_pi Message"), wxOK);
+        OERNCMessageDialog(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + _("Operation cancelled"), _("oeRNC_pi Message"), wxOK);
     }
      
     g_LastErrorMessage = result;
@@ -1891,7 +2071,7 @@ int checkResponseCode(int iResponseCode)
         msg1.Printf(_T("{%d}\n "), iResponseCode);
         msg += msg1;
         msg += _("Check your connection and try again.");
-        OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+        OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
     }
     
     // The wxCURL library returns "0" as response code,
@@ -1907,7 +2087,7 @@ int checkResponseCode(int iResponseCode)
 
 int doLogin()
 {
-    oeSENCLogin login(g_shopPanel);
+    oeRNCLogin login(g_shopPanel);
     login.ShowModal();
     if(!(login.GetReturnCode() == 0)){
         g_shopPanel->setStatusText( _("Invalid Login."));
@@ -1915,9 +2095,9 @@ int doLogin()
         return 55;
     }
     
-    g_loginUser = login.m_UserNameCtl->GetValue();
-    wxString pass = login.m_PasswordCtl->GetValue();
-    
+    g_loginUser = login.m_UserNameCtl->GetValue().Trim( true).Trim( false );
+    wxString pass = login.m_PasswordCtl->GetValue().Trim( true).Trim( false );
+
     wxString url = userURL;
     if(g_admin)
         url = adminURL;
@@ -2439,7 +2619,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     msg += _T("\n\n");
     msg += _("Proceed?");
     
-    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_PI Message"), wxYES_NO);
+    int ret = ShowOERNCMessageDialog(NULL, msg, _("oeRNC_PI Message"), wxYES_NO);
     
     if(ret != wxID_YES){
         return 1;
@@ -2630,7 +2810,7 @@ int doUploadXFPR(bool bDongle)
         wxString msg = _("ERROR Creating Fingerprint file") + _T("\n");
         msg += _("Check OpenCPN log file.") + _T("\n"); 
         msg += err;
-        OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+        OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
         return 1;
     }
         
@@ -2785,7 +2965,7 @@ bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool
     if(aStripPath)
         nStrip = 1;
     
-    ret = AndroidUnzip(aZipFile, aTargetDir, nStrip, true);
+    ret = AndroidUnzip(aZipFile, aTargetDir, nStrip, false);
 #else
     
     std::unique_ptr<wxZipEntry> entry(new wxZipEntry());
@@ -3767,20 +3947,36 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     
     wxBoxSizer* boxSizerTop = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(boxSizerTop);
-    
-    wxGridSizer *sysBox = new wxGridSizer(2);
-    boxSizerTop->Add(sysBox, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+
     wxString sn = _("System Name:");
     sn += _T(" ");
-    sn += g_systemName;
-    
+    if(g_systemName.Length())
+        sn += g_systemName;
+    else
+        sn += _T("                                            ");
+#ifndef __OCPN__ANDROID__     
+    wxFlexGridSizer *sysBox = new wxFlexGridSizer(2);
+    sysBox->AddGrowableCol(0);
+    boxSizerTop->Add(sysBox, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+   
     m_staticTextSystemName = new wxStaticText(this, wxID_ANY, sn, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     //m_staticTextSystemName->Wrap(-1);
-    sysBox->Add(m_staticTextSystemName, 0, wxALL | wxALIGN_LEFT, WXC_FROM_DIP(5));
+    sysBox->Add(m_staticTextSystemName, 1, wxALL | wxALIGN_LEFT, WXC_FROM_DIP(5));
+
+    m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
+    sysBox->Add(m_buttonUpdate, 1, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+#else
+    wxBoxSizer *sysBox = new wxBoxSizer(wxVERTICAL);
+    boxSizerTop->Add(sysBox, 0, wxTOP | wxEXPAND, WXC_FROM_DIP(5));
+   
+    m_staticTextSystemName = new wxStaticText(this, wxID_ANY, sn, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    sysBox->Add(m_staticTextSystemName, 0, wxLEFT | wxALIGN_LEFT, WXC_FROM_DIP(5));
 
     m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
     sysBox->Add(m_buttonUpdate, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+#endif
     
     wxStaticBoxSizer* staticBoxSizerChartList = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("My Chart Sets")), wxVERTICAL);
     boxSizerTop->Add(staticBoxSizerChartList, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
@@ -3808,11 +4004,11 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     
     ///Buttons
     //wxGridSizer* gridSizerActionButtons = new wxGridSizer(1, 3, 0, 0);
-    wxBoxSizer* gridSizerActionButtons = new wxBoxSizer(wxVERTICAL);
+    gridSizerActionButtons = new wxBoxSizer(wxVERTICAL);
     staticBoxSizerAction->Add(gridSizerActionButtons, 1, wxALL|wxEXPAND, WXC_FROM_DIP(2));
     
-    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Install Selected Chart Set"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
-    gridSizerActionButtons->Add(m_buttonInstall, 1, wxTOP | wxBOTTOM, WXC_FROM_DIP(2));
+    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Reinstall Selected Chart for ") + _T("XXXXXXXXXXXXXXX"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    gridSizerActionButtons->Add(m_buttonInstall, 1, wxTOP | wxBOTTOM , WXC_FROM_DIP(2));
     
     m_buttonCancelOp = new wxButton(this, wxID_ANY, _("Cancel Operation"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonCancelOp->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonCancelOp), NULL, this);
@@ -3827,7 +4023,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     
     ///Status
     m_staticTextStatus = new wxStaticText(this, wxID_ANY, _("Status: Chart List Refresh required."), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
-    m_staticTextStatus->Wrap(-1);
+    //m_staticTextStatus->Wrap(-1);
     staticBoxSizerAction->Add(m_staticTextStatus, 0, wxALL|wxALIGN_LEFT, WXC_FROM_DIP(5));
 
     g_ipGauge = new InProgressIndicator(this, wxID_ANY, 100, wxDefaultPosition, wxSize(ref_len * 12, ref_len));
@@ -3905,11 +4101,11 @@ void shopPanel::RefreshSystemName()
         sn = _("System Name:");
         sn += _T(" ");
         sn += g_systemName;
-        qDebug() << "RefreshSystemName  new system name  " << sn.mb_str();
     }
     
     m_staticTextSystemName->SetLabel(sn);
     m_staticTextSystemName->Refresh();
+    wxYield();
 }
 
 
@@ -3971,6 +4167,8 @@ void shopPanel::MakeChartVisible(oeXChartPanel *chart)
 
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
+    m_shopLog->ClearLog();
+
     loadShopConfig();
     
     g_LastErrorMessage.Clear();
@@ -4078,13 +4276,13 @@ bool shopPanel::GetNewSystemName()
             
             if(!g_systemName.Len()){
                 wxString msg = _("Invalid System Name");
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
                 itry++;
             }
             
             else if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
                 wxString msg = _("This System Name has been disabled\nPlease choose another SystemName");
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
                 itry++;
             }
             else{
@@ -4334,12 +4532,12 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         // Check the SHA256 of both files in the task
         if(!validateSHA256(task->cacheLinkLocn, task->sha256)){
             wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheLinkLocn );
-            OCPNMessageBox_PlugIn(NULL, _("Validation error on zip file"), _("oeRNC_pi Message"), wxOK);
+            OERNCMessageDialog(NULL, _("Validation error on zip file"), _("oeRNC_pi Message"), wxOK);
             return 8;
         }
         if(!validateSHA256(task->cacheKeysLocn, task->sha256Keys)){
             wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheKeysLocn );
-            OCPNMessageBox_PlugIn(NULL, _("Validation error on key file"), _("oeRNC_pi Message"), wxOK);
+            OERNCMessageDialog(NULL, _("Validation error on key file"), _("oeRNC_pi Message"), wxOK);
             return 9;
         }
 
@@ -4395,9 +4593,17 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         ChartSetKeys cskey_target(chartListKeysXMLtarget);
         
         // Extract the zip file to a temporary location, making the embedded files available for parsing
-        wxString tmp_dir = wxFileName::CreateTempFileName( _T("") );                    // Be careful, this method actually create a file
+#ifdef __OCPN__ANDROID__
+        wxString tmp_dir = AndroidGetCacheDir();
+        tmp_dir += wxFileName::GetPathSeparator();
         tmp_dir += _T("zipTemp");
         tmp_dir += wxFileName::GetPathSeparator();
+#else
+        wxString tmp_dir = wxFileName::CreateTempFileName( _T("") );                    // Be careful, this method actually create a file
+        tmp_dir += _T("zipTemp");
+        //tmp_dir += wxFileName::GetPathSeparator();
+#endif
+        
         wxFileName fn(tmp_dir);
         if( !fn.DirExists() ){
             if( !wxFileName::Mkdir(fn.GetPath()) ){
@@ -4570,10 +4776,19 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
             
             wxString destination = destinationDir + fileTarget;
+            g_shopPanel->setStatusText( _("Relocating chart files...") + fileTarget);
+            wxYield();
+            
+            if(wxFileExists(destination)){
+                wxRemoveFile(destination);
+            }
+                
             if(!wxCopyFile( source, destination)){
                 wxLogError(_T("Can not copy .oernc file referenced in ChartList...Source: ") + source + _T("   Destination: ") + destination);
-                continue;
             }
+            
+            // Revocer the temporary space used.
+            wxRemoveFile( source );
 
             // Add the entry from the working copy of ChartList.XML file
             csdata_target.AddChart( actionAddUpdate[i] );
@@ -4710,11 +4925,19 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
         if(m_validator)
             delete m_validator;
         
+        m_buttonValidate->Disable();
+        GetSizer()->Layout();
+        wxYield();
+
         m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), m_shopLog);
         m_validator->startValidation();
+        m_buttonValidate->Enable();
+        GetSizer()->Layout();
+        wxYield();
+        
     }
     else{
-        OCPNMessageBox_PlugIn(NULL, _("No chartset selected."), _("oeRNC_PI Message"), wxOK);
+        OERNCMessageDialog(NULL, _("No chartset selected."), _("oeRNC_PI Message"), wxOK);
     }
 
 
@@ -4727,7 +4950,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
     if(m_bAbortingDownload){
         m_bAbortingDownload = false;
-        OCPNMessageBox_PlugIn(NULL, _("Chart download cancelled."), _("oeRNC_PI Message"), wxOK);
+        OERNCMessageDialog(NULL, _("Chart download cancelled."), _("oeRNC_PI Message"), wxOK);
         UpdateActionControls();
         return;
     }
@@ -4738,7 +4961,6 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         
         // is the required file available in the cache?
         if(wxFileExists(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile)){
-            
             // Validate the existing file using SHA256
             if( validateSHA256(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile, gtargetSlot->dlQueue[gtargetSlot->idlQueue].SHA256)){
                 //  OK, Skip to next in queue
@@ -4783,7 +5005,9 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         
 #endif
         gtargetSlot->idlQueue++;        // next
-        
+        m_buttonCancelOp->Show();
+        GetSizer()->Layout();
+
         return;
     }
 
@@ -4865,7 +5089,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
                     g_statusOverride.Clear();
                     setStatusText( _("Status: Ready"));
-                    OCPNMessageBox_PlugIn(NULL, _("Chart installation ERROR."), _("oeRNC_PI Message"), wxOK);
+                    OERNCMessageDialog(NULL, _("Chart installation ERROR."), _("oeRNC_PI Message"), wxOK);
                     UpdateChartList();
                     UpdateActionControls();
                     return;
@@ -4911,7 +5135,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         g_statusOverride.Clear();
         setStatusText( _("Status: Ready"));
                 
-        OCPNMessageBox_PlugIn(NULL, _("Chart installation complete."), _("oeRNC_PI Message"), wxOK);
+        OERNCMessageDialog(NULL, _("Chart installation complete."), _("oeRNC_PI Message"), wxOK);
 
         // Show any EULA here
         wxArrayString fileArrayEULA;
@@ -4943,8 +5167,8 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     g_LastErrorMessage.Clear();
     SetErrorMessage();
     
-    g_statusOverride = _T("Downloading...");
-    setStatusText( _("Checking dongle..."));
+    g_statusOverride = _T("Installing...");
+    setStatusText( _("Preparing installation..."));
 
     wxYield();
     
@@ -4960,7 +5184,8 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
 
     m_buttonInstall->Disable();
     m_buttonValidate->Hide();
-    m_buttonCancelOp->Show();
+    m_buttonCancelOp->Hide();
+    GetSizer()->Layout();
     
 
 
@@ -5150,8 +5375,10 @@ void shopPanel::OnButtonDownload( wxCommandEvent& event )
 
 int shopPanel::doPrepareGUI(itemSlot *targetSlot)
 {
-    m_buttonCancelOp->Show();
-    
+    m_buttonCancelOp->Hide();
+    GetSizer()->Layout();
+    wxYield();
+
     setStatusText( _("Requesting License Keys..."));
     
     m_prepareTimerCount = 8;            // First status query happens in 2 seconds
@@ -5185,13 +5412,13 @@ int shopPanel::doDownloadGui(itemChart *targetChart, itemSlot* targetSlot)
 {
     setStatusText( _("Status: Downloading..."));
     //m_staticTextStatusProgress->Show();
-    m_buttonCancelOp->Show();
+    m_buttonCancelOp->Hide();
     GetButtonUpdate()->Disable();
     
     g_statusOverride = _("Downloading...");
     UpdateChartList();
     m_buttonValidate->Hide();
-    m_buttonCancelOp->Show();
+    m_buttonCancelOp->Hide();
 
     wxYield();
     
@@ -5218,6 +5445,12 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
         setStatusTextProgress(_T(""));
         m_binstallChain = true;
     }
+#else
+    OCPN_cancelDownloadFileBackground(g_FileDownloadHandle);
+    m_bAbortingDownload = true;
+    g_ipGauge->Stop();
+    setStatusTextProgress(_T(""));
+    m_binstallChain = true;
 #endif    
     
     setStatusText( _("Status: OK"));
@@ -5225,7 +5458,9 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
     
     g_statusOverride.Clear();
     m_buttonInstall->Enable();
-    
+    m_buttonUpdate->Enable();
+    GetSizer()->Layout();
+
     SetErrorMessage();
 
     UpdateChartList();
@@ -5333,6 +5568,8 @@ void shopPanel::UpdateActionControls()
         m_buttonInstall->SetLabel(_("Update Selected Chart for ") + suffix);
         m_buttonInstall->Show();
     }
+    //gridSizerActionButtons->Layout();
+    
 #if 0    
     else if(chart->getChartStatus() == STAT_READY_DOWNLOAD){
         m_buttonInstall->SetLabel(_("Download Selected Chart"));
@@ -5346,7 +5583,8 @@ void shopPanel::UpdateActionControls()
         m_buttonInstall->Hide();
     }
 #endif    
-    
+    GetSizer()->Layout();
+
 }
 
     
@@ -5373,11 +5611,9 @@ bool shopPanel::doSystemNameWizard(  )
 //    androidHideBusyIcon();
     #endif             
     int ret = dlg.ShowModal();
-    qDebug() << "ret  " << ret;
  
     if(dlg.GetReturnCode() == 0){               // OK
         wxString sName = dlg.getRBSelection();
-        qDebug() << sName.mb_str();
         if(g_systemNameChoiceArray.Index(sName) == wxNOT_FOUND){
             // Is it the dongle selected?
             if(sName.Find(_T("Dongle")) != wxNOT_FOUND){
@@ -5399,8 +5635,6 @@ bool shopPanel::doSystemNameWizard(  )
     else 
         return false;
 
-    qDebug() << g_systemName.mb_str();
-    
     RefreshSystemName();
     
     saveShopConfig();
@@ -5481,6 +5715,7 @@ void shopPanel::onDLEvent(OCPN_downloadEvent &evt)
             g_ipGauge->SetValue(100);
             setStatusTextProgress(_T(""));
             setStatusText( _("Status: OK"));
+            m_buttonCancelOp->Hide();
             GetButtonUpdate()->Enable();
 
 /*            
@@ -5704,6 +5939,11 @@ END_EVENT_TABLE()
      
      long wstyle = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER;
      wxDialog::Create( parent, id, caption, pos, size, wstyle );
+
+#ifdef __OCPN__ANDROID__
+    SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
+    SetForegroundColour(wxColour(200, 200, 200));
+#endif
      
      wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
      SetFont( *qFont );
@@ -5734,7 +5974,12 @@ END_EVENT_TABLE()
      SetFont( *qFont );
      
      SetTitle( _("Select OpenCPN/oeRNC System Name"));
-     
+    
+#ifdef __OCPN__ANDROID__
+    SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
+    SetForegroundColour(wxColour(200, 200, 200));
+#endif
+    
      CreateControls(  );
      Centre();
      return TRUE;
@@ -5775,19 +6020,26 @@ END_EVENT_TABLE()
          else if(g_systemNameDisabledArray.Index(candidate) == wxNOT_FOUND)
             system_names.Add(candidate);
      }
-     
-  
      // Add USB dongle if present, and not already added
      
      if(!bDongleAdded && IsDongleAvailable()){
         system_names.Add( g_dongleName  + _T(" (") + _("USB Key Dongle") + _T(")"));
      }
-         
+
      system_names.Add(_("new..."));
+
+    wxPanel *selectorPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
+    itemBoxSizer2->Add(selectorPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    selectorPanel->SetForegroundColour(wxColour(200, 200, 200));
+
+    wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
+    selectorPanel->SetSizer(boxSizercPanel);
+
+    selectorPanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
+
+     m_rbSystemNames = new wxRadioBox(selectorPanel, wxID_ANY, _("System Names"), wxDefaultPosition, wxDefaultSize, system_names, 0, wxRA_SPECIFY_ROWS);
      
-     m_rbSystemNames = new wxRadioBox(this, wxID_ANY, _("System Names"), wxDefaultPosition, wxDefaultSize, system_names, 0, wxRA_SPECIFY_ROWS);
-     
-     itemBoxSizer2->Add( m_rbSystemNames, 0, wxALIGN_CENTER | wxALL, 25 );
+     boxSizercPanel->Add( m_rbSystemNames, 0, wxALIGN_CENTER | wxALL, 25 );
 
      wxStaticLine* itemStaticLine = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
      itemBoxSizer2->Add( itemStaticLine, 0, wxEXPAND|wxALL, 0 );
@@ -5891,7 +6143,7 @@ OESENC_CURL_EvtHandler::~OESENC_CURL_EvtHandler()
 
 void OESENC_CURL_EvtHandler::onBeginEvent(wxCurlBeginPerformEvent &evt)
 {
- //   OCPNMessageBox_PlugIn(NULL, _("DLSTART."), _("oeSENC_PI Message"), wxOK);
+ //   OERNCMessageDialog(NULL, _("DLSTART."), _("oeSENC_PI Message"), wxOK);
     g_shopPanel->m_startedDownload = true;
     g_shopPanel->m_buttonCancelOp->Show();
 
@@ -5899,7 +6151,7 @@ void OESENC_CURL_EvtHandler::onBeginEvent(wxCurlBeginPerformEvent &evt)
 
 void OESENC_CURL_EvtHandler::onEndEvent(wxCurlEndPerformEvent &evt)
 {
- //   OCPNMessageBox_PlugIn(NULL, _("DLEnd."), _("oeSENC_PI Message"), wxOK);
+ //   OERNCMessageDialog(NULL, _("DLEnd."), _("oeSENC_PI Message"), wxOK);
     
     g_ipGauge->Stop();
     g_shopPanel->setStatusTextProgress(_T(""));
@@ -5964,7 +6216,7 @@ void OESENC_CURL_EvtHandler::onProgressEvent(wxCurlDownloadEvent &evt)
 #endif   //__OCPN_USE_CURL__
 
 
-
+#if 0
 //IMPLEMENT_DYNAMIC_CLASS( oeSENCLogin, wxDialog )
 BEGIN_EVENT_TABLE( oeSENCLogin, wxDialog )
 EVT_BUTTON( ID_GETIP_CANCEL, oeSENCLogin::OnCancelClick )
@@ -6101,6 +6353,244 @@ void oeSENCLogin::OnOkClick( wxCommandEvent& event )
 }
 
 void oeSENCLogin::OnClose( wxCloseEvent& event )
+{
+    SetReturnCode(2);
+}
+
+#endif
+
+IMPLEMENT_DYNAMIC_CLASS( oeRNCLogin, wxDialog )
+BEGIN_EVENT_TABLE( oeRNCLogin, wxDialog )
+EVT_BUTTON( ID_GETIP_CANCEL, oeRNCLogin::OnCancelClick )
+EVT_BUTTON( ID_GETIP_OK, oeRNCLogin::OnOkClick )
+END_EVENT_TABLE()
+
+
+oeRNCLogin::oeRNCLogin()
+{
+}
+
+oeRNCLogin::oeRNCLogin( wxWindow* parent, wxWindowID id, const wxString& caption,
+                                          const wxPoint& pos, const wxSize& size, long style )
+{
+    
+    long wstyle = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER;
+
+    m_bCompact = false;
+    wxSize sz = ::wxGetDisplaySize();
+    if((sz.x < 500) | (sz.y < 500))
+        m_bCompact = true;
+    
+    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    
+#ifndef __OCPN__ANDROID__
+    SetFont( *qFont );
+#else
+    if(m_bCompact){
+        SetFont( *qFont );
+    }
+    else{
+        double font_size = qFont->GetPointSize() * 1.20;
+        wxFont *dFont = wxTheFontList->FindOrCreateFont( font_size, qFont->GetFamily(), qFont->GetStyle(),  qFont->GetWeight());
+        SetFont( *dFont );
+    }
+#endif
+    
+    wxDialog::Create( parent, id, caption, pos, size, wstyle );
+    
+    CreateControls();
+    GetSizer()->SetSizeHints( this );
+    Centre();
+    Move(-1, 2 * GetCharHeight());
+    
+}
+
+oeRNCLogin::~oeRNCLogin()
+{
+}
+
+/*!
+ * oeRNCLogin creator
+ */
+
+bool oeRNCLogin::Create( wxWindow* parent, wxWindowID id, const wxString& caption,
+                                  const wxPoint& pos, const wxSize& size, long style )
+{
+    SetExtraStyle( GetExtraStyle() | wxWS_EX_BLOCK_EVENTS );
+    
+    long wstyle = style;
+    #ifdef __WXMAC__
+    wstyle |= wxSTAY_ON_TOP;
+    #endif
+    wxDialog::Create( parent, id, caption, pos, size, wstyle );
+    
+//     wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+//     SetFont( *qFont );
+
+//     wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+//     double font_size = qFont->GetPointSize() * 3 / 2;
+//     wxFont *dFont = wxTheFontList->FindOrCreateFont( font_size, qFont->GetFamily(), qFont->GetStyle(),  qFont->GetWeight());
+//     SetFont( *dFont );
+    
+    
+    CreateControls(  );
+    Centre();
+
+    return TRUE;
+}
+
+
+void oeRNCLogin::CreateControls(  )
+{
+    int ref_len = GetCharHeight();
+    
+    oeRNCLogin* itemDialog1 = this;
+
+#ifndef __OCPN__ANDROID__    
+    
+    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer( wxVERTICAL );
+    itemDialog1->SetSizer( itemBoxSizer2 );
+    
+    wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( itemDialog1, wxID_ANY, _("Login to o-charts.org") );
+    
+    wxStaticBoxSizer* itemStaticBoxSizer4 = new wxStaticBoxSizer( itemStaticBoxSizer4Static, wxVERTICAL );
+    itemBoxSizer2->Add( itemStaticBoxSizer4, 0, wxEXPAND | wxALL, 5 );
+    
+    itemStaticBoxSizer4->AddSpacer(10);
+    
+    wxStaticLine *staticLine121 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxLI_HORIZONTAL);
+    itemStaticBoxSizer4->Add(staticLine121, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    
+    wxFlexGridSizer* flexGridSizerActionStatus = new wxFlexGridSizer(0, 2, 0, 0);
+    flexGridSizerActionStatus->SetFlexibleDirection( wxBOTH );
+    flexGridSizerActionStatus->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+    flexGridSizerActionStatus->AddGrowableCol(0);
+    
+    itemStaticBoxSizer4->Add(flexGridSizerActionStatus, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    
+    wxStaticText* itemStaticText5 = new wxStaticText( itemDialog1, wxID_STATIC, _("email address:"), wxDefaultPosition, wxDefaultSize, 0 );
+    flexGridSizerActionStatus->Add( itemStaticText5, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, 5 );
+    
+    m_UserNameCtl = new wxTextCtrl( itemDialog1, ID_GETIP_IP, _T(""), wxDefaultPosition, wxSize( ref_len * 10, -1 ), 0 );
+    flexGridSizerActionStatus->Add( m_UserNameCtl, 0,  wxALIGN_CENTER | wxLEFT | wxRIGHT | wxBOTTOM , 5 );
+    
+ 
+    wxStaticText* itemStaticText6 = new wxStaticText( itemDialog1, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
+    flexGridSizerActionStatus->Add( itemStaticText6, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, 5 );
+    
+    m_PasswordCtl = new wxTextCtrl( itemDialog1, ID_GETIP_IP, _T(""), wxDefaultPosition, wxSize( ref_len * 10, -1 ), wxTE_PASSWORD );
+    flexGridSizerActionStatus->Add( m_PasswordCtl, 0,  wxALIGN_CENTER | wxLEFT | wxRIGHT | wxBOTTOM , 5 );
+    
+    
+    wxBoxSizer* itemBoxSizer16 = new wxBoxSizer( wxHORIZONTAL );
+    itemBoxSizer2->Add( itemBoxSizer16, 0, wxALIGN_RIGHT | wxALL, 5 );
+    
+    m_CancelButton = new wxButton( itemDialog1, ID_GETIP_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer16->Add( m_CancelButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+    
+    m_OKButton = new wxButton( itemDialog1, ID_GETIP_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_OKButton->SetDefault();
+    
+    itemBoxSizer16->Add( m_OKButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+#else
+    
+    SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
+    SetForegroundColour(wxColour(200, 200, 200));
+    
+    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer( wxVERTICAL );
+    itemDialog1->SetSizer( itemBoxSizer2 );
+    
+    wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( itemDialog1, wxID_ANY, _("Login to o-charts.org") );
+    
+    wxStaticBoxSizer* itemStaticBoxSizer4 = new wxStaticBoxSizer( itemStaticBoxSizer4Static, wxVERTICAL );
+    itemBoxSizer2->Add( itemStaticBoxSizer4, 0, wxEXPAND | wxALL, 5 );
+    
+    itemStaticBoxSizer4->AddSpacer(10);
+    
+    wxStaticLine *staticLine121 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxLI_HORIZONTAL);
+    itemStaticBoxSizer4->Add(staticLine121, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    
+    
+    
+        
+    wxPanel *loginPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
+    itemStaticBoxSizer4->Add(loginPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    loginPanel->SetForegroundColour(wxColour(200, 200, 200));
+    
+    wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
+    loginPanel->SetSizer(boxSizercPanel);
+
+    loginPanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
+    
+    wxFlexGridSizer* flexGridSizerActionStatus = new wxFlexGridSizer(0, 2, 0, 0);
+    flexGridSizerActionStatus->SetFlexibleDirection( wxBOTH );
+    flexGridSizerActionStatus->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+    flexGridSizerActionStatus->AddGrowableCol(0);
+    
+    boxSizercPanel->Add(flexGridSizerActionStatus, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    
+    int item_space = 50;
+    if(m_bCompact)
+        item_space = 10;
+    
+    wxStaticText* itemStaticText5 = new wxStaticText( loginPanel, wxID_STATIC, _("email:"), wxDefaultPosition, wxDefaultSize, 0 );
+    flexGridSizerActionStatus->Add( itemStaticText5, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP | wxADJUST_MINSIZE, item_space );
+    
+    m_UserNameCtl = new wxTextCtrl( loginPanel, ID_GETIP_IP, _T("bdbcat@yahoo.com"), wxDefaultPosition, wxSize( ref_len * 10, -1 ), 0 );
+    flexGridSizerActionStatus->Add( m_UserNameCtl, 0,  wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP , item_space );
+    
+    wxStaticText* itemStaticText6 = new wxStaticText( loginPanel, wxID_STATIC, _("pass:"), wxDefaultPosition, wxDefaultSize, 0 );
+    flexGridSizerActionStatus->Add( itemStaticText6, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP | wxADJUST_MINSIZE, item_space );
+    
+    m_PasswordCtl = new wxTextCtrl( loginPanel, ID_GETIP_IP, _T("danforth"), wxDefaultPosition, wxSize( ref_len * 10, -1 ), wxTE_PASSWORD );
+    m_PasswordCtl->SetBackgroundColour(wxColour(0, 192, 192));
+    flexGridSizerActionStatus->Add( m_PasswordCtl, 0,  wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP , item_space );
+    
+ 
+    int button_space = 100;
+    if(m_bCompact)
+        button_space = 20;
+    
+    wxBoxSizer* itemBoxSizer16 = new wxBoxSizer( wxHORIZONTAL );
+    boxSizercPanel->Add( itemBoxSizer16, 0, wxALIGN_RIGHT | wxALL, 5 );
+    
+    m_CancelButton = new wxButton( loginPanel, ID_GETIP_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer16->Add( m_CancelButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, button_space );
+    
+    m_OKButton = new wxButton( loginPanel, ID_GETIP_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_OKButton->SetDefault();
+    
+    itemBoxSizer16->Add( m_OKButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, button_space );
+#endif    
+    
+}
+
+
+bool oeRNCLogin::ShowToolTips()
+{
+    return TRUE;
+}
+
+
+
+void oeRNCLogin::OnCancelClick( wxCommandEvent& event )
+{
+    EndModal(2);
+}
+
+void oeRNCLogin::OnOkClick( wxCommandEvent& event )
+{
+    if( (m_UserNameCtl->GetValue().Length() == 0 ) || (m_PasswordCtl->GetValue().Length() == 0 ) ){
+        SetReturnCode(1);
+        EndModal(1);
+    }
+    else {
+        SetReturnCode(0);
+        EndModal(0);
+    }
+}
+
+void oeRNCLogin::OnClose( wxCloseEvent& event )
 {
     SetReturnCode(2);
 }

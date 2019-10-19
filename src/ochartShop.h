@@ -405,6 +405,7 @@ protected:
     wxButton* m_buttonUpdate;
     wxButton* m_buttonValidate;
     wxBoxSizer* boxSizerCharts;
+    wxBoxSizer* gridSizerActionButtons;
     
     std::vector<oeXChartPanel *> panelVector;
     
@@ -661,5 +662,42 @@ public:
     
 };
 
+class oeRNCLogin: public wxDialog
+{
+    DECLARE_DYNAMIC_CLASS( oeRNCLogin )
+    DECLARE_EVENT_TABLE()
+    
+public:
+    oeRNCLogin( );
+    oeRNCLogin( wxWindow* parent, wxWindowID id = wxID_ANY,
+                         const wxString& caption =  _("OpenCPN Login"),
+                        const wxPoint& pos = wxDefaultPosition,
+                          const wxSize& size = wxSize(500, 200),
+                        long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
+    
+    ~oeRNCLogin();
+    
+    bool Create( wxWindow* parent, wxWindowID id = wxID_ANY,
+                 const wxString& caption =  _("OpenCPN Login"),
+                 const wxPoint& pos = wxDefaultPosition,
+                 const wxSize& size = wxSize(500, 200), long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
+    
+    
+    void CreateControls(  );
+    
+    void OnCancelClick( wxCommandEvent& event );
+    void OnOkClick( wxCommandEvent& event );
+    void OnClose( wxCloseEvent& event );
+    
+    static bool ShowToolTips();
+    
+    wxTextCtrl*   m_UserNameCtl;
+    wxTextCtrl*   m_PasswordCtl;
+    wxButton*     m_CancelButton;
+    wxButton*     m_OKButton;
+    bool          m_bCompact;
+    
+    
+};
 
 #endif          //_OCHARTSHOP_H_
