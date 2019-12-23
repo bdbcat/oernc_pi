@@ -2022,17 +2022,17 @@ void saveShopConfig()
    }
 }
 
-            
 int checkResult(wxString &result, bool bShowErrorDialog = true)
 {
     if(g_shopPanel){
         g_ipGauge->Stop();
     }
     
+    wxString resultDigits = result.BeforeFirst(':');
+    
     long dresult;
-    if(result.ToLong(&dresult)){
+    if(resultDigits.ToLong(&dresult)){
         if(dresult == 1){
-            g_LastErrorMessage.Clear();
             return 0;
         }
         else{
@@ -2046,21 +2046,30 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
                     case 5:
                         msg += _("Invalid user/email name or password.");
                         break;
-                    default:    
-                        msg += _("Check your configuration and try again.");
+                    case 27:
+                        msg += _("This oeRNC plugin version is obsolete.");
+                        msg += _T("\n");
+                        msg += _("Please update your plugin.");
+                        msg += _T("\n");
+                        msg +=  _("Operation cancelled");
+                        break;
+                    default:
+                        if(result.AfterFirst(':').Length()){
+                            msg += result.AfterFirst(':');
+                            msg += _T("\n");
+                        }
+                        msg += _("Operation cancelled");
                         break;
                 }
                 
-                OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
             }
             return dresult;
         }
     }
     else{
-        OERNCMessageDialog(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + _("Operation cancelled"), _("oeRNC_pi Message"), wxOK);
+        OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + _("Operation cancelled"), _("oeRNC_pi Message"), wxOK);
     }
-     
-    g_LastErrorMessage = result;
      
     return 98;
 }
@@ -3139,340 +3148,6 @@ BEGIN_EVENT_TABLE(MyStaticTextCtrl,wxStaticText)
 EVT_ERASE_BACKGROUND(MyStaticTextCtrl::OnEraseBackGround)
 END_EVENT_TABLE()
 
-
-#if 0
-BEGIN_EVENT_TABLE(oeSencChartPanel, wxPanel)
-EVT_PAINT ( oeSencChartPanel::OnPaint )
-EVT_ERASE_BACKGROUND(oeSencChartPanel::OnEraseBackground)
-END_EVENT_TABLE()
-
-oeSencChartPanel::oeSencChartPanel(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, oitemChart *p_itemChart, shopPanel *pContainer)
-:wxPanel(parent, id, pos, size, wxBORDER_NONE)
-{
-    m_pContainer = pContainer;
-    m_pChart = p_itemChart;
-    m_bSelected = false;
-
-    int refHeight = GetCharHeight();
-    SetMinSize(wxSize(-1, 5 * refHeight));
-    m_unselectedHeight = 5 * refHeight;
-    
-//     wxBoxSizer* itemBoxSizer01 = new wxBoxSizer(wxHORIZONTAL);
-//     SetSizer(itemBoxSizer01);
-     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(oeSencChartPanel::OnChartSelected), NULL, this);
-//     
-    
-}
-
-oeSencChartPanel::~oeSencChartPanel()
-{
-}
-
-void oeSencChartPanel::OnChartSelected( wxMouseEvent &event )
-{
-    // Do not allow de-selection by mouse if this chart is busy, i.e. being prepared, or being downloaded 
-    if(m_pChart){
-       if(g_statusOverride.Length())
-           return;
-    }
-           
-    if(!m_bSelected){
-        SetSelected( true );
-        //m_pContainer->SelectChart( this );
-        
-    }
-    else{
-        SetSelected( false );
-        //m_pContainer->SelectChart( (oeSencChartPanel *)NULL );
-    }
-}
-
-void oeSencChartPanel::SetSelected( bool selected )
-{
-    m_bSelected = selected;
-    wxColour colour;
-    int refHeight = GetCharHeight();
-    
-    if (selected)
-    {
-        GetGlobalColor(_T("UIBCK"), &colour);
-        m_boxColour = colour;
-        SetMinSize(wxSize(-1, 10 * refHeight));
-    }
-    else
-    {
-        GetGlobalColor(_T("DILG0"), &colour);
-        m_boxColour = colour;
-        SetMinSize(wxSize(-1, 5 * refHeight));
-    }
-    
-    Refresh( true );
-    
-}
-
-
-extern "C"  DECL_EXP bool GetGlobalColor(wxString colorName, wxColour *pcolour);
-
-void oeSencChartPanel::OnEraseBackground( wxEraseEvent &event )
-{
-}
-
-void oeSencChartPanel::OnPaint( wxPaintEvent &event )
-{
-    int width, height;
-    GetSize( &width, &height );
-    wxPaintDC dc( this );
- 
-    //dc.SetBackground(*wxLIGHT_GREY);
-    
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxBrush(GetBackgroundColour()));
-    dc.DrawRectangle(GetVirtualSize());
-    
-    wxColour c;
-    
-    wxString nameString = m_pChart->chartName;
-    if(!m_pChart->quantityId.IsSameAs(_T("1")))
-        nameString += _T(" (") + m_pChart->quantityId + _T(")");
-    
-    if(m_bSelected){
-        dc.SetBrush( wxBrush( m_boxColour ) );
-        
-        GetGlobalColor( _T ( "UITX1" ), &c );
-        dc.SetPen( wxPen( wxColor(0xCE, 0xD5, 0xD6), 3 ));
-        
-        dc.DrawRoundedRectangle( 0, 0, width-1, height-1, height / 10);
-        
-        int base_offset = height / 10;
-        
-        // Draw the thumbnail
-        int scaledWidth = height;
-        
-        int scaledHeight = (height - (2 * base_offset)) * 95 / 100;
-        wxBitmap &bm = m_pChart->GetChartThumbnail( scaledHeight );
-        
-        if(bm.IsOk()){
-            dc.DrawBitmap(bm, base_offset + 3, base_offset + 3);
-        }
-        
-        wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-        double font_size = dFont->GetPointSize() * 3/2;
-        wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
-        
-        int text_x = scaledWidth * 12 / 10;
-        dc.SetFont( *qFont );
-        dc.SetTextForeground(wxColour(0,0,0));
-        dc.DrawText(nameString, text_x, height * 5 / 100);
-        
-        int hTitle = dc.GetCharHeight();
-        int y_line = (height * 5 / 100) + hTitle;
-        dc.DrawLine( text_x, y_line, width - base_offset, y_line);
-        
-        
-        dc.SetFont( *dFont );           // Restore default font
-        int offset = GetCharHeight();
-        
-        int yPitch = GetCharHeight();
-        int yPos = y_line + 4;
-        wxString tx;
-        
-        int text_x_val = scaledWidth + ((width - scaledWidth) * 4 / 10);
-        
-        // Create and populate the current chart information
-        tx = _("Chart Edition:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->currentChartEdition;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Order Reference:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->orderRef;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Purchase date:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->purchaseDate;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Expiration date:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->expDate;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Status:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->getStatusString();
-        if(g_statusOverride.Len())
-            tx = g_statusOverride;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-
-        tx = m_pChart->getKeytypeString();
-        if(tx.Len()){
-            tx = _("Key type:");
-            dc.DrawText( tx, text_x, yPos);
-            tx = m_pChart->getKeytypeString();
-            dc.DrawText( tx, text_x_val, yPos);
-            yPos += yPitch;
-        }
-
-
-#if 0        
-        dc.SetBrush( wxBrush( m_boxColour ) );
-        
-        GetGlobalColor( _T ( "UITX1" ), &c );
-        dc.SetPen( wxPen( c, 3 ));
-        
-        dc.DrawRoundedRectangle( 0, 0, width-1, height-1, height / 10);
-         
-        wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-        double font_size = dFont->GetPointSize() * 4/3;
-        wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
-
-        dc.SetFont( *qFont );
-        dc.SetTextForeground(wxColour(0,0,0));
-        dc.DrawText(m_pChart->chartName, 5, 5);
-        
-        dc.SetFont( *dFont );
-        
-        int offset = GetCharHeight();
-        
-        int yPitch = GetCharHeight();
-        int yPos = yPitch * 2;
-        int xcolumn = GetCharHeight();
-        wxString tx; 
-        // Create and populate the current chart information
-/*        
-        <order>OAUMRVVRP</order>
-        <purchase>2017-07-06 19:27:41</purchase>
-        <expiration>2018-07-06 19:27:41</expiration>
-        <chartid>10</chartid>
-        <chartEdition>2018-2</chartEdition>
-        <chartPublication>1522533600</chartPublication>
-        <chartName>Netherlands and Belgium 2017</chartName>
-        <quantityId>1</quantityId>
-        
-        <slot>1</slot>
-        <assignedSystemName />
-        <lastRequested />
-        <state>unassigned</state>
-        <link />
-  */      
-        tx = _("Chart Edition: ") + m_pChart->currentChartEdition;
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-
-        tx = _("Order Reference: ") + m_pChart->orderRef;
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-
-        yPos = yPitch * 2;
-        xcolumn = width / 2;
-        
-        tx = _("Purchase date: ") + m_pChart->purchaseDate;
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-        
-        tx = _("Expiration date: ") + m_pChart->expDate;
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-        
-        dc.DrawLine( offset, yPos + 3, width - offset, yPos + 3);
-        yPos += 6;
-        
-        
-        //  The two assignment slots
-        xcolumn = GetCharHeight();
-        int yTable = yPos;
-        wxString adjStatus;
-        
-        tx = _("Assigment 1");
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-        
-        tx = _("System: ") + m_pChart->sysID0;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-        
-        tx = _("Installed edition: ") + m_pChart->lastRequestEdition0;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-        
-        adjStatus = m_pChart->statusID0;
-//         if(adjStatus.IsSameAs(_T("requestable")))
-//             adjStatus = _("ok");
-        
-        tx = _("Status: ") + adjStatus;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
- 
-        yPos = yTable;
-        xcolumn = width / 2;
-        
-        tx = _("Assigment 2");
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-        
-        tx = _("System: ") + m_pChart->sysID1;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-        
-        tx = _("Installed edition: ") + m_pChart->lastRequestEdition1;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-        
-        adjStatus = m_pChart->statusID1;
-//        if(adjStatus.IsSameAs(_T("requestable")))
-//            adjStatus = _("ok");
-        
-        tx = _("Status: ") + adjStatus;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-#endif
-        
-        
-    }
-    else{
-        dc.SetBrush( wxBrush( m_boxColour ) );
-    
-        GetGlobalColor( _T ( "UITX1" ), &c );
-        dc.SetPen( wxPen( c, 1 ) );
-    
-        int offset = height / 10;
-        dc.DrawRectangle( offset, offset, width - (2 * offset), height - (2 * offset));
-    
-        // Draw the thumbnail
-        int scaledHeight = (height - (2 * offset)) * 95 / 100;
-        wxBitmap &bm = m_pChart->GetChartThumbnail( scaledHeight );
-        
-        if(bm.IsOk()){
-            dc.DrawBitmap(bm, offset + 3, offset + 3);
-        }
-        
-        int scaledWidth = bm.GetWidth() * scaledHeight / bm.GetHeight();
-        
-        
-        wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-        double font_size = dFont->GetPointSize() * 3/2;
-        wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
-
-        dc.SetFont( *qFont );
-        dc.SetTextForeground(wxColour(128, 128, 128));
-        
-        if(m_pContainer->GetSelectedChart())
-            dc.SetTextForeground(wxColour(220,220,220));
-        
-        dc.DrawText(nameString, scaledWidth * 15 / 10, height * 35 / 100);
-        
-    }
-    
-    
-}
-#endif
 
 BEGIN_EVENT_TABLE(oeXChartPanel, wxPanel)
 EVT_PAINT ( oeXChartPanel::OnPaint )
@@ -6245,148 +5920,6 @@ void OESENC_CURL_EvtHandler::onProgressEvent(wxCurlDownloadEvent &evt)
 #endif   //__OCPN_USE_CURL__
 
 
-#if 0
-//IMPLEMENT_DYNAMIC_CLASS( oeSENCLogin, wxDialog )
-BEGIN_EVENT_TABLE( oeSENCLogin, wxDialog )
-EVT_BUTTON( ID_GETIP_CANCEL, oeSENCLogin::OnCancelClick )
-EVT_BUTTON( ID_GETIP_OK, oeSENCLogin::OnOkClick )
-END_EVENT_TABLE()
-
-
-oeSENCLogin::oeSENCLogin()
-{
-}
-
-oeSENCLogin::oeSENCLogin( wxWindow* parent, wxWindowID id, const wxString& caption,
-                                          const wxPoint& pos, const wxSize& size, long style )
-{
-    
-    long wstyle = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER;
-    wxDialog::Create( parent, id, caption, pos, size, wstyle );
-    
-    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-    SetFont( *qFont );
-    
-    CreateControls();
-    GetSizer()->SetSizeHints( this );
-    Centre();
-    
-}
-
-oeSENCLogin::~oeSENCLogin()
-{
-}
-
-/*!
- * oeSENCLogin creator
- */
-
-bool oeSENCLogin::Create( wxWindow* parent, wxWindowID id, const wxString& caption,
-                                  const wxPoint& pos, const wxSize& size, long style )
-{
-    SetExtraStyle( GetExtraStyle() | wxWS_EX_BLOCK_EVENTS );
-    
-    long wstyle = style;
-    #ifdef __WXMAC__
-    wstyle |= wxSTAY_ON_TOP;
-    #endif
-    wxDialog::Create( parent, id, caption, pos, size, wstyle );
-    
-    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-    SetFont( *qFont );
-    
-    
-    CreateControls(  );
-    Centre();
-    return TRUE;
-}
-
-
-void oeSENCLogin::CreateControls(  )
-{
-    int ref_len = GetCharHeight();
-    
-    oeSENCLogin* itemDialog1 = this;
-    
-    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer( wxVERTICAL );
-    itemDialog1->SetSizer( itemBoxSizer2 );
-    
-    wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( itemDialog1, wxID_ANY, _("Login to o-charts.org") );
-    
-    wxStaticBoxSizer* itemStaticBoxSizer4 = new wxStaticBoxSizer( itemStaticBoxSizer4Static, wxVERTICAL );
-    itemBoxSizer2->Add( itemStaticBoxSizer4, 0, wxEXPAND | wxALL, 5 );
-    
-    itemStaticBoxSizer4->AddSpacer(10);
-    
-    wxStaticLine *staticLine121 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxLI_HORIZONTAL);
-    itemStaticBoxSizer4->Add(staticLine121, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
-    
-    wxFlexGridSizer* flexGridSizerActionStatus = new wxFlexGridSizer(0, 2, 0, 0);
-    flexGridSizerActionStatus->SetFlexibleDirection( wxBOTH );
-    flexGridSizerActionStatus->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-    flexGridSizerActionStatus->AddGrowableCol(0);
-    
-    itemStaticBoxSizer4->Add(flexGridSizerActionStatus, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
-    
-    wxStaticText* itemStaticText5 = new wxStaticText( itemDialog1, wxID_STATIC, _("email address:"), wxDefaultPosition, wxDefaultSize, 0 );
-    flexGridSizerActionStatus->Add( itemStaticText5, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, 5 );
-    
-    m_UserNameCtl = new wxTextCtrl( itemDialog1, ID_GETIP_IP, _T(""), wxDefaultPosition, wxSize( ref_len * 10, -1 ), 0 );
-    flexGridSizerActionStatus->Add( m_UserNameCtl, 0,  wxALIGN_CENTER | wxLEFT | wxRIGHT | wxBOTTOM , 5 );
-    
- 
-    wxStaticText* itemStaticText6 = new wxStaticText( itemDialog1, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
-    flexGridSizerActionStatus->Add( itemStaticText6, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, 5 );
-    
-    m_PasswordCtl = new wxTextCtrl( itemDialog1, ID_GETIP_IP, _T(""), wxDefaultPosition, wxSize( ref_len * 10, -1 ), 0 );
-    flexGridSizerActionStatus->Add( m_PasswordCtl, 0,  wxALIGN_CENTER | wxLEFT | wxRIGHT | wxBOTTOM , 5 );
-    
-    
-    wxBoxSizer* itemBoxSizer16 = new wxBoxSizer( wxHORIZONTAL );
-    itemBoxSizer2->Add( itemBoxSizer16, 0, wxALIGN_RIGHT | wxALL, 5 );
-    
-    m_CancelButton = new wxButton( itemDialog1, ID_GETIP_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer16->Add( m_CancelButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-    
-    m_OKButton = new wxButton( itemDialog1, ID_GETIP_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    m_OKButton->SetDefault();
-    
-    itemBoxSizer16->Add( m_OKButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-    
-    
-}
-
-
-bool oeSENCLogin::ShowToolTips()
-{
-    return TRUE;
-}
-
-
-
-void oeSENCLogin::OnCancelClick( wxCommandEvent& event )
-{
-    EndModal(2);
-}
-
-void oeSENCLogin::OnOkClick( wxCommandEvent& event )
-{
-    if( (m_UserNameCtl->GetValue().Length() == 0 ) || (m_PasswordCtl->GetValue().Length() == 0 ) ){
-        SetReturnCode(1);
-        EndModal(1);
-    }
-    else {
-        SetReturnCode(0);
-        EndModal(0);
-    }
-}
-
-void oeSENCLogin::OnClose( wxCloseEvent& event )
-{
-    SetReturnCode(2);
-}
-
-#endif
 
 IMPLEMENT_DYNAMIC_CLASS( oeRNCLogin, wxDialog )
 BEGIN_EVENT_TABLE( oeRNCLogin, wxDialog )
