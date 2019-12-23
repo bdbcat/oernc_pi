@@ -96,7 +96,6 @@ bool IsDongleAvailable()
         wxLogMessage(line);
     }
 
-    g_server_bin.Clear();
 #endif
     
     return false;

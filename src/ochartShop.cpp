@@ -79,6 +79,8 @@ wxString g_lastSlotUUID;
 
 extern int g_admin;
 extern wxString g_lastEULAFile;
+extern wxString g_versionString;
+extern wxString g_systemOS;
 
 wxString g_systemName;
 wxString g_loginKey;
@@ -1848,8 +1850,8 @@ void loadShopConfig()
         pConf->Read( _T("DEBUG_SHOP"), &g_debugShop);
         pConf->Read( _T("LastEULAFile"), &g_lastEULAFile);
 
-        g_systemName = _T("");
-        g_loginKey = _T("");
+//        g_systemName = _T("");
+//        g_loginKey = _T("");
         
         // Get the list of charts
         wxArrayString chartIDArray;
@@ -2110,6 +2112,7 @@ int doLogin()
     loginParms += _T("&password=") + pass;
     if(g_debugShop.Len())
         loginParms += _T("&debug=") + g_debugShop;
+    loginParms += _T("&version=") + g_systemOS + g_versionString;
     
     int iResponseCode =0;
     TiXmlDocument *doc = 0;
@@ -2547,7 +2550,7 @@ int getChartList( bool bShowErrorDialogs = true){
     loginParms += _T("&key=") + g_loginKey;
     if(g_debugShop.Len())
         loginParms += _T("&debug=") + g_debugShop;
-
+    loginParms += _T("&version=") + g_systemOS + g_versionString;
 
     int iResponseCode = 0;
     size_t res = 0;
@@ -2645,7 +2648,8 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     wxString sqid;
     sqid.Printf(_T("%1d"), chart->quantityList[qtyIndex].quantityId);
     loginParms += _T("&quantityId=") + sqid;
-
+    loginParms += _T("&version=") + g_systemOS + g_versionString;
+    
     int iResponseCode = 0;
     size_t res = 0;
     std::string responseBody;
@@ -2749,6 +2753,7 @@ int doUploadXFPR(bool bDongle)
                 
             loginParms += _T("&xfpr=") + stringFPR;
             loginParms += _T("&xfprName=") + fprName;
+            loginParms += _T("&version=") + g_systemOS + g_versionString;
             
             wxLogMessage(loginParms);
 
@@ -2854,6 +2859,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     loginParms += _T("&requestedFile=") + chart->taskRequestedFile;
     loginParms += _T("&requestedEdition=") + chart->taskRequestedEdition;
     loginParms += _T("&currentEdition=") + chart->taskCurrentEdition;
+    loginParms += _T("&version=") + g_systemOS + g_versionString;
     
     wxLogMessage(loginParms);
     
@@ -2915,12 +2921,16 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
     
         // First, the shorter Key file
         itemDLTask task1;
-        wxURI uri;
         wxString downloadURL = wxString(targetSlot->taskFileList[i]->linkKeys.c_str());
-        uri.Create(downloadURL);
-        wxString serverFilename = uri.GetPath();
-        wxFileName fn(serverFilename);
-        wxString fileTarget = fn.GetFullName();
+        
+        //  /oeRNC-IMR-CRBeast-1-0-base-hp64linux.XML
+        wxString fileTarget = _T("oeRNC-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetChart->serverChartEdition.c_str());
+        fileTarget += _T("-base-");
+        if(g_dongleName.Length())
+            fileTarget +=  g_dongleName + _T(".XML");
+        else
+            fileTarget +=  g_systemName + _T(".XML");
+
 
         task1.url = downloadURL;
         task1.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
@@ -2930,12 +2940,11 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         
         // Next, the chart payload file
         itemDLTask task2;
-        wxURI uri2;
         downloadURL = wxString(targetSlot->taskFileList[i]->link.c_str());
-        uri2.Create(downloadURL);
-        serverFilename = uri2.GetPath();
-        wxFileName fn2(serverFilename);
-        fileTarget = fn2.GetFullName();
+
+        //  /oeRNC-IMR-GR-2-0-base.zip
+        fileTarget = _T("oeRNC-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetChart->serverChartEdition.c_str());
+        fileTarget += _T("-base.zip");
 
         task2.url = downloadURL;
         task2.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
@@ -4778,7 +4787,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             
             wxString fileTarget = wxString( (actionAddUpdate[i]->ID).c_str()) + _T(".oernc");
             // Copy the oernc chart from the temp unzip location to the target location
-            wxString source = tmp_dir + chartTopLevelZip + wxFileName::GetPathSeparator() + fileTarget;
+            wxString source = tmp_dir + wxFileName::GetPathSeparator() + chartTopLevelZip + wxFileName::GetPathSeparator() + fileTarget;
             if(!wxFileExists(source)){
                 wxLogError(_T("Can not find .oernc file referenced in ChartList: ") + source);
                 continue;

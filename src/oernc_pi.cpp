@@ -85,6 +85,7 @@ bool g_serverDebug;
 long g_serverProc;
 int g_debugLevel = 0;
 int g_admin;
+wxString g_systemOS;
 
 wxString  g_deviceInfo;
 extern wxString  g_loginUser;
@@ -394,6 +395,23 @@ int oernc_pi::Init(void)
       // Set up the initial key hash table pointers
       pPrimaryKey = &keyMapDongle;
       pAlternateKey = &keyMapSystem;
+
+    // Establish the system build type for server identification
+    /*
+    w = Windows
+    d = macOS
+    l = Linux
+    r = Android
+    */
+    g_systemOS = _T("l.");            // default
+#ifdef __WXMSW__
+    g_systemOS = _T("w.");
+#endif
+#ifdef __WXMAC__
+    g_systemOS = _T("d.");
+#endif
+    // Android handled in Java-side interface
+    
 
       return flags;
       
