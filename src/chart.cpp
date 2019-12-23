@@ -417,7 +417,7 @@ void nvc_dll_authcheck(unsigned long *Data)
   unsigned long Key[] = { 0x0cd9469e,0x657f194c,0x1d952eaa,0x5a9b7e38 };
 
   // xtea cypher
-  register unsigned long delta, sum;
+  unsigned long delta, sum;
   short    cnt;
   sum   = 0;
   delta = 0x9E3779B9;
