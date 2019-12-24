@@ -926,7 +926,7 @@ void itemChart::Update(itemChart *other)
 
 wxBitmap& itemChart::GetChartThumbnail(int size)
 {
-#if 0    
+#if 1    
     if(!m_ChartImage.IsOk()){
         // Look for cached copy
         wxString fileKey = _T("ChartImage-");
@@ -1925,6 +1925,7 @@ void loadShopConfig()
                                 slot->installedEdition = std::string(installedEdition.mb_str());
                                 
                                 new_qty.slotList.push_back(slot);
+
                                 chart->quantityList.push_back(new_qty);
                             }
                             else{
@@ -2528,10 +2529,13 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                     // Does this chart already exist in the table?
                     int index = findOrderRefChartId(pChart->orderRef, pChart->chartID);
                     if(index < 0){
+                        pChart->bshopValidated = true;
                         ChartVector.push_back(pChart);
                     }
                     else{
                         ChartVector[index]->Update(pChart);
+                        ChartVector[index]->bshopValidated = true;
+
                         delete pChart;
                     }
                     
@@ -2608,6 +2612,15 @@ int getChartList( bool bShowErrorDialogs = true){
     if(iResponseCode == 200){
         wxString result = ProcessResponse(responseBody);
         
+        //  Scan for and delete any chartsets that are not recognized in server response
+        for (auto it = ChartVector.begin(); it != ChartVector.end(); ) {
+            if (!(*it)->bshopValidated) {
+                it = ChartVector.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
         return checkResult( result, bShowErrorDialogs );
     }
     else

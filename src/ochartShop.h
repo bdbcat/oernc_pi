@@ -221,7 +221,7 @@ public:
 class itemChart
 {
 public:    
-    itemChart() { m_downloading = false; m_bEnabled = true; m_assignedSlotIndex = -1; m_activeQtyID = -1; maxSlots = 0;}
+    itemChart() { m_downloading = false; m_bEnabled = true; m_assignedSlotIndex = -1; m_activeQtyID = -1; maxSlots = 0; bshopValidated=false;}
     ~itemChart() {};
 
     void setDownloadPath(int slot, wxString path);
@@ -293,7 +293,7 @@ public:
     wxString lastInstall;          // For updates, the full path of installed chartset
     int m_status;
     wxString lastInstalledtlDir;
-        
+    bool bshopValidated;     
 };
 
 
