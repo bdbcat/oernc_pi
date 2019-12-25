@@ -5747,12 +5747,14 @@ END_EVENT_TABLE()
 
     wxPanel *selectorPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
     itemBoxSizer2->Add(selectorPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    
+#ifdef __OCPN__ANDROID__
     selectorPanel->SetForegroundColour(wxColour(200, 200, 200));
+    selectorPanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
+#endif    
 
     wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
     selectorPanel->SetSizer(boxSizercPanel);
-
-    selectorPanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
 
      m_rbSystemNames = new wxRadioBox(selectorPanel, wxID_ANY, _("System Names"), wxDefaultPosition, wxDefaultSize, system_names, 0, wxRA_SPECIFY_ROWS);
      
@@ -5771,20 +5773,18 @@ END_EVENT_TABLE()
      m_OKButton = new wxButton( itemDialog1, ID_GETIP_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
      m_OKButton->SetDefault();
      itemBoxSizer16->Add( m_OKButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-                                              
-                                              
- }
+}
  
  
- bool oeRNCSystemNameSelector::ShowToolTips()
- {
-     return TRUE;
- }
+bool oeRNCSystemNameSelector::ShowToolTips()
+{
+    return TRUE;
+}
  
- wxString oeRNCSystemNameSelector::getRBSelection(  )
- {
+wxString oeRNCSystemNameSelector::getRBSelection(  )
+{
      return m_rbSystemNames->GetStringSelection();
- }
+}
  
  void oeRNCSystemNameSelector::OnCancelClick( wxCommandEvent& event )
  {
