@@ -81,8 +81,11 @@ bool IsDongleAvailable()
     wxArrayString ret_array, err_array;      
     wxExecute(cmd, ret_array, err_array );
             
+    wxLogMessage(_T("oeaserverd results:"));
     for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
         wxString line = ret_array[i];
+        wxLogMessage(line);
+
         if(line.IsSameAs(_T("1")))
             return true;
         if(line.IsSameAs(_T("0")))
@@ -90,10 +93,12 @@ bool IsDongleAvailable()
     }
 
     // Show error in log
-    wxLogMessage(_T("oeaserverd execution error:"));
-    for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
-        wxString line = err_array[i];
-        wxLogMessage(line);
+    if(err_array.GetCount()){
+        wxLogMessage(_T("oeaserverd execution error:"));
+        for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
+            wxString line = err_array[i];
+            wxLogMessage(line);
+        }
     }
 
 #endif
@@ -195,11 +200,12 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
             
             ::wxBeginBusyCursor();
             
-            wxArrayString ret_array;      
-            wxExecute(cmd, ret_array, ret_array );
+            wxArrayString ret_array, err_array;      
+            wxExecute(cmd, ret_array, err_array );
             
             ::wxEndBusyCursor();
-            
+            wxLogMessage(_T("Create FPR oeaserverd results:"));
+
             bool berr = false;
             for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
                 wxString line = ret_array[i];
@@ -213,6 +219,15 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
                 }
                 
             }
+            
+            if(err_array.GetCount()){
+                wxLogMessage(_T("Create FPR oeaserverd execution error:"));
+                for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
+                    wxString line = err_array[i];
+                    wxLogMessage(line);
+                }
+            }
+
             if(!berr){
                 if(fpr_file.IsEmpty()){                 // Probably dongle not present
                     fpr_file = _T("DONGLE_NOT_PRESENT");
