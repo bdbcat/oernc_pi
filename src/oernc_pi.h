@@ -68,7 +68,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock);
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-class oernc_pi : public opencpn_plugin_19
+class oernc_pi : public opencpn_plugin_116
 {
 public:
       oernc_pi(void *ppimgr);
