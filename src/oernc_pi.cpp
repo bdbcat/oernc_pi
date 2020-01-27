@@ -320,7 +320,7 @@ void SwapKeyHashes()
 //---------------------------------------------------------------------------------------------------------
 
 oernc_pi::oernc_pi(void *ppimgr)
-      :opencpn_plugin_116(ppimgr)
+      :opencpn_plugin_19(ppimgr)
 {
       // Create the PlugIn icons
 
