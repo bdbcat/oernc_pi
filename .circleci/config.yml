@@ -25,7 +25,7 @@ jobs:
      steps:
        - checkout
        - run: ci/circleci-build-debian.sh
-       #- run: ci/circleci-upload.sh
+       - run: ci/circleci-upload.sh
    build-flatpak:
      machine:
        image: circleci/classic:201808-01

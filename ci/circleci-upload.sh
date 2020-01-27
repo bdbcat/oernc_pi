@@ -53,13 +53,13 @@ sudo sed -i -e "s|@version@|$VERSION|" $xml
 sudo sed -i -e "s|@filename@|$tarball_basename|" $xml
 
 cloudsmith push raw --republish --no-wait-for-sync \
-    --name oesenc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
+    --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
     --version ${VERSION} \
-    --summary "oesenc opencpn plugin metadata for automatic installation" \
+    --summary "oernc opencpn plugin metadata for automatic installation" \
     $REPO $xml
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name $tarball_name \
     --version ${VERSION} \
-    --summary "oesenc opencpn plugin tarball for automatic installation" \
+    --summary "oernc opencpn plugin tarball for automatic installation" \
     $REPO $tarball
