@@ -6,8 +6,8 @@
 
 set -xe
 
-UNSTABLE_REPO='alec-leamas/opencpn-plugins-unstable'
-STABLE_REPO='alec-leamas/opencpn-plugins-stable'
+UNSTABLE_REPO='david-register/opencpn-plugins-unstable'
+STABLE_REPO='david-register/opencpn-plugins-stable'
 
 if [ -z "$CIRCLECI" ]; then
     exit 0;
@@ -45,7 +45,7 @@ tarball_basename=${tarball##*/}
 source $HOME/project/build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
-tarball_name=oesenc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
+tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
 sudo sed -i -e "s|@pkg_repo@|$REPO|" $xml
 sudo sed -i -e "s|@name@|$tarball_name|" $xml
