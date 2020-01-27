@@ -395,9 +395,9 @@ ENDIF (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
 
 IF(PACKAGE_FORMAT MATCHES "DEB")
         
-        INSTALL(FILES "buildlinux/oeaserverd/97-sglock.rules"
-          PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ 
-          DESTINATION "/etc/udev/rules.d")
+#        INSTALL(FILES "buildlinux/oeaserverd/97-sglock.rules"
+#          PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ 
+#          DESTINATION "/etc/udev/rules.d")
 
 ENDIF(PACKAGE_FORMAT MATCHES "DEB")
 
