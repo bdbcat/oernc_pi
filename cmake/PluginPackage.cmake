@@ -28,7 +28,9 @@ IF(WIN32)
 # CPACK_BUILDWIN_DIR ??
 # CPACK_PACKAGE_ICON ??
 
-  SET(CPACK_NSIS_PACKAGE_NAME "${PACKAGE_NAME}")
+  #SET(CPACK_PACKAGE_NAME "${PACKAGE_NAME}-ov50")
+  #SET(CPACK_NSIS_PACKAGE_NAME "${PACKAGE_NAME}-ov50")
+  #SET(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH}-ov50 )
   SET(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}-${OCPN_MIN_VERSION}")
 
   # Let cmake find NSIS.template.in
@@ -82,9 +84,9 @@ IF(UNIX AND NOT APPLE)
   IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
     SET (ARCH "armhf")
     # don't bother with rpm on armhf
-    SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
+    SET(CPACK_GENERATOR "DEB;TBZ2")
   ELSE ()
-    SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
+    SET(CPACK_GENERATOR "DEB;TBZ2")
 
     IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
       SET (ARCH "amd64")
@@ -151,23 +153,33 @@ INCLUDE(CPack)
 
 IF(APPLE)
 
- #  Copy a bunch of files so the Packages installer builder can find them
- #  relative to ${CMAKE_CURRENT_BINARY_DIR}
+ #  Copy a few generic files so the Packages installer builder can find them relative to ${CMAKE_CURRENT_BINARY_DIR}
  #  This avoids absolute paths in the chartdldr_pi.pkgproj file
 
-configure_file(${PROJECT_SOURCE_DIR}/cmake/gpl.txt
-            ${CMAKE_CURRENT_BINARY_DIR}/license.txt COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/cmake/gpl.txt ${CMAKE_CURRENT_BINARY_DIR}/license.txt COPYONLY)
 
-configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg
-            ${CMAKE_CURRENT_BINARY_DIR}/pkg_background.jpg COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg ${CMAKE_CURRENT_BINARY_DIR}/pkg_background.jpg COPYONLY)
+#configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/SG-LockV1.4.mpkg ${CMAKE_CURRENT_BINARY_DIR}/SG-LockV1.4.mpkg COPYONLY)
+#configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/SGLockInstall.scptd ${CMAKE_CURRENT_BINARY_DIR}/SGLockInstall.scptd COPYONLY)
+#configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/sgli ${CMAKE_CURRENT_BINARY_DIR}/sgli COPYONLY)
 
+  # This is a bit of a hack...
+  # We need to copy the helper utility to the binary build directory so that the PACKAGES scripts will find it.
+  # Would be nicer if this could be specified from the top level cmake file, so that this file remains generic...
+#configure_file(${PROJECT_SOURCE_DIR}/buildosx/oeserverd/oeserverd
+#            ${CMAKE_CURRENT_BINARY_DIR}/oeserverd COPYONLY)
+
+#configure_file(${PROJECT_SOURCE_DIR}/src/rrc_eula_ChartSetsForOpenCPN.txt
+#            ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+            
+            
  # Patch the pkgproj.in file to make the output package name conform to Xxx-Plugin_x.x.pkg format
  #  Key is:
  #  <key>NAME</key>
- #  <string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}</string>
+ #  <string>${VERBOSE_NAME}-Plugin_${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}</string>
 
-# configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/${PACKAGE_NAME}.pkgproj.in
-#            ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj)
+ configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/${PACKAGE_NAME}.pkgproj.in
+            ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}.pkgproj)
 
  ADD_CUSTOM_COMMAND(
    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg

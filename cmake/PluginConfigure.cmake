@@ -146,7 +146,7 @@ IF (NOT QT_ANDROID )
     if(WXWIDGETS_FORCE_VERSION)
         set (wxWidgets_CONFIG_OPTIONS --version=${WXWIDGETS_FORCE_VERSION})
     endif()
-    FIND_PACKAGE(wxWidgets COMPONENTS ${wxWidgets_USE_LIBS})
+    FIND_PACKAGE(wxWidgets REQUIRED)
     INCLUDE(${wxWidgets_USE_FILE})
 ENDIF (NOT QT_ANDROID )
 
@@ -158,11 +158,13 @@ IF (QT_ANDROID )
         # Presently, Android Plugins are built in the core tree, so the variables {wxQT_BASE}, etc.
         # flow to this module from above.  If we want to build Android plugins out-of-core, this will need improvement.
 
-        ${Qt_Base}/${Qt_Build}/lib/libQt5Core.so
-        ${Qt_Base}/${Qt_Build}/lib/libQt5OpenGL.so
-        ${Qt_Base}/${Qt_Build}/lib/libQt5Widgets.so
-        ${Qt_Base}/${Qt_Build}/lib/libQt5Gui.so
-        ${Qt_Base}/${Qt_Build}/lib/libQt5AndroidExtras.so
+  
+    ${Qt_Base}/${Qt_Build}/lib/libQt5Core.so
+    ${Qt_Base}/${Qt_Build}/lib/libQt5OpenGL.so
+    ${Qt_Base}/${Qt_Build}/lib/libQt5Widgets.so
+    ${Qt_Base}/${Qt_Build}/lib/libQt5Gui.so
+    ${Qt_Base}/${Qt_Build}/lib/libQt5AndroidExtras.so
+
         libGLESv2.so
         libEGL.so
         )
@@ -170,6 +172,7 @@ IF (QT_ANDROID )
 ENDIF(QT_ANDROID)
 
 
+ADD_DEFINITIONS(-DBUILDING_PLUGIN)
 
 
 SET(BUILD_SHARED_LIBS TRUE)

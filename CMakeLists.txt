@@ -31,7 +31,21 @@ SET(VERSION_PATCH "0")
 SET(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
 SET(OCPN_MIN_VERSION "ov50")
 
-#SET(CMAKE_BUILD_TYPE Release)
+SET(PKG_RELEASE "0")
+SET(PKG_API_VERSION "1.16")
+SET(PKG_AUTHOR "David S Register")
+SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}-${PKG_RELEASE})
+
+# The @keyword@ references are patched to actual values by upload script.
+SET(TARBALL_URL "https://dl.cloudsmith.io/public/@pkg_repo@/raw")
+SET(TARBALL_URL ${TARBALL_URL}/names/@name@/versions/@version@/@filename@)
+
+
+OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
+
+include("cmake/PluginSetup.cmake")
+set(PLUGIN_NAME oernc-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -112,6 +126,38 @@ IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
 ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
 
 MESSAGE (STATUS "*** Build Architecture is ${ARCH}")
+
+configure_file(
+        # Required in flatpak, done early.
+        ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
+        ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+        )
+
+if (OCPN_FLATPAK)
+          find_program(TAR NAMES gtar tar)
+          if (NOT TAR)
+              message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
+          endif ()
+          configure_file(
+              ${CMAKE_SOURCE_DIR}/oernc-plugin.xml.in
+              ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+          )
+          add_custom_target(flatpak-build ALL
+              WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak
+              COMMAND flatpak-builder --force-clean
+                  ${CMAKE_CURRENT_BINARY_DIR}/app
+                  org.opencpn.OpenCPN.Plugin.oernc.yaml
+          )
+          add_custom_target("package")
+          add_custom_command(
+              TARGET package
+              COMMAND ${TAR}
+                  -czf ${PKG_NVR}_${PKG_TARGET_NVR}.tar.gz
+                  --transform 's|.*/files/|oernc_pi-flatpak-${PACKAGE_VERSION}/|'
+                  ${CMAKE_CURRENT_BINARY_DIR}/app/files
+          )
+          return ()
+endif()
 
 
 #  To build for android, use this cmake invocation..
@@ -299,8 +345,13 @@ IF (QT_ANDROID )
     TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} "${OCPN_Base}/${OCPN_Build}/libgorp.so" )
 ENDIF(QT_ANDROID)
 
+if (MINGW)
+    SET(OPENCPN_IMPORT_LIB "buildwin/mingw/libopencpn.dll.a")
+elseif (WIN32)
+    SET(OPENCPN_IMPORT_LIB "buildwin/msvc/opencpn.lib")
+endif ()
+
 IF(WIN32)
-  SET(OPENCPN_IMPORT_LIB "C:/Projects/opencpn/build/${CMAKE_CFG_INTDIR}/opencpn.lib")
   TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${OPENCPN_IMPORT_LIB} )
   TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${CURL_LIBRARIES})
   TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${CMAKE_SOURCE_DIR}/buildwin/zlib1.lib)
@@ -327,28 +378,18 @@ IF (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
     INSTALL(FILES "buildlinux64/oeaserverd/oeaserverd"
        PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
        DESTINATION ${PREFIX_PARENTBIN})
-    #INSTALL(FILES "buildlinux64/oeaserverd/libsgllnx64-2.29.02.so"
-    #   PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-    #   DESTINATION ${LIB_INSTALL_DIR})
 ELSE (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
 
     IF (ARCH MATCHES "arm*" )
         INSTALL(FILES "buildlinuxarm/oeaserverd/oeaserverd"
           PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
           DESTINATION ${PREFIX_PARENTBIN})
-        #INSTALL(FILES "buildlinuxarm/oeaserverd/libsglarmhf32-2.30.0.0.so"
-        #  PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-        #  DESTINATION ${LIB_INSTALL_DIR})
 
     ELSE (ARCH MATCHES "arm*" )
         INSTALL(FILES "buildlinux/oeaserverd/oeaserverd"
           PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
           DESTINATION ${PREFIX_PARENTBIN})
-        #INSTALL(FILES "buildlinux/oeaserverd/libsgllnx-2.29.0.1.so"
-        #  PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-        #  DESTINATION ${LIB_INSTALL_DIR})
-
-     ENDIF (ARCH MATCHES "arm*" )
+    ENDIF (ARCH MATCHES "arm*" )
 
 ENDIF (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
 
@@ -383,12 +424,11 @@ SET(CMAKE_INSTALL_PREFIX "/tmp")
 
 INSTALL(FILES "buildosx/oeaserverd/oeaserverd"
        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ WORLD_EXECUTE
-       DESTINATION "oernc_pi/oernc_pi")
+       DESTINATION "bin/OpenCPN.app/Contents/PlugIns/")
 
 INSTALL(FILES "src/rrc_eula_ChartSetsForOpenCPN.txt"
       PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
-      DESTINATION "oernc_pi/oernc_pi" )
-
+      DESTINATION "bin/OpenCPN.app/Contents/SharedSupport/plugins/${PACKAGE_NAME}" )
 
   # We also need to copy the helper utility to the binary build directory so that the PACKAGES scripts will find it.
   
@@ -413,6 +453,12 @@ INCLUDE("cmake/PluginLocalization.cmake")
 IF(NOT QT_ANDROID)
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
+INCLUDE("cmake/PluginSetup.cmake")
 ENDIF(NOT QT_ANDROID)
+
+configure_file(
+    ${CMAKE_SOURCE_DIR}/oernc-plugin.xml.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+)
 
 
