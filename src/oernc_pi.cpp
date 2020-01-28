@@ -436,7 +436,7 @@ bool oernc_pi::DeInit(void)
     
     delete g_event_handler;
     
-    shutdown_server();
+    //shutdown_server();
     
     return true;
 }
