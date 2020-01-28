@@ -153,6 +153,7 @@ INCLUDE(CPack)
 
 IF(APPLE)
 
+IF(NOT OCPN_CI_BUILD)
  #  Copy a few generic files so the Packages installer builder can find them relative to ${CMAKE_CURRENT_BINARY_DIR}
  #  This avoids absolute paths in the chartdldr_pi.pkgproj file
 
@@ -191,6 +192,8 @@ configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg ${CM
 
  ADD_CUSTOM_TARGET(create-pkg COMMENT "create-pkg: Done."
  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VERBOSE_NAME}-Plugin.pkg )
+
+ENDIF(NOT OCPN_CI_BUILD)
 
  SET(CPACK_GENERATOR "TGZ")
 
