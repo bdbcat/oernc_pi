@@ -341,7 +341,7 @@ int oernc_pi::Init(void)
 
     m_shoppanel = NULL;
 
-    //g_event_handler = new oernc_pi_event_handler(this);
+    g_event_handler = new oernc_pi_event_handler(this);
 
     AddLocaleCatalog( _T("opencpn-oernc_pi") );
 
@@ -435,13 +435,11 @@ bool oernc_pi::DeInit(void)
 
     wxLogMessage(_T("oernc_pi: DeInit()"));
 
-    //delete m_shoppanel;
-    
     m_class_name_array.Clear();
     
-    //delete g_event_handler;
+    delete g_event_handler;
     
-    //shutdown_server();
+    shutdown_server();
     
     return true;
 }
@@ -515,8 +513,6 @@ void oernc_pi::OnSetupOptions( void )
     sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
     m_shoppanel->FitInside();
 #else
-    
-    wxLogMessage( _T("oernc_pi::OnSetupOptions") );
 
     m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeRNC Charts") );
     if( ! m_pOptionsPage )
