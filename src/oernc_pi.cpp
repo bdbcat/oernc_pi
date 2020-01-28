@@ -380,7 +380,7 @@ int oernc_pi::Init(void)
       if(!::wxDirExists( g_PrivateDataDir ))
           ::wxMkdir( g_PrivateDataDir );
       
-      wxLogMessage(_T("Path to serverd is: ") + g_server_bin);
+      wxLogMessage(_T("oernc_pi::Path to serverd is: ") + g_server_bin);
       
 //       if(IsDongleAvailable())
 //         wxLogMessage(_T("Dongle detected"));
@@ -424,14 +424,19 @@ bool oernc_pi::DeInit(void)
     
     delete pinfoDlg;
     pinfoDlg = NULL;
+#endif
     
     if( m_pOptionsPage )
     {
         if( DeleteOptionsPage( m_pOptionsPage ) )
             m_pOptionsPage = NULL;
     }
-#endif
 
+
+    wxLogMessage(_T("oernc_pi: DeInit()"));
+
+    //delete m_shoppanel;
+    
     m_class_name_array.Clear();
     
     //delete g_event_handler;
@@ -510,6 +515,9 @@ void oernc_pi::OnSetupOptions( void )
     sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
     m_shoppanel->FitInside();
 #else
+    
+    wxLogMessage( _T("oernc_pi::OnSetupOptions") );
+
     m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeRNC Charts") );
     if( ! m_pOptionsPage )
     {
