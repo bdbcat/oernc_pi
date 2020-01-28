@@ -382,10 +382,10 @@ int oernc_pi::Init(void)
       
       wxLogMessage(_T("oernc_pi::Path to serverd is: ") + g_server_bin);
       
-//       if(IsDongleAvailable())
-//         wxLogMessage(_T("Dongle detected"));
-//       else
-//         wxLogMessage(_T("No Dongle detected"));
+       if(IsDongleAvailable())
+         wxLogMessage(_T("oernc_pi::Dongle detected"));
+       else
+         wxLogMessage(_T("oernc_pi::No Dongle detected"));
 
       int flags = INSTALLS_PLUGIN_CHART;
 
