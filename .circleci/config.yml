@@ -63,7 +63,7 @@ jobs:
      steps:
        - checkout
        - run: ci/circleci-build-macos.sh
-       #- run: ci/circleci-upload.sh
+       - run: ci/circleci-upload.sh
 
 workflows:
   version: 2
