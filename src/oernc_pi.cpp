@@ -434,6 +434,8 @@ bool oernc_pi::DeInit(void)
 
     m_class_name_array.Clear();
     
+    delete g_event_handler;
+    
     shutdown_server();
     
     return true;
