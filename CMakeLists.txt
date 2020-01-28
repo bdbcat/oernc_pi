@@ -346,7 +346,7 @@ IF (QT_ANDROID )
 ENDIF(QT_ANDROID)
 
 if (MINGW)
-    SET(OPENCPN_IMPORT_LIB "buildwin/mingw/libopencpn.dll.a")
+    SET(OPENCPN_IMPORT_LIB "${CMAKE_SOURCE_DIR}/buildwin/mingw/libopencpn.dll.a")
 elseif (WIN32)
     SET(OPENCPN_IMPORT_LIB "buildwin/msvc/opencpn.lib")
 endif ()
