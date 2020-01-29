@@ -40,6 +40,7 @@
 #include "chart.h"
 #include "oernc_inStream.h"
 #include "ochartShop.h"
+#include "InstallDirs.h"
 #include <map>
 #include <unordered_map>
 #include <tinyxml.h>
@@ -352,7 +353,17 @@ int oernc_pi::Init(void)
       wxFileName fn_exe(GetOCPN_ExePath());
       g_server_bin = fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("oeaserverd");
       
-      
+      if (!wxFileExists(g_server_bin)) {
+        std::string path(find_in_path("oeaserverd"));
+        if (path == "") {
+            wxLogWarning("Cannot locate oeaserverd binary in $PATH");
+        }
+        else {
+            g_server_bin = wxString(path.c_str());
+        }
+      }
+ 
+#if 0 
       #ifdef __WXMSW__
       g_server_bin = _T("\"") + fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) +
       _T("plugins\\oernc_pi\\oeaserverd.exe\"");
@@ -363,7 +374,9 @@ int oernc_pi::Init(void)
       g_server_bin = _T("\"") + fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) +
       _T("PlugIns/oernc_pi/oeaserverd\"");
       #endif
-      
+     
+#endif
+
       #ifdef __OCPN__ANDROID__
       wxString piLocn = GetPlugInPath(this); //*GetpSharedDataLocation();
       wxFileName fnl(piLocn);

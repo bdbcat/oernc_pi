@@ -257,6 +257,8 @@ SET(SRC_OERNC
             src/piScreenLog.h
             src/validator.cpp
             src/validator.h
+            src/InstallDirs.cpp
+            src/InstallDirs.h
      )
 
 IF(QT_ANDROID)
