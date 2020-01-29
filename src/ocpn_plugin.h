@@ -40,6 +40,8 @@
 #ifdef MAKING_PLUGIN
 #  define DECL_IMP     __declspec(dllimport)
 #endif
+#else
+#  define DECL_IMP
 #endif    
 
 #include <wx/xml/xml.h>
