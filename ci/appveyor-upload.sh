@@ -4,8 +4,8 @@
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
-STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'alec-leamas/opencpn-plugins-stable'}
-UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'alec-leamas/opencpn-plugins-unstable'}
+STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'david-register/ocpn-plugins-stable'}
+UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'david-register/ocpn-plugins-unstable'}
 
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Cannot deploy to cloudsmith, missing $CLOUDSMITH_API_KEY'
@@ -31,7 +31,7 @@ tarball_basename=${tarball##*/}
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
-tarball_name=oesenc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
+tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
 # There is no sed available in git bash. This is nasty, but seems
 # to work:
@@ -44,13 +44,13 @@ while read line; do
 done < $xml > xml.tmp && cp xml.tmp $xml && rm xml.tmp
 
 cloudsmith push raw --republish --no-wait-for-sync \
-    --name oesenc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
+    --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
     --version ${VERSION} \
-    --summary "oesenc opencpn plugin metadata for automatic installation" \
+    --summary "oernc opencpn plugin metadata for automatic installation" \
     $REPO $xml
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name $tarball_name  \
     --version ${VERSION} \
-    --summary "oesenc opencpn plugin tarball for automatic installation" \
+    --summary "oernc opencpn plugin tarball for automatic installation" \
     $REPO $tarball
