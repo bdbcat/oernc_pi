@@ -1,18 +1,26 @@
 language: cpp
 
-arch:
-  - arm64
+#arch:
+#  - arm64
   
 matrix:
   include:
 
   - env:
-    - OCPN_TARGET=xenial
-    dist: xenial
-    compiler: gcc
+#    - OCPN_TARGET=xenial
+#    dist: xenial
+#    compiler: gcc
     
+#    script:
+#    - "./ci/travis-build-debian.sh"
+    
+  - env:
+    - OCPN_TARGET=bionic
+    services:
+    - docker
     script:
-    - "./ci/travis-build-debian.sh"
+    - "./ci/travis-build-bionic-arm.sh"
+
 #  - env:
 #    - OCPN_TARGET=trusty
 #    dist: trusty
