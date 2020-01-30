@@ -64,7 +64,6 @@ jobs:
        - checkout
        - run: ci/circleci-build-macos.sh
        - run: ci/circleci-upload.sh
-
    build-armhf-bionic:
      docker:
          - image: multiarch/ubuntu-debootstrap:armhf-bionic
@@ -75,7 +74,6 @@ jobs:
        - checkout
        - run: ci/circleci-build-armhf.sh
        #- run: ci/circleci-upload.sh
-
 workflows:
   version: 2
   build_all:
