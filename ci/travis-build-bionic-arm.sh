@@ -62,7 +62,7 @@ docker exec -ti $DOCKER_CONTAINER_ID ls
 #         echo -ne \"------\nEND OPENCPN-CI BUILD\n\";"
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -xec \
-    "bash -xe ci/travis-build-debian.sh;
+    "bash -xe /oernc_pi/ci/travis-build-debian.sh;
          echo -ne \"------\nEND OPENCPN-CI BUILD\n\";"
 
 docker ps -a
