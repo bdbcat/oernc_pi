@@ -50,7 +50,8 @@ docker run --privileged -d -ti -e "container=docker"  \
 DOCKER_CONTAINER_ID=$(sudo docker ps | grep armhf-bionic | awk '{print $1}')
 echo $DOCKER_CONTAINER_ID 
 docker exec -ti $DOCKER_CONTAINER_ID pwd
-docker exec -ti $DOCKER_CONTAINER_ID ls /home
+docker exec -ti $DOCKER_CONTAINER_ID git clone --depth=50 --branch=ciTravis https://github.com/bdbcat/oernc_pi.git bdbcat/oernc_pi
+docker exec -ti $DOCKER_CONTAINER_ID ls /bdbcat/oernc_pi
 
 #sudo docker logs $DOCKER_CONTAINER_ID
 #docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -xec \
