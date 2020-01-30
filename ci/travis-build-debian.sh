@@ -4,7 +4,6 @@
 # Build the Travis Debian artifacts
 #
 
-
 # https://askubuntu.com/questions/793182/update-not-working-on-ubuntu-14-04-4-lts
 if [ "$OCPN_TARGET" = "trusty" ]; then
      sudo apt-key adv \
