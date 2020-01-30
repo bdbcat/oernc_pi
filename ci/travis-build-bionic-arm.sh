@@ -50,7 +50,7 @@ docker run --privileged -d -ti -e "container=docker"  \
 DOCKER_CONTAINER_ID=$(sudo docker ps | grep armhf-bionic | awk '{print $1}')
 echo $DOCKER_CONTAINER_ID 
 docker exec -ti $DOCKER_CONTAINER_ID pwd
-docker exec -ti $DOCKER_CONTAINER_ID ls
+docker exec -ti $DOCKER_CONTAINER_ID ls /home
 
 #sudo docker logs $DOCKER_CONTAINER_ID
 #docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -xec \
@@ -62,7 +62,7 @@ docker exec -ti $DOCKER_CONTAINER_ID ls
 #         echo -ne \"------\nEND OPENCPN-CI BUILD\n\";"
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -xec \
-    "bash -xe /oernc_pi/ci/travis-build-debian.sh;
+    "bash -xe /home/bdbcat/oernc_pi/ci/travis-build-debian.sh;
          echo -ne \"------\nEND OPENCPN-CI BUILD\n\";"
 
 docker ps -a
