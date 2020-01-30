@@ -64,6 +64,17 @@ jobs:
        - checkout
        - run: ci/circleci-build-macos.sh
        - run: ci/circleci-upload.sh
+   build-armhfbionic:
+     docker:
+         - image: multiarch/ubuntu-debootstrap:armhf-bionic
+         #- image: fedora:29
+     environment:
+       - OCPN_TARGET:  armhf-bionic
+     steps:
+       - run: su -c "apt-get install git openssh-clients openssh-server"
+       - checkout
+       - run: ci/circleci-build-armhf.sh
+       #- run: ci/circleci-upload.sh
 
 workflows:
   version: 2
@@ -90,6 +101,10 @@ workflows:
             branches:
               only: ci
       - build-mingw:
+          filters:
+            branches:
+              only: ci
+      - build-armhfbionic:
           filters:
             branches:
               only: ci
