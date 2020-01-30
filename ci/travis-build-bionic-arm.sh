@@ -37,13 +37,15 @@ docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 docker run --rm -t multiarch/ubuntu-debootstrap:armhf-bionic uname -a
 
-#DOCKER_CONTAINER_ID=$(docker ps | grep qemu | awk '{print $1}')
-#echo $DOCKER_CONTAINER_ID 
-docker exec -t multiarch/ubuntu-debootstrap:armhf-bionic /bin/bash -xec \
+docker run --rm -t multiarch/ubuntu-debootstrap:armhf-bionic /bin/bash
+docker ps
+DOCKER_CONTAINER_ID=$(docker ps | grep qemu | awk '{print $1}')
+echo $DOCKER_CONTAINER_ID 
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -xec \
     "bash -xe /opencpn-ci/ci/travis-build-debian.sh;
          echo -ne \"------\nEND OPENCPN-CI BUILD\n\";"
-#docker ps -a
-#docker stop $DOCKER_CONTAINER_ID
-#docker rm -v $DOCKER_CONTAINER_ID
+docker ps -a
+docker stop $DOCKER_CONTAINER_ID
+docker rm -v $DOCKER_CONTAINER_ID
 
 sudo apt-get install python3-pip python3-setuptools
