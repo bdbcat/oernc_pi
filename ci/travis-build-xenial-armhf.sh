@@ -16,7 +16,7 @@ sleep 5;
 
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-docker run --privileged -d -ti -e "container=docker"  raspbian/stretch /bin/bash
+docker run --privileged -d -ti -e "container=docker"  -v ~/source_top:/source_top raspbian/stretch /bin/bash
 DOCKER_CONTAINER_ID=$(sudo docker ps | grep raspbian | awk '{print $1}')
 
 
@@ -29,12 +29,12 @@ docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essentia
 
 
 docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/ciTravis
-docker exec -ti $DOCKER_CONTAINER_ID mkdir oernc_pi
-docker exec -ti $DOCKER_CONTAINER_ID tar -xzf ciTravis -C oernc_pi --strip-components=1
+docker exec -ti $DOCKER_CONTAINER_ID mkdir source_top
+docker exec -ti $DOCKER_CONTAINER_ID tar -xzf ciTravis -C source_top --strip-components=1
 
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-    'mkdir oernc_pi/build; cd oernc_pi/build; cmake ..; make; make package;'
+    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
          
 
 echo "Stopping"
@@ -58,9 +58,10 @@ echo "Using \$CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
 
 set -xe
 
-python -m ensurepip
-python -m pip install -q setuptools
-python -m pip install -q cloudsmith-cli
+#python -m ensurepip
+
+python3 -m pip install -q setuptools
+python3 -m pip install -q cloudsmith-cli
 
 BUILD_ID=${APPVEYOR_BUILD_NUMBER:-1}
 commit=$(git rev-parse --short=7 HEAD) || commit="unknown"
@@ -70,6 +71,8 @@ echo "Check 1"
 echo $tag
 echo $commit
 
+#  shift to the directory linked from docker execution
+cd source_top
 xml=$(ls *.xml)
 tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
@@ -78,7 +81,7 @@ echo "Check 2"
 echo $tarball_name
 echo $tarball_basename
 
-source ../build/pkg_version.sh
+source build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
 tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
