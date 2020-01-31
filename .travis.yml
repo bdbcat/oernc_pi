@@ -6,7 +6,7 @@ language: cpp
 matrix:
   include:
 
-  - env:
+#  - env:
 #    - OCPN_TARGET=xenial
 #    dist: xenial
 #    compiler: gcc
