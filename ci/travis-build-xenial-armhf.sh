@@ -71,9 +71,12 @@ echo "Check 1"
 echo $tag
 echo $commit
 
-#  shift to the directory linked from docker execution
+#  shift to the build directory linked from docker execution
 pwd
 cd ~/source_top
+ls
+cd build
+ls
 xml=$(ls *.xml)
 tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
@@ -82,10 +85,10 @@ echo "Check 2"
 echo $tarball_name
 echo $tarball_basename
 
-source build/pkg_version.sh
+source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
 tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
-echo "Check 2"
+echo "Check 3"
 echo $tarball_name
