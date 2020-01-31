@@ -92,3 +92,31 @@ tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
 echo "Check 3"
 echo $tarball_name
+
+# There is no sed available in git bash. This is nasty, but seems
+# to work:
+while read line; do
+    line=${line/@pkg_repo@/$REPO}
+    line=${line/@name@/$tarball_name}
+    line=${line/@version@/$VERSION}
+    line=${line/@filename@/$tarball_basename}
+    echo $line
+done < $xml > xml.tmp && cp xml.tmp $xml && rm xml.tmp
+
+echo "Check 4"
+echo $PKG_TARGET
+echo $PKG_TARGET_VERSION
+cat $xml
+
+cloudsmith push raw --republish --no-wait-for-sync \
+    --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
+    --version ${VERSION} \
+    --summary "oernc opencpn plugin metadata for automatic installation" \
+    $REPO $xml
+
+cloudsmith push raw --republish --no-wait-for-sync \
+    --name $tarball_name  \
+    --version ${VERSION} \
+    --summary "oernc opencpn plugin tarball for automatic installation" \
+    $REPO $tarball
+
