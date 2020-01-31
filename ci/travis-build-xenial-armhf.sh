@@ -29,7 +29,7 @@ docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essentia
 
 
 docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/ciTravis
-docker exec -ti $DOCKER_CONTAINER_ID mkdir source_top
+#docker exec -ti $DOCKER_CONTAINER_ID mkdir source_top
 docker exec -ti $DOCKER_CONTAINER_ID tar -xzf ciTravis -C source_top --strip-components=1
 
 
