@@ -15,11 +15,11 @@ matrix:
 #    - "./ci/travis-build-debian.sh"
     
   - env:
-    - OCPN_TARGET=bionic
+    - OCPN_TARGET=xenial-armhf
     services:
     - docker
     script:
-    - "./ci/travis-build-bionic-arm.sh"
+    - "./ci/travis-build-xenial-armhf.sh"
 
 #  - env:
 #    - OCPN_TARGET=trusty
