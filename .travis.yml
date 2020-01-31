@@ -16,6 +16,7 @@ matrix:
     
   - env:
     - OCPN_TARGET=xenial-armhf
+    - OCPN_BRANCH=ciTravis
     services:
     - docker
     script:

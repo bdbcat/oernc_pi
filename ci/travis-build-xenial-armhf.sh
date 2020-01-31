@@ -28,6 +28,8 @@ docker exec -ti $DOCKER_CONTAINER_ID echo "------\nEND apt-get update\n"
 docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release 
 
 
+docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
+
 docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/ciTravis
 #docker exec -ti $DOCKER_CONTAINER_ID mkdir source_top
 docker exec -ti $DOCKER_CONTAINER_ID tar -xzf ciTravis -C source_top --strip-components=1
@@ -70,6 +72,7 @@ tag=$(git tag --contains HEAD)
 echo "Check 1"
 echo $tag
 echo $commit
+echo $OCPN_BRANCH
 
 #  shift to the build directory linked from docker execution
 pwd
@@ -92,7 +95,6 @@ tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
 echo "Check 3"
 echo $tarball_name
-
 # There is no sed available in git bash. This is nasty, but seems
 # to work:
 while read line; do
@@ -101,12 +103,14 @@ while read line; do
     line=${line/@version@/$VERSION}
     line=${line/@filename@/$tarball_basename}
     echo $line
-done < $xml > xml.tmp && cp xml.tmp $xml && rm xml.tmp
+done < $xml > xml.tmp && cp xml.tmp $xml
+#rm xml.tmp
 
 echo "Check 4"
 echo $PKG_TARGET
 echo $PKG_TARGET_VERSION
 cat $xml
+cat xml.tmp
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
