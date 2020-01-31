@@ -72,7 +72,8 @@ echo $tag
 echo $commit
 
 #  shift to the directory linked from docker execution
-cd source_top
+pwd
+cd ~/source_top
 xml=$(ls *.xml)
 tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
