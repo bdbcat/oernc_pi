@@ -97,15 +97,15 @@ echo "Check 3"
 echo $tarball_name
 # There is no sed available in git bash. This is nasty, but seems
 # to work:
-touch xml.tmp
+touch ~/xml.tmp
 while read line; do
     line=${line/@pkg_repo@/$REPO}
     line=${line/@name@/$tarball_name}
     line=${line/@version@/$VERSION}
     line=${line/@filename@/$tarball_basename}
     echo $line
-done < $xml > xml.tmp
-cp xml.tmp $xml
+done < $xml > ~/xml.tmp
+cp ~/xml.tmp $xml
 #rm xml.tmp
 
 echo "Check 4"
