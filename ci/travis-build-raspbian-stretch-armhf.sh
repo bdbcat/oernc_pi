@@ -30,9 +30,8 @@ docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essentia
 
 docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
 
-docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/ciTravis
-#docker exec -ti $DOCKER_CONTAINER_ID mkdir source_top
-docker exec -ti $DOCKER_CONTAINER_ID tar -xzf ciTravis -C source_top --strip-components=1
+docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/$OCPN_BRANCH
+docker exec -ti $DOCKER_CONTAINER_ID tar -xzf $OCPN_BRANCH -C source_top --strip-components=1
 
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
@@ -106,13 +105,12 @@ while read line; do
     echo $line
 done < $xml > ~/xml.tmp
 cp ~/xml.tmp ~/$xml
-#rm xml.tmp
 
 echo "Check 4"
 echo $PKG_TARGET
 echo $PKG_TARGET_VERSION
 cat ~/$xml
-cat ~/xml.tmp
+#cat ~/xml.tmp
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \

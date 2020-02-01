@@ -20,7 +20,7 @@ matrix:
     services:
     - docker
     script:
-    - "./ci/travis-build-xenial-armhf.sh"
+    - "./ci/travis-build-raspbian-stretch-armhf.sh"
 
 #  - env:
 #    - OCPN_TARGET=trusty
