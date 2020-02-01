@@ -105,20 +105,20 @@ while read line; do
     line=${line/@filename@/$tarball_basename}
     echo $line
 done < $xml > ~/xml.tmp
-cp ~/xml.tmp $xml
+cp ~/xml.tmp ~/$xml
 #rm xml.tmp
 
 echo "Check 4"
 echo $PKG_TARGET
 echo $PKG_TARGET_VERSION
-cat $xml
-cat xml.tmp
+cat ~/$xml
+cat ~/xml.tmp
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
     --version ${VERSION} \
     --summary "oernc opencpn plugin metadata for automatic installation" \
-    $REPO $xml
+    $REPO ~/$xml
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name $tarball_name  \
