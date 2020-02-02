@@ -5,29 +5,20 @@ language: cpp
   
 matrix:
   include:
-
-#  - env:
-#    - OCPN_TARGET=xenial
-#    dist: xenial
-#    compiler: gcc
-    
-#    script:
-#    - "./ci/travis-build-debian.sh"
-    
   - env:
-    - OCPN_TARGET=xenial-armhf
+    - OCPN_TARGET=stretch-armhf
     - OCPN_BRANCH=ciTravis
     services:
     - docker
     script:
     - "./ci/travis-build-raspbian-stretch-armhf.sh"
-
-#  - env:
-#    - OCPN_TARGET=trusty
-#    dist: trusty
-#    compiler: gcc
-#    script:
-#    - "./ci/generic-build-debian.sh"
+  - env:
+    - OCPN_TARGET=buster-armhf
+    - OCPN_BRANCH=ciTravis
+    services:
+    - docker
+    script:
+    - "./ci/travis-build-raspbian-buster-armhf.sh"
 
 #before_install:
 #- 'echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne ''/-BEGIN
