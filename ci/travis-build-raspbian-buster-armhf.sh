@@ -16,7 +16,7 @@ sleep 5;
 
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-docker run --privileged -d -ti -e "container=docker"  -v ~/source_top:/source_top opencpn/raspbian-buster /bin/bash
+docker run --privileged -d -ti -e "container=docker"  -v ~/source_top:/source_top opencpn/raspbian-buster:plugin_build_tooling /bin/bash
 DOCKER_CONTAINER_ID=$(sudo docker ps | grep raspbian | awk '{print $1}')
 
 
