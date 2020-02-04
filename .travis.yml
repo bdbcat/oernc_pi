@@ -43,5 +43,5 @@ matrix:
 
 branches:
   only:
-    - ciTravis
+    - ci
 
