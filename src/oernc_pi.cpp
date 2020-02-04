@@ -350,6 +350,10 @@ int oernc_pi::Init(void)
       m_class_name_array.Add(_T("Chart_oeRNC"));
 
       // Specify the location of the xxserverd helper.
+#ifdef __WXMSW__
+      g_server_bin = GetPluginDataDir("oernc_pi") + _T("\\oeaserverd.exe");
+
+#else      
       wxFileName fn_exe(GetOCPN_ExePath());
       g_server_bin = fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("oeaserverd");
       
@@ -362,6 +366,7 @@ int oernc_pi::Init(void)
             g_server_bin = wxString(path.c_str());
         }
       }
+#endif      
  
 #if 0 
       #ifdef __WXMSW__
