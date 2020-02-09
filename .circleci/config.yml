@@ -76,10 +76,10 @@ workflows:
           filters:
             branches:
               only: ci
-      #- build-flatpak:
-      #    filters:
-      #      branches:
-      #        only: ci
+      - build-flatpak:
+          filters:
+            branches:
+              only: ci
       - build-fedora:
           filters:
             branches:
