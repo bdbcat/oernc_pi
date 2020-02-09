@@ -1,0 +1,44 @@
+id: org.opencpn.OpenCPN.Plugin.oernc
+runtime: org.opencpn.OpenCPN
+runtime-version: master
+sdk: org.freedesktop.Sdk//18.08
+build-extension: true
+separate-locales: false
+appstream-compose: false
+modules:
+    - name: iproute
+      no-autogen: true
+      make-install-args:
+          - PREFIX=/app/extensions/oernc
+          - SBINDIR=/app/extensions/oernc/bin
+      post-install:
+          # Just leave the ip command in place.
+          - >
+            cd /app/extensions/oernc/bin;
+            rm ifstat bridge ctstat genl ifcfg lnstat nstat route* rt* ss
+      sources:
+          - type: archive
+            url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-4.9.0.tar.xz
+            sha256: c0f30f043f7767cc1b2cd2197b08d4e9b2392c95823fabe30bbce308c30116c4
+          - type: patch
+            path: 0100-iproute-Remove-failing-tc-subdir.patch
+
+    - name: oernc
+      no-autogen: true
+      cmake: true
+      build-options:
+          cflags: -fPIC
+          cxxflags: -fPIC -DFLATPAK
+      config-opts:
+          - -DPREFIX:PATH=/app/extensions/oernc
+      post-install:
+          - >
+            mv /app/extensions/oernc/bin/oeaserverd
+            /app/extensions/oernc/bin/oeaserverd.prog
+          - install -t /app/extensions/oernc/bin/ -m 755 oeaserverd
+      sources:
+          - type: git
+            url: https://github.com/bdbcat/oernc_pi.git
+            commit: HEAD
+          - type: file
+            path: oeaserverd
