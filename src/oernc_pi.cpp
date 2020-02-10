@@ -349,9 +349,14 @@ int oernc_pi::Init(void)
       //    Build an arraystring of dynamically loadable chart class names
       m_class_name_array.Add(_T("Chart_oeRNC"));
 
-      // Specify the location of the xxserverd helper.
+     // Specify the location of the xxserverd helper.
+#ifdef __WXMSW__
+      g_server_bin = GetPluginDataDir("oernc_pi") + _T("\\oeaserverd.exe");
+
+#else      
       wxFileName fn_exe(GetOCPN_ExePath());
       g_server_bin = fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("oeaserverd");
+#endif
       
       if (!wxFileExists(g_server_bin)) {
         std::string path(find_in_path("oeaserverd"));
@@ -362,6 +367,13 @@ int oernc_pi::Init(void)
             g_server_bin = wxString(path.c_str());
         }
       }
+      
+            // Account for possible "space" in Mac directory name.
+#ifdef __WXOSX__
+      g_server_bin.Prepend(_T("\""));
+      g_server_bin.Append(_T("\""));
+#endif    
+
  
 #if 0 
       #ifdef __WXMSW__
