@@ -88,7 +88,7 @@ ls
 
 #cd ~/source_top
 #ls
-#cd build
+cd build
 
 ls
 xml=$(ls *.xml)
