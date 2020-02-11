@@ -16,7 +16,11 @@ sleep 5;
 
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-docker run --privileged -d -ti -e "container=docker"  -v ~/source_top:/source_top opencpn/raspbian-buster:plugin_build_tooling /bin/bash
+docker run --privileged -d -ti -e "container=docker" \
+      -v ~/source_top:/source_top \
+      -v $(pwd):/ci-source:rw
+      opencpn/raspbian-buster:plugin_build_tooling /bin/bash
+      
 DOCKER_CONTAINER_ID=$(sudo docker ps | grep raspbian | awk '{print $1}')
 
 
@@ -37,10 +41,10 @@ docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
 #docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
 #    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
 
-docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c  'pwd'
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c  'ls'
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-    'mkdir /home/travis/build/bdbcat/oernc_pi/build; cd /home/travis/build/bdbcat/oernc_pi/build; cmake ..; make; make package;'
+    'mkdir ci-source/build; cd ci-source/build; cmake ..; make; make package;'
  
 echo "Stopping"
 docker ps -a
