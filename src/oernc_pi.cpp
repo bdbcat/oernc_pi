@@ -444,21 +444,11 @@ int oernc_pi::Init(void)
 
 bool oernc_pi::DeInit(void)
 {
-#if 0    
-    SaveConfig();
-    
-    delete pinfoDlg;
-    pinfoDlg = NULL;
-#endif
-    
     if( m_pOptionsPage )
     {
         if( DeleteOptionsPage( m_pOptionsPage ) )
             m_pOptionsPage = NULL;
     }
-
-
-    wxLogMessage(_T("oernc_pi: DeInit()"));
 
     m_class_name_array.Clear();
     
