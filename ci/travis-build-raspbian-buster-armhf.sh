@@ -86,15 +86,21 @@ echo "Check 1.5"
 pwd
 ls
 
-cd ~/source_top
-ls
-cd build
+#cd ~/source_top
+#ls
+#cd build
+
 ls
 xml=$(ls *.xml)
 tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
 
+# extract the project name for a filename.  e.g. oernc-pi... sets PROJECT to  "oernc"
+PROJECT=$(ls *.xml | awk '{split($0,a,"-"); print a[1]}')
+
 echo "Check 2"
+echo $PROJECT
+echo $xml
 echo $tarball_name
 echo $tarball_basename
 echo $tarball
