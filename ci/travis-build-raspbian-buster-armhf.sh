@@ -30,14 +30,16 @@ docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essentia
 
 docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
 
-docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/$OCPN_BRANCH
-docker exec -ti $DOCKER_CONTAINER_ID tar -xzf $OCPN_BRANCH -C source_top --strip-components=1
+#docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/$OCPN_BRANCH
+#docker exec -ti $DOCKER_CONTAINER_ID tar -xzf $OCPN_BRANCH -C source_top --strip-components=1
 
 
-docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
+#docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
+#    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
          
-
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
+    'mkdir /home/travis/build/bdbcat/oernc_pi/build; cd /home/travis/build/bdbcat/oernc_pi/build; cmake ..; make; make package;'
+ 
 echo "Stopping"
 docker ps -a
 docker stop $DOCKER_CONTAINER_ID
@@ -91,6 +93,9 @@ echo $tarball_name
 echo $tarball_basename
 echo $tarball
 
+#tarball_basename=oernc_pi-0.1.0-0_raspbian-10.tar.gz
+#tarball=         oernc_pi-0.1.0-0_raspbian-10.tar.gz
+
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
@@ -112,7 +117,10 @@ cp ~/xml.tmp ~/$xml
 
 echo "Check 4"
 echo $PKG_TARGET
+#raspbian
 echo $PKG_TARGET_VERSION
+#10
+
 cat ~/$xml
 #cat ~/xml.tmp
 

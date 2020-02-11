@@ -13,6 +13,7 @@ matrix:
   - env:
     - OCPN_TARGET=buster-armhf
     - OCPN_BRANCH=ci
+    - OCPN_PROJECT=$PACKAGE_NAME
     services:
     - docker
     script:
