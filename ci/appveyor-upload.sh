@@ -29,7 +29,7 @@ tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
 
 source ../build/pkg_version.sh
-test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
+test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
 tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
