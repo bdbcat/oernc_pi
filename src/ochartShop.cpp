@@ -2023,7 +2023,7 @@ void saveShopConfig()
    }
 }
 
-int checkResult(wxString &result, bool bShowErrorDialog = true)
+int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
 {
     if(g_shopPanel){
         g_ipGauge->Stop();
@@ -2031,21 +2031,33 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
     
     wxString resultDigits = result.BeforeFirst(':');
     
+    bool bSkipErrorDialog = false;
     long dresult;
     if(resultDigits.ToLong(&dresult)){
         if(dresult == 1){
             return 0;
         }
         else{
-            if(bShowErrorDialog){
-                wxString msg = _("o-charts API error code: ");
-                wxString msg1;
-                msg1.Printf(_T("{%ld}\n\n"), dresult);
-                msg += msg1;
+           wxString msg = _("o-charts API error code: ");
+           wxString msg1;
+           msg1.Printf(_T("{%ld}\n\n"), dresult);
+           msg += msg1;
+           if( bShowLoginErrorDialog ){
                 switch(dresult){
                     case 4:
                     case 5:
+                    case 6:
                         msg += _("Invalid user/email name or password.");
+                        break;
+                }
+           }
+                
+           else{
+                switch(dresult){
+                    case 4:
+                    case 5:
+                    case 6:
+                        bSkipErrorDialog = true;
                         break;
                     case 27:
                         msg += _("This oeRNC plugin version is obsolete.");
@@ -2063,7 +2075,8 @@ int checkResult(wxString &result, bool bShowErrorDialog = true)
                         break;
                 }
                 
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                if(!bSkipErrorDialog)
+                    OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
             }
             return dresult;
         }
@@ -3904,7 +3917,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
      wxYield();
 
     ::wxBeginBusyCursor();
-    int err_code = getChartList( false );               // no error code dialog, we handle here
+    int err_code = getChartList( false );               // no login error code dialog, we handle here
     ::wxEndBusyCursor();
  
     // Could be a change in login_key, userName, or password.
