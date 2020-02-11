@@ -111,7 +111,7 @@ echo $tarball
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
-tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
+tarball_name=${PROJECT}-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
 echo "Check 3"
 echo $tarball_name
@@ -137,14 +137,14 @@ cat ~/$xml
 #cat ~/xml.tmp
 
 cloudsmith push raw --republish --no-wait-for-sync \
-    --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
+    --name ${PROJECT}-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
     --version ${VERSION} \
-    --summary "oernc opencpn plugin metadata for automatic installation" \
+    --summary "opencpn plugin metadata for automatic installation" \
     $REPO ~/$xml
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name $tarball_name  \
     --version ${VERSION} \
-    --summary "oernc opencpn plugin tarball for automatic installation" \
+    --summary "opencpn plugin tarball for automatic installation" \
     $REPO $tarball
 
