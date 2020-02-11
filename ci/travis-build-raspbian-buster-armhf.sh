@@ -74,7 +74,10 @@ echo $commit
 echo $OCPN_BRANCH
 
 #  shift to the build directory linked from docker execution
+echo "Check 1.5"
 pwd
+ls
+
 cd ~/source_top
 ls
 cd build
@@ -86,6 +89,7 @@ tarball_basename=${tarball##*/}
 echo "Check 2"
 echo $tarball_name
 echo $tarball_basename
+echo $tarball
 
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
