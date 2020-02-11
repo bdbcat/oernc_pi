@@ -36,7 +36,9 @@ docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
 
 #docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
 #    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
-         
+
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c  'pwd'
+
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
     'mkdir /home/travis/build/bdbcat/oernc_pi/build; cd /home/travis/build/bdbcat/oernc_pi/build; cmake ..; make; make package;'
  
