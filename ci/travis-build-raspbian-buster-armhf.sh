@@ -24,7 +24,7 @@ docker run --privileged -d -ti -e "container=docker" \
 DOCKER_CONTAINER_ID=$(sudo docker ps | grep raspbian | awk '{print $1}')
 
 
-echo $DOCKER_CONTAINER_ID 
+#echo $DOCKER_CONTAINER_ID 
 
 docker exec -ti $DOCKER_CONTAINER_ID apt-get update
 docker exec -ti $DOCKER_CONTAINER_ID echo "------\nEND apt-get update\n" 
@@ -32,7 +32,7 @@ docker exec -ti $DOCKER_CONTAINER_ID echo "------\nEND apt-get update\n"
 docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release 
 
 
-docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
+#docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
 
 #docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/$OCPN_BRANCH
 #docker exec -ti $DOCKER_CONTAINER_ID tar -xzf $OCPN_BRANCH -C source_top --strip-components=1
@@ -41,7 +41,7 @@ docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
 #docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
 #    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
 
-docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c  'ls'
+#docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c  'ls'
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
     'mkdir ci-source/build; cd ci-source/build; cmake ..; make; make package;'
@@ -55,8 +55,15 @@ sudo apt-get install python3-pip python3-setuptools
 
 #  Upload to cloudsmith
 
-STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'david-register/ocpn-plugins-stable'}
-UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'david-register/ocpn-plugins-unstable'}
+STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-OCPN_STABLE_REPO}
+UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-OCPN_UNSTABLE_REPO}
+
+#UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'david-register/ocpn-plugins-unstable'}
+#STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'david-register/ocpn-plugins-stable'}
+
+echo "Check 0.5"
+echo $STABLE_REPO
+echo $UNSTABLE_REPO
 
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Cannot deploy to cloudsmith, missing $CLOUDSMITH_API_KEY'
@@ -90,7 +97,7 @@ ls
 #ls
 cd build
 
-ls
+#ls
 xml=$(ls *.xml)
 tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
@@ -105,8 +112,6 @@ echo $tarball_name
 echo $tarball_basename
 echo $tarball
 
-#tarball_basename=oernc_pi-0.1.0-0_raspbian-10.tar.gz
-#tarball=         oernc_pi-0.1.0-0_raspbian-10.tar.gz
 
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}+${BUILD_ID}.${commit}"
@@ -128,9 +133,9 @@ done < $xml > ~/xml.tmp
 cp ~/xml.tmp ~/$xml
 
 echo "Check 4"
-echo $PKG_TARGET
+#echo $PKG_TARGET
 #raspbian
-echo $PKG_TARGET_VERSION
+#echo $PKG_TARGET_VERSION
 #10
 
 cat ~/$xml

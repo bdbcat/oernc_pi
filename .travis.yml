@@ -13,7 +13,8 @@ matrix:
   - env:
     - OCPN_TARGET=buster-armhf
     - OCPN_BRANCH=ci
-    - OCPN_PROJECT=${PACKAGE_NAME}
+    - OCPN_STABLE_REPO=david-register/ocpn-plugins-stable
+    - OCPN_UNSTABLE_REPO=david-register/ocpn-plugins-unstable
     services:
     - docker
     script:
