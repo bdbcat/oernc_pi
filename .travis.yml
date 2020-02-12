@@ -15,33 +15,12 @@ matrix:
     - OCPN_BRANCH=ci
     - OCPN_STABLE_REPO=david-register/ocpn-plugins-stable
     - OCPN_UNSTABLE_REPO=david-register/ocpn-plugins-unstable
+    - DOCKER_IMAGE=opencpn/raspbian-buster:plugin_build_tooling
     services:
     - docker
     script:
     - "./ci/travis-build-raspbian-buster-armhf.sh"
 
-#before_install:
-#- 'echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne ''/-BEGIN
-#  CERTIFICATE-/,/-END CERTIFICATE-/p'' | sudo tee -a /etc/ssl/certs/ca '
-#deploy:
-#  provider: script
-#  skip_cleanup: true
-#  script: ci/generic-upload.sh
-#  on:
-#    branch: master
-#    tags: false
-#notifications:
-#  email: false
-#git:
-#  depth: 10
-#addons:
-#  coverity_scan:
-#    project:
-#      name: OpenCPN/OpenCPN
-#    notification_email: pavel@kalian.cz
-#    build_command_prepend: mkdir -p build; cd build; cmake ..; make clean
-#    build_command: make
-#    branch_pattern: coverity_scan
 
 branches:
   only:
