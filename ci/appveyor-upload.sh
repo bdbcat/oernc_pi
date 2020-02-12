@@ -28,10 +28,14 @@ xml=$(ls *.xml)
 tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
 
+# extract the project name for a filename.  e.g. oernc-pi... sets PROJECT to  "oernc"
+PROJECT=$(ls *.xml | awk '{split($0,a,"-"); print a[1]}')
+echo $PROJECT
+
 source ../build/pkg_version.sh
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
-tarball_name=oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
+tarball_name=${PROJECT}-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
 
 # There is no sed available in git bash. This is nasty, but seems
 # to work:
@@ -44,7 +48,7 @@ while read line; do
 done < $xml > xml.tmp && cp xml.tmp $xml && rm xml.tmp
 
 cloudsmith push raw --republish --no-wait-for-sync \
-    --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
+    --name ${PROJECT}-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
     --version ${VERSION} \
     --summary "opencpn plugin metadata for automatic installation" \
     $REPO $xml
