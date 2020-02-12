@@ -41,8 +41,6 @@ docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git cmake build-essentia
 #docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
 #    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
 
-#docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c  'ls'
-
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
     'mkdir ci-source/build; cd ci-source/build; cmake ..; make; make package;'
  
@@ -55,8 +53,8 @@ sudo apt-get install python3-pip python3-setuptools
 
 #  Upload to cloudsmith
 
-STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-OCPN_STABLE_REPO}
-UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-OCPN_UNSTABLE_REPO}
+STABLE_REPO=${OCPN_STABLE_REPO}
+UNSTABLE_REPO=${OCPN_UNSTABLE_REPO}
 
 #UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'david-register/ocpn-plugins-unstable'}
 #STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'david-register/ocpn-plugins-stable'}
@@ -93,11 +91,8 @@ echo "Check 1.5"
 pwd
 ls
 
-#cd ~/source_top
-#ls
 cd build
 
-#ls
 xml=$(ls *.xml)
 tarball=$(ls *.tar.gz)
 tarball_basename=${tarball##*/}
