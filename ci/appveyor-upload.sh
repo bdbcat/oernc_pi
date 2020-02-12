@@ -4,8 +4,8 @@
 # Upload the .tar.gz and .xml artifacts to cloudsmith
 #
 
-STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'david-register/ocpn-plugins-stable'}
-UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'david-register/ocpn-plugins-unstable'}
+#STABLE_REPO=${CLOUDSMITH_STABLE_REPO:-'david-register/ocpn-plugins-stable'}
+#UNSTABLE_REPO=${CLOUDSMITH_UNSTABLE_REPO:-'david-register/ocpn-plugins-unstable'}
 
 if [ -z "$CLOUDSMITH_API_KEY" ]; then
     echo 'Cannot deploy to cloudsmith, missing $CLOUDSMITH_API_KEY'
@@ -46,11 +46,11 @@ done < $xml > xml.tmp && cp xml.tmp $xml && rm xml.tmp
 cloudsmith push raw --republish --no-wait-for-sync \
     --name oernc-${PKG_TARGET}-${PKG_TARGET_VERSION}-metadata \
     --version ${VERSION} \
-    --summary "oernc opencpn plugin metadata for automatic installation" \
+    --summary "opencpn plugin metadata for automatic installation" \
     $REPO $xml
 
 cloudsmith push raw --republish --no-wait-for-sync \
     --name $tarball_name  \
     --version ${VERSION} \
-    --summary "oernc opencpn plugin tarball for automatic installation" \
+    --summary "opencpn plugin tarball for automatic installation" \
     $REPO $tarball
