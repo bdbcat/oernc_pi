@@ -3692,18 +3692,23 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
     sysBox->Add(m_buttonUpdate, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
 #endif
+   
+    int add_prop_flag = 0;
+#ifdef __OCPN__ANDROID__
+    add_prop_flag = 1;
+#endif
     
     wxStaticBoxSizer* staticBoxSizerChartList = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("My Chart Sets")), wxVERTICAL);
-    boxSizerTop->Add(staticBoxSizerChartList, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    boxSizerTop->Add(staticBoxSizerChartList, add_prop_flag, wxALL|wxEXPAND, WXC_FROM_DIP(5));
 
     wxPanel *cPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
-    staticBoxSizerChartList->Add(cPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    staticBoxSizerChartList->Add(cPanel, add_prop_flag, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
     cPanel->SetSizer(boxSizercPanel);
     
     m_scrollWinChartList = new wxScrolledWindow(cPanel, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBORDER_RAISED | wxVSCROLL | wxBG_STYLE_ERASE );
     m_scrollWinChartList->SetScrollRate(5, 5);
-    boxSizercPanel->Add(m_scrollWinChartList, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    boxSizercPanel->Add(m_scrollWinChartList, add_prop_flag, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     
     boxSizerCharts = new wxBoxSizer(wxVERTICAL);
     m_scrollWinChartList->SetSizer(boxSizerCharts);
@@ -5769,9 +5774,18 @@ END_EVENT_TABLE()
     wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
     selectorPanel->SetSizer(boxSizercPanel);
 
-     m_rbSystemNames = new wxRadioBox(selectorPanel, wxID_ANY, _("System Names"), wxDefaultPosition, wxDefaultSize, system_names, 0, wxRA_SPECIFY_ROWS);
+    wxScrolledWindow *rbScroller = new wxScrolledWindow(selectorPanel, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBORDER_RAISED | wxVSCROLL | wxBG_STYLE_ERASE );
+    rbScroller->SetScrollRate(5, 5);
+    boxSizercPanel->Add(rbScroller, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    
+    wxBoxSizer *boxSizerrB = new wxBoxSizer(wxVERTICAL);
+    rbScroller->SetSizer(boxSizerrB);
+
+    rbScroller->SetMinSize(wxSize(-1,10 * GetCharHeight()));
+ 
+     m_rbSystemNames = new wxRadioBox(rbScroller, wxID_ANY, _("System Names"), wxDefaultPosition, wxDefaultSize, system_names, 0, wxRA_SPECIFY_ROWS);
      
-     boxSizercPanel->Add( m_rbSystemNames, 0, wxALIGN_CENTER | wxALL, 25 );
+     boxSizerrB->Add( m_rbSystemNames, 0, wxALIGN_CENTER | wxALL, 25 );
 
      wxStaticLine* itemStaticLine = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
      itemBoxSizer2->Add( itemStaticLine, 0, wxEXPAND|wxALL, 0 );
