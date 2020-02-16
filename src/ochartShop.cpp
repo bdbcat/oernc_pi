@@ -3924,6 +3924,15 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 
     loadShopConfig();
 
+#ifdef __OCPN__ANDROID__
+    if(!g_systemName.Length()){
+        extern wxString androidGetSystemName();
+        g_systemName = androidGetSystemName();
+        //qDebug() << "Set systemName: " << g_systemName.mb_str();
+        saveShopConfig();
+    }
+#endif    
+    
     g_LastErrorMessage.Clear();
     SetErrorMessage();
 
