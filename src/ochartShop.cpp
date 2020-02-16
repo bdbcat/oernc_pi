@@ -3140,7 +3140,7 @@ int doShop(){
 
         g_dongleName = wxString(sName);
     }
- 
+
     if(g_shopPanel)
         g_shopPanel->RefreshSystemName();
 
@@ -3225,20 +3225,27 @@ void oeXChartPanel::SetSelected( bool selected )
     m_bSelected = selected;
     wxColour colour;
     int refHeight = GetCharHeight();
-    
+    int width, height;
+    GetSize( &width, &height );
+ 
     if (selected)
     {
         GetGlobalColor(_T("UIBCK"), &colour);
         m_boxColour = colour;
 
         // Calculate minimum size required
+        int lcount = 9;
+        if(width < (30 *refHeight)){
+            lcount += 2;
+        }
+
         if(m_pChart){
         int nAssign = 0;
             for(unsigned int i=0 ; i < m_pChart->quantityList.size() ; i++){
                 itemQuantity Qty = m_pChart->quantityList[i];
                 nAssign += Qty.slotList.size();
             }
-            SetMinSize(wxSize(-1, (9 + nAssign) * refHeight));
+            SetMinSize(wxSize(-1, (lcount + nAssign) * refHeight));
         }
         else
             SetMinSize(wxSize(-1, 5 * refHeight));
@@ -3280,6 +3287,10 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
       //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
     
     if(m_bSelected){
+        bool bCompact = false;
+        if(width < (30 *GetCharHeight()))
+            bCompact = true;
+        
         dc.SetBrush( wxBrush( m_boxColour ) );
         
         GetGlobalColor( _T ( "UITX1" ), &c );
@@ -3293,34 +3304,49 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         int scaledWidth = height;
         
         int scaledHeight = (height - (2 * base_offset)) * 95 / 100;
+        if(bCompact){
+            scaledHeight = (height - (2 * base_offset)) * 50 / 100;
+            scaledWidth = scaledHeight;
+        }
+            
         wxBitmap &bm = m_pChart->GetChartThumbnail( scaledHeight );
         
         if(bm.IsOk()){
             dc.DrawBitmap(bm, base_offset + 3, base_offset + 3);
         }
-        
+
+        bool bsplit_line = false;
+
+        int text_x = scaledWidth * 11 / 10;
+        int text_x_val = scaledWidth + ((width - scaledWidth) * 4 / 10);
+        int yPitch = GetCharHeight();
+
         wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
         double font_size = dFont->GetPointSize() * 3/2;
+
+        if(bCompact){
+            bsplit_line = true;
+            text_x = scaledWidth * 14 / 10;
+            text_x_val = text_x + (3 * yPitch);
+            font_size = dFont->GetPointSize() * 5/4;
+        }
+
         wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
-        
-        int text_x = scaledWidth * 11 / 10;
+
         dc.SetFont( *qFont );
         dc.SetTextForeground(wxColour(0,0,0));
         dc.DrawText(nameString, text_x, height * 5 / 100);
-        
+
         int hTitle = dc.GetCharHeight();
         int y_line = (height * 5 / 100) + hTitle;
-        dc.DrawLine( text_x, y_line, width - base_offset, y_line);
-        
-        
+
         dc.SetFont( *dFont );           // Restore default font
         int offset = GetCharHeight();
         
-        int yPitch = GetCharHeight();
+        dc.DrawLine( text_x, y_line, width - base_offset, y_line);
+
         int yPos = y_line + 4;
         wxString tx;
-        
-        int text_x_val = scaledWidth + ((width - scaledWidth) * 4 / 10);
         
         // Create and populate the current chart information
         tx = _("Installed Chart Edition:");
@@ -3335,18 +3361,6 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         dc.DrawText( tx, text_x_val, yPos);
         yPos += yPitch;
         
-        tx = _("Order Reference:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->orderRef;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Updates available through:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->expDate;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
         tx = _("Status:");
         dc.DrawText( tx, text_x, yPos);
         tx = m_pChart->getStatusString();
@@ -3354,6 +3368,21 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
             tx = g_statusOverride;
         dc.DrawText( tx, text_x_val, yPos);
         yPos += yPitch;
+
+        tx = _("Order Reference:");
+        dc.DrawText( tx, text_x, yPos);
+        if(bsplit_line) yPos += yPitch;
+        tx = m_pChart->orderRef;
+        dc.DrawText( tx, text_x_val, yPos);
+        yPos += yPitch;
+        
+        tx = _("Updates available through:");
+        dc.DrawText( tx, text_x, yPos);
+        if(bsplit_line) yPos += yPitch;
+        tx = m_pChart->expDate;
+        dc.DrawText( tx, text_x_val, yPos);
+        yPos += yPitch;
+        
 
         tx = _("Assignments:");
         int assignedCount = m_pChart->getChartAssignmentCount();
@@ -3894,7 +3923,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     m_shopLog->ClearLog();
 
     loadShopConfig();
-    
+
     g_LastErrorMessage.Clear();
     SetErrorMessage();
 
