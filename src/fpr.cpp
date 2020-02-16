@@ -33,6 +33,7 @@
 #include "wx/filename.h"
 #include "wx/tokenzr.h"
 #include "wx/dir.h"
+#include <wx/textfile.h>
 
 #ifdef __MSVC__
 #include <windows.h>
@@ -418,3 +419,44 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
 #endif        
 }
 
+#ifdef __OCPN__ANDROID__
+wxString androidGetSystemName(){
+        // Get systemName from the oeaserverda helper utility.
+        //  The target binary executable
+        wxString cmd = g_server_bin;
+
+//  Set up the parameter passed as the local app storage directory, and append "cache/" to it
+        wxString dataLoc = *GetpPrivateApplicationDataLocation();
+        wxFileName fn(dataLoc);
+        wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        //dataDir += _T("cache/");
+
+        wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        
+        //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
+        // This will be {dir of g_server_bin}
+        wxFileName fnl(cmd);
+        wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
+      
+        wxLogMessage(_T("oernc_pi: Getting systemName: Starting: ") + cmd );
+        wxLogMessage(_T("oernc_pi: Getting systemName: Parms: ") + rootDir + _T(" ") + dataDir + _T(" ") + libDir );
+
+        wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-x"), dataDir, libDir);
+
+        wxLogMessage(_T("oernc_pi: Getting systemName: Start Result: ") + result);
+
+        bool berror = true;            //TODO
+        dataDir += _T("cache/");
+        wxString file( dataDir );
+        file += _T("s");
+        //qDebug() << "NameFile candidate: " << file.mb_str();
+        wxTextFile name_file( file );
+        if( name_file.Open() ){
+            wxString line = name_file.GetFirstLine();
+            //qDebug() << "Result: " << line.Trim().mb_str();
+            return line.Trim();
+        }
+
+        return wxEmptyString;
+}
+#endif
