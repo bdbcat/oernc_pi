@@ -410,9 +410,10 @@ int oernc_pi::Init(void)
 #ifdef __WXMAC__
     g_systemOS = _T("d.");
 #endif
-    // Android handled in Java-side interface
+#ifdef __OCPN__ANDROID__
+    g_systemOS = _T("r.");
+#endif
     
-
       return flags;
       
 }
