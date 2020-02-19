@@ -70,7 +70,7 @@ std::vector<itemChart *> ChartVector;
 
 wxString userURL(_T("https://o-charts.org/shop/index.php"));
 wxString adminURL(_T("http://test.o-charts.org/shop/index.php"));
-int g_timeout_secs = 5;
+int g_timeout_secs = 10;
 
 wxArrayString g_systemNameChoiceArray;
 wxArrayString g_systemNameServerArray;
@@ -2606,7 +2606,7 @@ int getChartList( bool bShowErrorDialogs = true){
     qDebug() << url.mb_str();
     qDebug() << loginParms.mb_str();
 
-    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     qDebug() << "getChartList Post Stat: " << stat;
     
