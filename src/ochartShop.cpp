@@ -6176,13 +6176,13 @@ void oeRNCLogin::CreateControls(  )
     wxStaticText* itemStaticText5 = new wxStaticText( loginPanel, wxID_STATIC, _("email:"), wxDefaultPosition, wxDefaultSize, 0 );
     flexGridSizerActionStatus->Add( itemStaticText5, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP | wxADJUST_MINSIZE, item_space );
     
-    m_UserNameCtl = new wxTextCtrl( loginPanel, ID_GETIP_IP, _T("bdbcat@yahoo.com"), wxDefaultPosition, wxSize( ref_len * 10, -1 ), 0 );
+    m_UserNameCtl = new wxTextCtrl( loginPanel, ID_GETIP_IP, _T(""), wxDefaultPosition, wxSize( ref_len * 10, -1 ), 0 );
     flexGridSizerActionStatus->Add( m_UserNameCtl, 0,  wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP , item_space );
     
     wxStaticText* itemStaticText6 = new wxStaticText( loginPanel, wxID_STATIC, _("pass:"), wxDefaultPosition, wxDefaultSize, 0 );
     flexGridSizerActionStatus->Add( itemStaticText6, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP | wxADJUST_MINSIZE, item_space );
     
-    m_PasswordCtl = new wxTextCtrl( loginPanel, ID_GETIP_IP, _T("danforth"), wxDefaultPosition, wxSize( ref_len * 10, -1 ), wxTE_PASSWORD );
+    m_PasswordCtl = new wxTextCtrl( loginPanel, ID_GETIP_IP, _T(""), wxDefaultPosition, wxSize( ref_len * 10, -1 ), wxTE_PASSWORD );
     m_PasswordCtl->SetBackgroundColour(wxColour(0, 192, 192));
     flexGridSizerActionStatus->Add( m_PasswordCtl, 0,  wxALIGN_CENTER | wxLEFT | wxRIGHT | wxTOP , item_space );
     
