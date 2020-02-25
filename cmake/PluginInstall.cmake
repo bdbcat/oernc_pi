@@ -45,9 +45,6 @@ IF(UNIX)
 ENDIF(UNIX)
 
 IF(APPLE)
-   MESSAGE (STATUS "CI Install Target: bin/OpenCPN.app/Contents/PlugIns")
-
-  #INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME LIBRARY DESTINATION ${CMAKE_BINARY_DIR}/OpenCPN.app/Contents/SharedSupport/plugins)
   INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME LIBRARY DESTINATION bin/OpenCPN.app/Contents/PlugIns)
   IF(EXISTS ${PROJECT_SOURCE_DIR}/data)
     INSTALL(DIRECTORY data DESTINATION bin/OpenCPN.app/Contents/SharedSupport/plugins/${PACKAGE_NAME})
@@ -171,8 +168,6 @@ IF(UNIX AND NOT APPLE)
 ENDIF(UNIX AND NOT APPLE)
 
 IF(APPLE)
-IF(NOT OCPN_CI_BUILD)
-
     # For Apple build, we need to copy the "data" directory contents to the build directory, so that the packager can pick them up.
     if (NOT EXISTS "${PROJECT_BINARY_DIR}/data/")
         file (MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/data/")
@@ -189,5 +184,4 @@ IF(NOT OCPN_CI_BUILD)
    INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME LIBRARY DESTINATION ${PACKAGE_NAME}/${PACKAGE_NAME})
    MESSAGE (STATUS "Install Target: ${PACKAGE_NAME}/${PACKAGE_NAME}")
 
-ENDIF(NOT OCPN_CI_BUILD)
 ENDIF(APPLE)
