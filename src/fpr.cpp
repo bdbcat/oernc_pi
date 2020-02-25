@@ -76,6 +76,19 @@ void androidGetDeviceName()
 bool IsDongleAvailable()
 {
 #ifndef __OCPN__ANDROID__    
+///    
+    wxString cmdls = _T("ls -la /Applications/OpenCPN.app/Contents/PlugIns/oernc_pi");
+
+    wxArrayString lsret_array, lserr_array;      
+    wxExecute(cmdls, lsret_array, lserr_array );
+            
+    wxLogMessage(_T("ls results:"));
+    for(unsigned int i=0 ; i < lsret_array.GetCount() ; i++){
+        wxString line = lsret_array[i];
+        wxLogMessage(line);
+    }
+ 
+/// 
     wxString cmd = g_server_bin;
     cmd += _T(" -s ");                  // Available?
 
