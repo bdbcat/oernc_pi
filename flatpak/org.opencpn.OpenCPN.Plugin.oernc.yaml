@@ -6,23 +6,6 @@ build-extension: true
 separate-locales: false
 appstream-compose: false
 modules:
-    - name: iproute
-      no-autogen: true
-      make-install-args:
-          - PREFIX=/app/extensions/oernc
-          - SBINDIR=/app/extensions/oernc/bin
-      post-install:
-          # Just leave the ip command in place.
-          - >
-            cd /app/extensions/oernc/bin;
-            rm ifstat bridge ctstat genl ifcfg lnstat nstat route* rt* ss
-      sources:
-          - type: archive
-            url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-4.9.0.tar.xz
-            sha256: c0f30f043f7767cc1b2cd2197b08d4e9b2392c95823fabe30bbce308c30116c4
-          - type: patch
-            path: 0100-iproute-Remove-failing-tc-subdir.patch
-
     - name: oernc
       no-autogen: true
       cmake: true
@@ -36,9 +19,17 @@ modules:
             mv /app/extensions/oernc/bin/oeaserverd
             /app/extensions/oernc/bin/oeaserverd.prog
           - install -t /app/extensions/oernc/bin/ -m 755 oeaserverd
+          - >
+            install -t /app/extensions/oernc/lib -m 755
+            buildlinux64/oeaserverd/libsgllnx64-2.29.02.so
+            libusb-0.1.so.4
+
       sources:
           - type: git
-            url: https://github.com/bdbcat/oernc_pi.git
-            commit: HEAD
+            url: ..
+            branch: ci
           - type: file
             path: oeaserverd
+          - type: file
+            # originally libusb-0.1.so.4.1.1, built from  libusb-0.1.6
+            path: libusb-0.1.so.4
