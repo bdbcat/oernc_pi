@@ -251,7 +251,8 @@ public:
     bool isEnabled(){ return m_bEnabled; }
     wxString getStatusString();
     int getChartStatus();
-    wxBitmap& GetChartThumbnail(int size);
+    bool isThumbnailReady();
+    wxBitmap& GetChartThumbnail(int size, bool bDL_If_Needed = false);
     wxString getKeytypeString( std::string slotUUID );
     int GetServerEditionInt();
 

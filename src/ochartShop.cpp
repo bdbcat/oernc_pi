@@ -923,11 +923,24 @@ void itemChart::Update(itemChart *other)
     
 }
 
+int s_dlbusy;
 
-wxBitmap& itemChart::GetChartThumbnail(int size)
+bool itemChart::isThumbnailReady()
+{       // Look for cached copy
+    wxString fileKey = _T("ChartImage-");
+    fileKey += chartID;
+    fileKey += _T(".jpg");
+ 
+    wxString file = g_PrivateDataDir + fileKey;
+    return ::wxFileExists(file);
+}
+ 
+    
+wxBitmap& itemChart::GetChartThumbnail(int size, bool bDL_If_Needed)
 {
 #if 1    
     if(!m_ChartImage.IsOk()){
+
         // Look for cached copy
         wxString fileKey = _T("ChartImage-");
         fileKey += chartID;
@@ -937,8 +950,8 @@ wxBitmap& itemChart::GetChartThumbnail(int size)
         if(::wxFileExists(file)){
             m_ChartImage = wxImage( file, wxBITMAP_TYPE_ANY);
         }
-        else{
-            int iResponseCode;
+        else if(bDL_If_Needed){
+            int iResponseCode = 0;
             if(g_chartListUpdatedOK && thumbLink.length()){  // Do not access network until after first "getList"
 #ifndef __OCPN__ANDROID__                
                 wxCurlHTTP get;
@@ -949,20 +962,34 @@ wxBitmap& itemChart::GetChartThumbnail(int size)
                 
                 get.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
 #else
-                wxString file_URI = _T("file://") + file;
+                if(!s_dlbusy){
                     
-                _OCPN_DLStatus ret = OCPN_downloadFile( wxString(thumbLink), file_URI, _T(""), _T(""), wxNullBitmap, g_shopPanel, OCPN_DLDS_DEFAULT_STYLE, 5);
+                    wxString fileKeytmp = _T("ChartImage-");
+                    fileKeytmp += chartID;
+                    fileKeytmp += _T(".tmp");
+ 
+                    wxString filetmp = g_PrivateDataDir + fileKeytmp;
 
-//OCPN_DLDS_ELAPSED_TIME|OCPN_DLDS_ESTIMATED_TIME|OCPN_DLDS_REMAINING_TIME|OCPN_DLDS_SPEED|OCPN_DLDS_SIZE|OCPN_DLDS_URL|OCPN_DLDS_CAN_PAUSE|OCPN_DLDS_CAN_ABORT|OCPN_DLDS_AUTO_CLOSE,
+                    wxString file_URI = _T("file://") + filetmp;
+                    
+                    s_dlbusy = 1;
+                    _OCPN_DLStatus ret = OCPN_downloadFile( wxString(thumbLink), file_URI, _T(""), _T(""), wxNullBitmap, NULL /*g_shopPanel*/, 0/*OCPN_DLDS_DEFAULT_STYLE*/, 15);
 
-                wxLogMessage(_T("DLRET"));
-                
-                if(OCPN_DL_NO_ERROR == ret)
-                    iResponseCode = 200;
-                else{
-                    iResponseCode = ret;
-                    //m_thumbRetry++;
+                    wxLogMessage(_T("DLRET"));
+                    qDebug() << "DL done";
+                    if(OCPN_DL_NO_ERROR == ret){
+                        wxCopyFile(filetmp, file);
+                        iResponseCode = 200;
+                    }
+                    else
+                        iResponseCode = ret;
+                    
+                    wxRemoveFile( filetmp );
+                    s_dlbusy = 0;
                 }
+                else
+                    qDebug() << "Busy";
+                
 #endif
                 
             
@@ -3309,7 +3336,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
             scaledWidth = scaledHeight;
         }
             
-        wxBitmap &bm = m_pChart->GetChartThumbnail( scaledHeight );
+        wxBitmap& bm = m_pChart->GetChartThumbnail( scaledHeight );
         
         if(bm.IsOk()){
             dc.DrawBitmap(bm, base_offset + 3, base_offset + 3);
@@ -3541,7 +3568,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
     
         // Draw the thumbnail
         int scaledHeight = (height - (2 * offset)) * 95 / 100;
-        wxBitmap &bm = m_pChart->GetChartThumbnail( scaledHeight );
+        wxBitmap& bm = m_pChart->GetChartThumbnail( scaledHeight );
         
         if(bm.IsOk()){
             dc.DrawBitmap(bm, offset + 3, offset + 3);
@@ -5260,7 +5287,8 @@ void shopPanel::UpdateChartList( )
     
     // Add new panels
     for(unsigned int i=0 ; i < ChartVector.size() ; i++){
-        if(/*g_chartListUpdatedOK && */ChartVector[i]->isChartsetShow()){
+        if( ChartVector[i]->isChartsetShow() ){
+            ChartVector[i]->GetChartThumbnail(100, true );              // attempt download if necessary
             oeXChartPanel *chartPanel = new oeXChartPanel( m_scrollWinChartList, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), ChartVector[i], this);
             chartPanel->SetSelected(false);
         
