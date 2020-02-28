@@ -4387,6 +4387,9 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         tmp_dir += wxFileName::GetPathSeparator();
         tmp_dir += _T("zipTemp");
         tmp_dir += wxFileName::GetPathSeparator();
+        tmp_dir += wxString( task->chartsetNameNormalized.c_str() );
+        tmp_dir += wxFileName::GetPathSeparator();
+
 #else
         wxString tmp_dir = wxFileName::CreateTempFileName( _T("") );                    // Be careful, this method actually create a file
         tmp_dir += _T("zipTemp");
@@ -4571,8 +4574,15 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             if(wxFileExists(destination)){
                 wxRemoveFile(destination);
             }
-                
-            if(!wxCopyFile( source, destination)){
+            
+            bool bret;
+#ifdef __OCPN__ANDROID__
+            bret = AndroidSecureCopyFile( source, destination );
+#else
+            bret = wxCopyFile( source, destination);
+#endif
+
+            if(!bret){
                 wxLogError(_T("Can not copy .oernc file referenced in ChartList...Source: ") + source + _T("   Destination: ") + destination);
             }
             
@@ -4614,12 +4624,26 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             wxFileName fn(fileArrayEULA.Item(i));
             wxString destination = destinationDir + fn.GetFullName();
             wxString source = fileArrayEULA.Item(i);
-            
-            if(!wxCopyFile( source, destination))
-                wxLogError(_T("Can not copy EULA file...Source: ") + source + _T("   Destination: ") + destination);
-            else
-               g_lastEULAFile = destination;
 
+            bool bret;
+#ifdef __OCPN__ANDROID__
+            bret = AndroidSecureCopyFile( source, destination );
+#else
+            bret = wxCopyFile( source, destination);
+#endif
+            
+            if(!bret)
+                wxLogError(_T("Can not copy EULA file...Source: ") + source + _T("   Destination: ") + destination);
+            else{
+                g_lastEULAFile = destination;
+               // Recover the temporary space used.
+                wxRemoveFile( source );
+            }
+        }
+        
+        // Delete the temporary Chartlist file
+        if(wxFileExists(actionChartList)){
+            wxRemoveFile(actionChartList);
         }
     }    
         
