@@ -3693,7 +3693,8 @@ END_EVENT_TABLE()
 shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
 : wxPanel(parent, id, pos, size, style)
 {
-    m_shopLog =NULL;
+    m_shopLog = NULL;
+    m_shopLogFrame = NULL;
     m_validator = NULL;
     m_bconnected = false;
 
@@ -4741,9 +4742,18 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
         m_buttonValidate->Disable();
         GetSizer()->Layout();
         wxYield();
+        
+        if(!m_shopLogFrame){
+            wxSize shopSize = GetSize();
+            wxSize valSize = wxSize( (shopSize.x * 9 / 10), (shopSize.y * 8 / 10));
+            m_shopLogFrame = new piScreenLogContainer( this, _T("Validate Log"), valSize);
+            m_shopLogFrame->Center();
+        }
 
-        m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), m_shopLog);
+        m_shopLogFrame->ClearLog();
+        m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), m_shopLogFrame);
         m_validator->startValidation();
+        
         m_buttonValidate->Enable();
         GetSizer()->Layout();
         wxYield();

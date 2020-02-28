@@ -503,6 +503,7 @@ public:
     bool m_bconnected;
     
     ocValidator *m_validator;
+    piScreenLogContainer *m_shopLogFrame;
 };
 
 

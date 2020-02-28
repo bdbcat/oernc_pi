@@ -243,6 +243,7 @@ ocValidator::~ocValidator()
 
 void ocValidator::init()
 {
+    m_clog = NULL;
     m_log = NULL;
     m_chart = NULL;
 
@@ -253,6 +254,10 @@ void ocValidator::LogMessage( wxString msg)
     if(m_log){
         m_log->LogMessage(msg);
     }
+    if(m_clog){
+        m_clog->LogMessage(msg);
+    }
+
 }
 
 void ocValidator::startValidation()
