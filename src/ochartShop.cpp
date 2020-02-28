@@ -3218,10 +3218,11 @@ oeXChartPanel::oeXChartPanel(wxWindow *parent, wxWindowID id, const wxPoint &pos
     SetMinSize(wxSize(-1, 5 * refHeight));
     m_unselectedHeight = 5 * refHeight;
     
-//     wxBoxSizer* itemBoxSizer01 = new wxBoxSizer(wxHORIZONTAL);
-//     SetSizer(itemBoxSizer01);
+#ifdef __OCPN__ANDROID__
+    Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(oeXChartPanel::OnChartSelected), NULL, this);
+#else    
      Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(oeXChartPanel::OnChartSelected), NULL, this);
-//     
+#endif     
     
 }
 
