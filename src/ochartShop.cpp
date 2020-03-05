@@ -4389,6 +4389,15 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         tmp_dir += wxFileName::GetPathSeparator();
         tmp_dir += _T("zipTemp");
         tmp_dir += wxFileName::GetPathSeparator();
+        
+        // Check and make this (parent) directory if necessary
+        wxFileName fnp(tmp_dir);
+        if( !fnp.DirExists() ){
+            if( !wxFileName::Mkdir(fnp.GetPath()) ){
+                wxLogError(_T("Can not create tmp parent directory on TASK_UPDATE '") + fnp.GetPath() + _T("'."));
+                return 10;
+            }
+        }
         tmp_dir += wxString( task->chartsetNameNormalized.c_str() );
         tmp_dir += wxFileName::GetPathSeparator();
 
