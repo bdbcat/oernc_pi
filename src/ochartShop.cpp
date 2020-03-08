@@ -5020,7 +5020,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     m_buttonCancelOp->Hide();
     GetSizer()->Layout();
     
-
+    wxYield();
 
     // Create and upload an XFPR and selected systemName to the server.
     // If the systemName is already known, and the XFPR matches no harm done.
