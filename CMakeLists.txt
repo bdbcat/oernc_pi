@@ -523,8 +523,8 @@ INCLUDE("cmake/PluginLocalization.cmake")
 
 IF(NOT QT_ANDROID)
 INCLUDE("cmake/PluginInstall.cmake")
-INCLUDE("cmake/PluginPackage.cmake")
 INCLUDE("cmake/PluginSetup.cmake")
+INCLUDE("cmake/PluginPackage.cmake")
 ENDIF(NOT QT_ANDROID)
 
 configure_file(
