@@ -52,7 +52,6 @@ SET(OCPN_MIN_VERSION "ov50")
 #OPTION(OCPN_USE_API_16 "Use plugin api 16 (default: api 13)." OFF)
 OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
 
-include("cmake/PluginSetup.cmake")
 set(PLUGIN_NAME oernc-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
 
 SET(PREFIX_BIN bin)
