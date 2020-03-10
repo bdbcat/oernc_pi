@@ -16,12 +16,12 @@ modules:
           - -DPREFIX:PATH=/app/extensions/oernc
       post-install:
           - >
-            mv /app/extensions/oernc/bin/oeserverd
-            /app/extensions/oernc/bin/oeserverd.prog
+            mv /app/extensions/oernc/bin/oeaserverd
+            /app/extensions/oernc/bin/oeaserverd.prog
           - install -t /app/extensions/oernc/bin/ -m 755 oeaserverd
           - >
             install -t /app/extensions/oernc/lib -m 755
-            buildlinux64/oeserverd/libsgllnx64-2.29.02.so
+            buildlinux64/oeaserverd/libsgllnx64-2.29.02.so
             libusb-0.1.so.4
       sources:
           - type: git
