@@ -9,17 +9,21 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
 # This should be 2.8.0 to have FindGTK2 module
 IF (COMMAND cmake_policy)
-  CMAKE_POLICY(SET CMP0003 OLD)
-  CMAKE_POLICY(SET CMP0005 OLD)
-  CMAKE_POLICY(SET CMP0011 OLD)
+  CMAKE_POLICY(SET CMP0003 NEW)
+  CMAKE_POLICY(SET CMP0005 NEW)
+  CMAKE_POLICY(SET CMP0011 NEW)
+  CMAKE_POLICY(SET CMP0037 NEW)
+  if (POLICY CMP0053)
+      CMAKE_POLICY(SET CMP0053 NEW)
+  endif ()
 ENDIF (COMMAND cmake_policy)
 
 PROJECT(oernc_pi)
 
+SET(PACKAGE_NAME oernc_pi)
+SET(VERBOSE_NAME oernc)
 SET(PLUGIN_SOURCE_DIR .)
 
-SET(PACKAGE_NAME oernc_pi)
-SET(VERBOSE_NAME oeRNCCharts)
 SET(TITLE_NAME oeRNCCharts)
 SET(CPACK_PACKAGE_CONTACT "Dave Register")
 
@@ -31,7 +35,30 @@ SET(VERSION_PATCH "0")
 SET(PACKAGE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
 SET(OCPN_MIN_VERSION "ov50")
 
-#SET(CMAKE_BUILD_TYPE Release)
+SET(PKG_RELEASE "0")
+SET(PKG_API_VERSION "1.16")
+SET(PKG_AUTHOR "David S Register")
+SET(PKG_NVR ${PACKAGE_NAME}-${PACKAGE_VERSION}-${PKG_RELEASE})
+
+# The @keyword@ references are patched to actual values by upload script.
+SET(TARBALL_URL "https://dl.cloudsmith.io/public/@pkg_repo@/raw")
+SET(TARBALL_URL ${TARBALL_URL}/names/@name@/versions/@version@/@filename@)
+
+
+SET(API_DIR "${CMAKE_SOURCE_DIR}/api-16")
+SET(OCPN_USE_API_16 ON)
+
+SET(OCPN_MIN_VERSION "ov50")
+#OPTION(OCPN_USE_API_16 "Use plugin api 16 (default: api 13)." OFF)
+OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
+
+include("cmake/PluginSetup.cmake")
+set(PLUGIN_NAME oernc-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+
+SET(PREFIX_BIN bin)
+SET(PREFIX_INCLUDE include)
+SET(PREFIX_DATA share)
+SET(PREFIX_PKGDATA ${PREFIX_DATA}/${PACKAGE_NAME})
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -51,25 +78,6 @@ else ()
   message(STATUS "Setting C++11 standard via cmake standard mecahnism")
 endif ()
 
-IF( NOT CMAKE_BUILD_TYPE )
-  SET( CMAKE_BUILD_TYPE Release CACHE STRING
-       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-       FORCE )
-ENDIF( NOT CMAKE_BUILD_TYPE )
-
-MESSAGE (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-
-SET(CMAKE_VERBOSE_MAKEFILE ON)
-
-IF (PREFIX)
- SET(CMAKE_INSTALL_PREFIX ${PREFIX})
-ENDIF (PREFIX)
-
-SET(PREFIX_BIN bin)
-SET(PREFIX_INCLUDE include)
-SET(PREFIX_DATA share)
-SET(PREFIX_PKGDATA ${PREFIX_DATA}/${PACKAGE_NAME})
-
 IF (NOT WIN32)
   # default
   SET (ARCH "i386")
@@ -83,16 +91,38 @@ IF (NOT WIN32)
     MESSAGE (STATUS "*** Will install to ${CMAKE_INSTALL_PREFIX}  ***")
 
     IF (EXISTS /etc/debian_version)
+      MESSAGE (STATUS "*** Debian detected  ***")
       SET (PACKAGE_FORMAT "DEB")
       SET (PACKAGE_DEPS "libc6, libwxgtk3.0-0, libglu1-mesa (>= 7.0.0) curl")
       SET (LIB_INSTALL_DIR "lib")
+      IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
+        IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
+          SET (ARCH "arm64")
+          ADD_DEFINITIONS( -DOCPN_ARM64 )
+        ELSE (CMAKE_SIZEOF_VOID_P MATCHES "8")
+          SET (ARCH "armhf")
+          ADD_DEFINITIONS( -DOCPN_ARMHF )
+        ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
+      ELSE (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
       IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
         SET (ARCH "amd64")
       ELSE (CMAKE_SIZEOF_VOID_P MATCHES "8")
         SET (ARCH "i386")
       ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
+      ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
     ENDIF (EXISTS /etc/debian_version)
+    IF(NOT DEFINED PACKAGE_FORMAT)
+      IF (EXISTS /app)
+        MESSAGE (STATUS "*** Flatpak detected  ***")
+        SET (PACKAGE_FORMAT "TGZ")
+        SET (ARCH "x86_64")
+        SET (LIB_INSTALL_DIR "lib")
+      ENDIF (EXISTS /app)
+    ENDIF(NOT DEFINED PACKAGE_FORMAT)
+    
+    IF(NOT DEFINED PACKAGE_FORMAT)
     IF (EXISTS /etc/redhat-release)
+      MESSAGE (STATUS "*** Redhat detected  ***")
       SET (PACKAGE_FORMAT "RPM")
       SET (PACKAGE_DEPS  "opencpn")
       IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
@@ -103,15 +133,75 @@ IF (NOT WIN32)
         SET (LIB_INSTALL_DIR "lib")
       ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
     ENDIF (EXISTS /etc/redhat-release)
+    ENDIF(NOT DEFINED PACKAGE_FORMAT)
+ 
+    IF(NOT DEFINED PACKAGE_FORMAT)
+     IF (EXISTS /etc/os-release OR EXISTS /etc/sysconfig/SuSEfirewall2.d OR EXISTS /etc/suse-release OR EXISTS /etc/SuSE-release)
+      MESSAGE (STATUS "*** OpenSUSE detected  ***")
+      SET (PACKAGE_FORMAT "RPM")
+      SET (PACKAGE_DEPS  "opencpn")
+      IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
+        SET (ARCH "x86_64")
+        SET (LIB_INSTALL_DIR "lib")
+      ELSE (CMAKE_SIZEOF_VOID_P MATCHES "8")
+        SET (ARCH "i386")
+        SET (LIB_INSTALL_DIR "lib")
+      ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
+     ENDIF (EXISTS /etc/os-release OR EXISTS /etc/sysconfig/SuSEfirewall2.d OR EXISTS /etc/suse-release OR EXISTS /etc/SuSE-release)
+    ENDIF(NOT DEFINED PACKAGE_FORMAT)
+
   ENDIF (UNIX AND NOT APPLE)
 endif(NOT WIN32)
 
-IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
+IF (CMAKE_SYSTEM_PROCESSOR MATCHES "armhf")
   SET (ARCH "armhf")
   ADD_DEFINITIONS( -DARMHF )
-ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
+ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "armhf")
+
+IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+  SET (ARCH "arm64")
+  ADD_DEFINITIONS( -DARMHF )
+ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
 
 MESSAGE (STATUS "*** Build Architecture is ${ARCH}")
+MESSAGE (STATUS "*** CMAKE_SYSTEM_PROCESSOR is ${CMAKE_SYSTEM_PROCESSOR}")
+MESSAGE (STATUS "*** PACKAGE_FORMAT is ${PACKAGE_FORMAT}")
+
+if (OCPN_FLATPAK)
+    # Lie to PluginSetup that we have found wxWidgets so it don't barfs.
+    set(wxWidgets_LIBRARIES FOOBAR)
+    include("cmake/PluginSetup.cmake")
+configure_file(
+        # Required in flatpak, done early.
+        ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
+        ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+        )
+    set(PLUGIN_NAME ${VERBOSE_NAME}-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+
+          find_program(TAR NAMES gtar tar)
+          if (NOT TAR)
+              message(FATAL_ERROR "tar not found, required for OCPN_FLATPAK")
+          endif ()
+          configure_file(
+              ${CMAKE_SOURCE_DIR}/oernc-plugin.xml.in
+              ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+          )
+          add_custom_target(flatpak-build ALL
+              WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/flatpak
+              COMMAND flatpak-builder --force-clean
+                  ${CMAKE_CURRENT_BINARY_DIR}/app
+                  org.opencpn.OpenCPN.Plugin.oernc.yaml
+          )
+          add_custom_target("package")
+          add_custom_command(
+              TARGET package
+              COMMAND ${TAR}
+                  -czf ${PKG_NVR}_${PKG_TARGET_NVR}.tar.gz
+                  --transform 's|.*/files/|oernc_pi-flatpak-${PACKAGE_VERSION}/|'
+                  ${CMAKE_CURRENT_BINARY_DIR}/app/files
+          )
+          return ()
+endif()
 
 
 #  To build for android, use this cmake invocation..
@@ -145,15 +235,18 @@ ENDIF(DEFINED _wx_selected_config)
 
 INCLUDE("cmake/PluginConfigure.cmake")
 
-ADD_DEFINITIONS(-DMAKING_PLUGIN)
 
+INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src/wxJSON)
+INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src)
+INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src/cpl)
+INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src/dsa)
+INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR})
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/wxJSON)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/cpl)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/dsa)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
-
+if (OCPN_USE_API_16) 
+  INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/api-16)
+else ()
+  INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/api-13)
+endif ()
 
 IF(NOT WIN32)
  ADD_DEFINITIONS( "-Wall -g -fexceptions -O2 -Wno-unused -fno-strict-aliasing")
@@ -211,6 +304,8 @@ SET(SRC_OERNC
             src/piScreenLog.h
             src/validator.cpp
             src/validator.h
+            src/InstallDirs.cpp
+            src/InstallDirs.h
      )
 
 IF(QT_ANDROID)
@@ -299,11 +394,15 @@ IF (QT_ANDROID )
     TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} "${OCPN_Base}/${OCPN_Build}/libgorp.so" )
 ENDIF(QT_ANDROID)
 
+if (MINGW)
+  SET(OPENCPN_IMPORT_LIB "${API_DIR}/mingw/libopencpn.dll.a")
+elseif (WIN32)
+  SET(OPENCPN_IMPORT_LIB "${API_DIR}/msvc/opencpn.lib")
+endif ()
+
 IF(WIN32)
-  SET(OPENCPN_IMPORT_LIB "C:/Projects/opencpn/build/${CMAKE_CFG_INTDIR}/opencpn.lib")
-  TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${OPENCPN_IMPORT_LIB} )
   TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${CURL_LIBRARIES})
-  TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${CMAKE_SOURCE_DIR}/buildwin/zlib1.lib)
+  TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${OPENCPN_IMPORT_LIB} )
 
 ENDIF(WIN32)
 
@@ -354,11 +453,17 @@ ENDIF (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
 
 IF(PACKAGE_FORMAT MATCHES "DEB")
         
-        INSTALL(FILES "buildlinux/oeaserverd/97-sglock.rules"
-          PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ 
-          DESTINATION "/etc/udev/rules.d")
+#        INSTALL(FILES "buildlinux/oeaserverd/97-sglock.rules"
+#          PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ 
+#          DESTINATION "/etc/udev/rules.d")
 
 ENDIF(PACKAGE_FORMAT MATCHES "DEB")
+
+
+
+INSTALL(FILES "src/rrc_eula_ChartSetsForOpenCPN-v16-12.txt"
+      PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
+      DESTINATION ${PREFIX_PARENTDATA}/plugins/${PACKAGE_NAME} )
 
 ENDIF(UNIX AND NOT APPLE)
 
@@ -373,25 +478,30 @@ IF(WIN32)
        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ WORLD_EXECUTE
        DESTINATION "plugins\\\\${PACKAGE_NAME}")
 
+    #INSTALL(FILES "buildwin/oeserverd/SglW32.dll"
+    #   PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ WORLD_EXECUTE
+    #   DESTINATION "plugins\\\\${PACKAGE_NAME}")
+
     INSTALL(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "plugins")
     SET(INSTALL_DIRECTORY "plugins\\\\${PACKAGE_NAME}")
+
+    INSTALL(FILES "src/rrc_eula_ChartSetsForOpenCPN-v16-12.txt"
+      PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
+      DESTINATION ${INSTALL_DIRECTORY} )
 
 ENDIF(WIN32)
 
 IF(APPLE)
-SET(CMAKE_INSTALL_PREFIX "/tmp")
 
 INSTALL(FILES "buildosx/oeaserverd/oeaserverd"
        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ WORLD_EXECUTE
-       DESTINATION "oernc_pi/oernc_pi")
+       DESTINATION "OpenCPN.app/Contents/PlugIns/")
 
 INSTALL(FILES "src/rrc_eula_ChartSetsForOpenCPN.txt"
       PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
-      DESTINATION "oernc_pi/oernc_pi" )
+      DESTINATION "OpenCPN.app/Contents/SharedSupport/plugins/${PACKAGE_NAME}" )
 
-
-  # We also need to copy the helper utility to the binary build directory so that the PACKAGES scripts will find it.
-  
+  # We also need to copy the helper utility and required dylibs to the binary build directory so that the PACKAGES scripts will find it.
 configure_file(${PROJECT_SOURCE_DIR}/buildosx/oeaserverd/oeaserverd
             ${CMAKE_CURRENT_BINARY_DIR}/oeaserverd COPYONLY)
 
@@ -405,6 +515,9 @@ configure_file(${PROJECT_SOURCE_DIR}/src/rrc_eula_ChartSetsForOpenCPN.txt
 ENDIF(APPLE)
 
 
+IF(NOT WIN32)
+SET(CPACK_SET_DESTDIR ON)
+ENDIF(NOT WIN32)
 
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "dsr")
 
@@ -413,6 +526,17 @@ INCLUDE("cmake/PluginLocalization.cmake")
 IF(NOT QT_ANDROID)
 INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginPackage.cmake")
+INCLUDE("cmake/PluginSetup.cmake")
 ENDIF(NOT QT_ANDROID)
 
+configure_file(
+  ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/pkg_version.sh
+)
 
+set(PLUGIN_NAME ${VERBOSE_NAME}-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/oernc-plugin.xml.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
+)

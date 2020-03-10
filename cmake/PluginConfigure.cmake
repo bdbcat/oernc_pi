@@ -7,11 +7,6 @@
 SET(PLUGIN_SOURCE_DIR .)
 
 # This should be 2.8.0 to have FindGTK2 module
-IF (COMMAND cmake_policy)
-  CMAKE_POLICY(SET CMP0003 OLD)
-  CMAKE_POLICY(SET CMP0005 OLD)
-  CMAKE_POLICY(SET CMP0011 OLD)
-ENDIF (COMMAND cmake_policy)
 
 MESSAGE (STATUS "*** Staging to build ${PACKAGE_NAME} ***")
 
@@ -142,11 +137,10 @@ IF(QT_ANDROID)
 ENDIF(QT_ANDROID)
 
 IF (NOT QT_ANDROID )
-    set (WXWIDGETS_FORCE_VERSION CACHE VERSION "Force usage of a specific wxWidgets version.")
     if(WXWIDGETS_FORCE_VERSION)
         set (wxWidgets_CONFIG_OPTIONS --version=${WXWIDGETS_FORCE_VERSION})
     endif()
-    FIND_PACKAGE(wxWidgets COMPONENTS ${wxWidgets_USE_LIBS})
+    FIND_PACKAGE(wxWidgets REQUIRED)
     INCLUDE(${wxWidgets_USE_FILE})
 ENDIF (NOT QT_ANDROID )
 
@@ -158,11 +152,13 @@ IF (QT_ANDROID )
         # Presently, Android Plugins are built in the core tree, so the variables {wxQT_BASE}, etc.
         # flow to this module from above.  If we want to build Android plugins out-of-core, this will need improvement.
 
-        ${Qt_Base}/${Qt_Build}/lib/libQt5Core.so
-        ${Qt_Base}/${Qt_Build}/lib/libQt5OpenGL.so
-        ${Qt_Base}/${Qt_Build}/lib/libQt5Widgets.so
-        ${Qt_Base}/${Qt_Build}/lib/libQt5Gui.so
-        ${Qt_Base}/${Qt_Build}/lib/libQt5AndroidExtras.so
+  
+    ${Qt_Base}/${Qt_Build}/lib/libQt5Core.so
+    ${Qt_Base}/${Qt_Build}/lib/libQt5OpenGL.so
+    ${Qt_Base}/${Qt_Build}/lib/libQt5Widgets.so
+    ${Qt_Base}/${Qt_Build}/lib/libQt5Gui.so
+    ${Qt_Base}/${Qt_Build}/lib/libQt5AndroidExtras.so
+
         libGLESv2.so
         libEGL.so
         )
@@ -170,6 +166,7 @@ IF (QT_ANDROID )
 ENDIF(QT_ANDROID)
 
 
+ADD_DEFINITIONS(-DBUILDING_PLUGIN)
 
 
 SET(BUILD_SHARED_LIBS TRUE)

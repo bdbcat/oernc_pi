@@ -1,0 +1,34 @@
+id: org.opencpn.OpenCPN.Plugin.oernc
+runtime: org.opencpn.OpenCPN
+runtime-version: master
+sdk: org.freedesktop.Sdk//18.08
+build-extension: true
+separate-locales: false
+appstream-compose: false
+modules:
+    - name: oernc
+      no-autogen: true
+      cmake: true
+      build-options:
+          cflags: -fPIC
+          cxxflags: -fPIC -DFLATPAK
+      config-opts:
+          - -DPREFIX:PATH=/app/extensions/oernc
+      post-install:
+          - >
+            mv /app/extensions/oernc/bin/oeserverd
+            /app/extensions/oernc/bin/oeserverd.prog
+          - install -t /app/extensions/oernc/bin/ -m 755 oeaserverd
+          - >
+            install -t /app/extensions/oernc/lib -m 755
+            buildlinux64/oeserverd/libsgllnx64-2.29.02.so
+            libusb-0.1.so.4
+      sources:
+          - type: git
+            url: ..
+            branch: master
+          - type: file
+            path: oeaserverd
+          - type: file
+            # originally libusb-0.1.so.4.1.1, built from  libusb-0.1.6
+            path: libusb-0.1.so.4
