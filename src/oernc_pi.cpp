@@ -40,6 +40,7 @@
 #include "chart.h"
 #include "oernc_inStream.h"
 #include "ochartShop.h"
+#include "InstallDirs.h"
 #include <map>
 #include <unordered_map>
 #include <tinyxml.h>
@@ -320,7 +321,7 @@ void SwapKeyHashes()
 //---------------------------------------------------------------------------------------------------------
 
 oernc_pi::oernc_pi(void *ppimgr)
-      :opencpn_plugin_19(ppimgr)
+      :opencpn_plugin_116(ppimgr)
 {
       // Create the PlugIn icons
 
@@ -349,28 +350,34 @@ int oernc_pi::Init(void)
       m_class_name_array.Add(_T("Chart_oeRNC"));
 
       // Specify the location of the xxserverd helper.
-      wxFileName fn_exe(GetOCPN_ExePath());
-      g_server_bin = fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("oeaserverd");
+#ifdef __WXMSW__
+      g_server_bin = GetPluginDataDir("oernc_pi") + _T("\\oeaserverd.exe");
+#endif
       
+      if (!wxFileExists(g_server_bin)) {
+        std::string path(find_in_path("oeaserverd"));
+        if (path == "") {
+            wxLogWarning("Cannot locate oeaserverd binary in $PATH");
+        }
+        else {
+            g_server_bin = wxString(path.c_str());
+        }
+      }
       
-      #ifdef __WXMSW__
-      g_server_bin = _T("\"") + fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) +
-      _T("plugins\\oernc_pi\\oeaserverd.exe\"");
-      #endif
-      
-      #ifdef __WXOSX__
-      fn_exe.RemoveLastDir();
-      g_server_bin = _T("\"") + fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) +
-      _T("PlugIns/oernc_pi/oeaserverd\"");
-      #endif
-      
-      #ifdef __OCPN__ANDROID__
+            // Account for possible "space" in Mac directory name.
+#ifdef __WXOSX__
+      g_server_bin.Prepend(_T("\""));
+      g_server_bin.Append(_T("\""));
+#endif    
+
+#ifdef __OCPN__ANDROID__
       wxString piLocn = GetPlugInPath(this); //*GetpSharedDataLocation();
       wxFileName fnl(piLocn);
       g_server_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oeaserverda");
       g_serverProc = 0;
-      #endif
+#endif
       
+      wxLogMessage(_T("oernc_pi::Path to serverd is: ") + g_server_bin);
       
       // Get and build if necessary a private data dir
       g_PrivateDataDir = *GetpPrivateApplicationDataLocation();
@@ -380,12 +387,10 @@ int oernc_pi::Init(void)
       if(!::wxDirExists( g_PrivateDataDir ))
           ::wxMkdir( g_PrivateDataDir );
       
-      wxLogMessage(_T("Path to serverd is: ") + g_server_bin);
-      
       if(IsDongleAvailable())
-        wxLogMessage(_T("Dongle detected"));
+         wxLogMessage(_T("oernc_pi::Dongle detected"));
       else
-        wxLogMessage(_T("No Dongle detected"));
+         wxLogMessage(_T("oernc_pi::No Dongle detected"));
 
       int flags = INSTALLS_PLUGIN_CHART;
 
@@ -410,9 +415,8 @@ int oernc_pi::Init(void)
 #ifdef __WXMAC__
     g_systemOS = _T("d.");
 #endif
-#ifdef __OCPN__ANDROID__
-    g_systemOS = _T("r.");
-#endif
+    // Android handled in Java-side interface
+    
     
       return flags;
       
@@ -427,6 +431,8 @@ bool oernc_pi::DeInit(void)
     }
 
     m_class_name_array.Clear();
+    
+    delete g_event_handler;
     
     shutdown_server();
     
