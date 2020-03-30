@@ -27,7 +27,7 @@ elif dnf --version 2>&1 >/dev/null; then
     sudo python -m pip install -q cloudsmith-cli
 elif apt-get --version 2>&1 >/dev/null; then
     sudo apt-get install python3-pip python3-setuptools
-    sudo python3 -m pip install -q cloudsmith-cli
+    sudo python -m pip install -q cloudsmith-cli
 else
     sudo -H python3 -m ensurepip
     sudo -H python3 -m pip install -q setuptools
