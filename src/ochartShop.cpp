@@ -2076,7 +2076,17 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
                     case 6:
                         msg += _("Invalid user/email name or password.");
                         break;
+                    default:
+                        if(result.AfterFirst(':').Length()){
+                            msg += result.AfterFirst(':');
+                            msg += _T("\n");
+                        }
+                        msg += _("Operation cancelled");
+                        break;
+  
                 }
+                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+
            }
                 
            else{
@@ -4042,6 +4052,23 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     if(bNeedSystemName ){
         GetNewSystemName();
     }
+    
+    // If a new systemName was selected, verify on the server
+    // If the server already has a systemName associated with this FPR, cancel the operation.
+    if(bNeedSystemName && !g_systemName.IsEmpty()){
+        if( doUploadXFPR( false ) != 0){
+            g_systemName.Clear();
+            saveShopConfig();           // Record the blank systemName
+            
+            wxString sn = _("System Name:");
+            m_staticTextSystemName->SetLabel( sn );
+            m_staticTextSystemName->Refresh();
+
+            setStatusText( _("Status: Ready"));
+            return;
+        }
+    }
+
  
     RefreshSystemName();
     
