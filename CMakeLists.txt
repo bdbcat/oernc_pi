@@ -532,7 +532,7 @@ configure_file(
 set(PLUGIN_NAME ${VERBOSE_NAME}-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/oesenc-plugin.xml.in
+  ${CMAKE_SOURCE_DIR}/oernc-plugin.xml.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
 )
 
