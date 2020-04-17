@@ -522,13 +522,7 @@ ENDIF(NOT WIN32)
 
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "dsr")
 
-INCLUDE("cmake/PluginLocalization.cmake")
-
-IF(NOT QT_ANDROID)
-INCLUDE("cmake/PluginInstall.cmake")
 INCLUDE("cmake/PluginSetup.cmake")
-INCLUDE("cmake/PluginPackage.cmake")
-ENDIF(NOT QT_ANDROID)
 
 configure_file(
   ${CMAKE_SOURCE_DIR}/pkg_version.sh.in
@@ -538,6 +532,14 @@ configure_file(
 set(PLUGIN_NAME ${VERBOSE_NAME}-plugin-${PKG_TARGET}-${PKG_TARGET_VERSION})
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/oernc-plugin.xml.in
+  ${CMAKE_SOURCE_DIR}/oesenc-plugin.xml.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_NAME}.xml
 )
+
+IF(NOT QT_ANDROID)
+INCLUDE("cmake/PluginLocalization.cmake")
+INCLUDE("cmake/PluginInstall.cmake")
+INCLUDE("cmake/PluginPackage.cmake")
+ENDIF(NOT QT_ANDROID)
+
+

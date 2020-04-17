@@ -46,6 +46,8 @@ tarball_basename=${tarball##*/}
 PROJECT=${tarball_basename%%_pi*}
 
 source $HOME/project/build/pkg_version.sh
+VERSION3=${VERSION%%.0}
+
 test -n "$tag" && VERSION="$tag" || VERSION="${VERSION}.${commit}"
 test -n "$tag" && REPO="$STABLE_REPO" || REPO="$UNSTABLE_REPO"
 tarball_name=${PROJECT}-${PKG_TARGET}-${PKG_TARGET_VERSION}-tarball
@@ -63,11 +65,10 @@ sudo sed -i -e "s|@filename@|$tarball_basename|" $xml
 
 cd build
 sudo tar xf $tarball
-tar_dir=${tarball%%.tar.gz}
 sudo ls -la
-sudo ls -la $tar_dir
-sudo cp $xml $tar_dir/metadata.xml
-tar_dir_here=${tar_dir##*/}
+tar_dir_here=$PROJECT'_pi'-flatpak-$VERSION3
+sudo ls -la $tar_dir_here
+sudo cp $xml $tar_dir_here/metadata.xml
 sudo tar czf $tarball $tar_dir_here
 cd ..
 
