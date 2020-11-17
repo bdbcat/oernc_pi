@@ -381,7 +381,8 @@ int oernc_pi::Init(void)
       
       // Get and build if necessary a private data dir
       g_PrivateDataDir = *GetpPrivateApplicationDataLocation();
-      g_PrivateDataDir += wxFileName::GetPathSeparator();
+      if (!g_PrivateDataDir.EndsWith(wxFileName::GetPathSeparator()))
+        g_PrivateDataDir += wxFileName::GetPathSeparator();
       g_PrivateDataDir += _T("oernc_pi");
       g_PrivateDataDir += wxFileName::GetPathSeparator();
       if(!::wxDirExists( g_PrivateDataDir ))
