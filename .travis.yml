@@ -16,7 +16,7 @@ matrix:
   - env:
     - OCPN_TARGET=buster-armhf
     - OCPN_BRANCH=master
-    - DOCKER_IMAGE=raspbian/buster
+    - DOCKER_IMAGE=balenalib/raspberry-pi-debian:buster
     services:
     - docker
     script:
