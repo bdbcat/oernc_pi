@@ -24,10 +24,10 @@ docker run --privileged -d -ti -e "container=docker" \
 DOCKER_CONTAINER_ID=$(sudo docker ps | grep rasp | awk '{print $1}')
 
 
-docker exec -ti $DOCKER_CONTAINER_ID 'curl http://mirrordirector.raspbian.org/raspbian.public.key > k1'
-docker exec -ti $DOCKER_CONTAINER_ID 'sudo apt-key add k1'
-docker exec -ti $DOCKER_CONTAINER_ID 'curl http://archive.raspbian.org/raspbian.public.key > k2'
-docker exec -ti $DOCKER_CONTAINER_ID 'sudo apt-key add k2'
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c 'curl http://mirrordirector.raspbian.org/raspbian.public.key > k1'
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c 'sudo apt-key add k1'
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c 'curl http://archive.raspbian.org/raspbian.public.key > k2'
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c 'sudo apt-key add k2'
 
 #echo $DOCKER_CONTAINER_ID 
 
