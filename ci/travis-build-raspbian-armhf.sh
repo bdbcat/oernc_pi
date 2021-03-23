@@ -21,7 +21,7 @@ docker run --privileged -d -ti -e "container=docker" \
       -v $(pwd):/ci-source:rw \
       $DOCKER_IMAGE /bin/bash
       
-DOCKER_CONTAINER_ID=$(sudo docker ps | grep raspbian | awk '{print $1}')
+DOCKER_CONTAINER_ID=$(sudo docker ps | grep raspberry | awk '{print $1}')
 
 
 #echo $DOCKER_CONTAINER_ID 
