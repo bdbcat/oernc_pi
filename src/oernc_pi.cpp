@@ -376,6 +376,17 @@ int oernc_pi::Init(void)
       g_server_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oeaserverda");
       g_serverProc = 0;
 #endif
+
+    // Set environment variable for some platforms to find the required sglock dongle library
+    wxFileName fn_exe(GetOCPN_ExePath());
+
+#if !defined(__WXMSW__) && !defined(__WXMAC__)
+    // Set environment variable to find the required sglock dongle library
+    wxFileName libraryPath = fn_exe;
+    libraryPath.RemoveLastDir();
+    wxString libDir = libraryPath.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("bin");
+    wxSetEnv(_T("LD_LIBRARY_PATH"), libDir ); 
+#endif
       
       wxLogMessage(_T("oernc_pi::Path to serverd is: ") + g_server_bin);
       
