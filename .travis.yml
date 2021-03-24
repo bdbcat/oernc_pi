@@ -12,7 +12,7 @@ matrix:
     services:
     - docker
     script:
-    - "./ci/travis-build-raspbian-armhf.sh"
+    - "./ci/travis-build-raspbian-armhf-stretch.sh"
   - env:
     - OCPN_TARGET=buster-armhf
     - OCPN_BRANCH=master
@@ -20,7 +20,7 @@ matrix:
     services:
     - docker
     script:
-    - "./ci/travis-build-raspbian-armhf.sh"
+    - "./ci/travis-build-raspbian-armhf-buster.sh"
 
 
 branches:
