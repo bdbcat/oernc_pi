@@ -6,7 +6,7 @@
 
 
 # define minimum cmake version
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
 # This should be 2.8.0 to have FindGTK2 module
 IF (COMMAND cmake_policy)
   CMAKE_POLICY(SET CMP0003 NEW)
