@@ -96,14 +96,30 @@ ENDIF(MSYS)
 #  QT_ANDROID is a cross-build, so the native FIND_PACKAGE(OpenGL) is not useful.
 #
 IF (NOT QT_ANDROID )
+IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
+
+find_path(OPENGL_INCLUDE_DIR GL/gl.h
+    /usr/include
+    /usr/local/include
+  )
+  if ("${OPENGL_INCLUDE_DIR}" STREQUAL "")
+    set(OPENGL_FOUND FALSE)
+  else ("${OPENGL_INCLUDE_DIR}" STREQUAL "")
+    set(OPENGL_FOUND TRUE)
+  endif ("${OPENGL_INCLUDE_DIR}" STREQUAL "")
+  
+
+ELSE (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
 FIND_PACKAGE(OpenGL)
+ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
+
 IF(OPENGL_FOUND)
 
     SET(wxWidgets_USE_LIBS ${wxWidgets_USE_LIBS} gl)
     INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 
     MESSAGE (STATUS "Found OpenGL..." )
-    MESSAGE (STATUS "    Lib: " ${OPENGL_LIBRARIES})
+    #MESSAGE (STATUS "    Lib: " ${OPENGL_LIBRARIES})
     MESSAGE (STATUS "    Include: " ${OPENGL_INCLUDE_DIR})
     ADD_DEFINITIONS(-DocpnUSE_GL)
 ELSE(OPENGL_FOUND)
