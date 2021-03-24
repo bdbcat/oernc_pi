@@ -46,7 +46,7 @@ docker exec -ti $DOCKER_CONTAINER_ID sudo apt install git cmake build-essential 
 #    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-    'mkdir ci-source/build; cd ci-source/build; cmake -DCMAKE_INSTALL_PREFIX=/usr ..;'
+    'mkdir ci-source/build; cd ci-source/build; cmake -DCMAKE_INSTALL_PREFIX=/usr ..; exit 0;'
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
     'cd ci-source/build; cmake -DCMAKE_INSTALL_PREFIX=/usr ..; make; make package;'
