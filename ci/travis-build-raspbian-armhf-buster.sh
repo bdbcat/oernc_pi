@@ -36,8 +36,6 @@ docker exec -ti $DOCKER_CONTAINER_ID echo "------\nEND apt-get update\n"
 
 docker exec -ti $DOCKER_CONTAINER_ID sudo apt install git cmake build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release 
 
-docker exec -ti $DOCKER_CONTAINER_ID sudo dpkg -L libcurl4-openssl-dev
-
 #docker exec -ti $DOCKER_CONTAINER_ID echo $OCPN_BRANCH
 
 #docker exec -ti $DOCKER_CONTAINER_ID wget https://github.com/bdbcat/oernc_pi/tarball/$OCPN_BRANCH
@@ -48,7 +46,10 @@ docker exec -ti $DOCKER_CONTAINER_ID sudo dpkg -L libcurl4-openssl-dev
 #    'mkdir source_top/build; cd source_top/build; cmake ..; make; make package;'
 
 docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
-    'mkdir ci-source/build; cd ci-source/build; cmake -DCMAKE_INSTALL_PREFIX=/usr ..; make; make package;'
+    'mkdir ci-source/build; cd ci-source/build; cmake -DCMAKE_INSTALL_PREFIX=/usr ..;'
+
+docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c \
+    'cd ci-source/build; cmake -DCMAKE_INSTALL_PREFIX=/usr ..; make; make package;'
  
 echo "Stopping"
 docker ps -a
