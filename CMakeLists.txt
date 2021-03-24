@@ -336,11 +336,21 @@ ENDIF(WIN32)
 IF(NOT QT_ANDROID)
 
     IF(OCPN_USE_EXTERN_CURL)
+    # a real HACK
+     IF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
+      set(CURL_LIBRARIES "/usr/lib/arm-linux-gnueabihf/libcurl.so")
+      set(CURL_INCLUDE_DIR "/usr/include/arm-linux-gnueabihf")
+      MESSAGE (STATUS "Using SYSTEM curl library...${CURL_LIBRARIES}...${CURL_INCLUDE_DIR}")
+      INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIR})
+     ELSE (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
+    
         FIND_PACKAGE(CURL REQUIRED )
         IF(CURL_FOUND)
             MESSAGE (STATUS "Using SYSTEM curl library...${CURL_LIBRARIES}...${CURL_INCLUDE_DIR}")
         ENDIF(CURL_FOUND)
         INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIR})
+     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "arm*")
+
     ELSE(OCPN_USE_EXTERN_CURL)
         INCLUDE("Curl.cmake")
         MESSAGE (STATUS "Using local curl library...")

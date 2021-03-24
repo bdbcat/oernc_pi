@@ -18,6 +18,9 @@ chmod 755 uninstall.sh
 inst="https://raw.githubusercontent.com/Homebrew/install/master/install"
 /usr/bin/ruby -e "$(curl -fsSL $inst)"
 
+git -C /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core fetch --unshallow
+git -C /usr/local/Homebrew/Library/Taps/homebrew/homebrew-cask fetch --unshallow
+
 
 set -o pipefail
 for pkg in cairo cmake libarchive libexif python3 wget; do
