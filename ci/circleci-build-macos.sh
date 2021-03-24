@@ -24,6 +24,9 @@ set -xe
 #    brew list $pkg 2>&1 >/dev/null || brew install $pkg
 #done
 
+ git -C /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core fetch --unshallow
+ git -C /usr/local/Homebrew/Library/Taps/homebrew/homebrew-cask fetch --unshallow
+  
 # Fix broken ruby on the CircleCI image:
 if [ -n "$CIRCLECI" ]; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
