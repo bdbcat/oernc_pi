@@ -50,6 +50,7 @@
 extern wxString g_server_bin;
 extern wxString g_deviceInfo;
 extern wxString g_systemName;
+extern wxString g_libDir;
 
 #ifdef __OCPN__ANDROID__
 void androidGetDeviceName()
@@ -76,7 +77,8 @@ void androidGetDeviceName()
 bool IsDongleAvailable()
 {
 #ifndef __OCPN__ANDROID__    
-///    
+
+#ifdef __WXMAC__    
     wxString cmdls = _T("ls -la /Applications/OpenCPN.app/Contents/PlugIns/oernc_pi");
 
     wxArrayString lsret_array, lserr_array;      
@@ -87,14 +89,21 @@ bool IsDongleAvailable()
         wxString line = lsret_array[i];
         wxLogMessage(line);
     }
- 
-/// 
+#endif    
+
+    // Set environment variable for some platforms to find the required sglock dongle library
+
+#if !defined(__WXMSW__) && !defined(__WXMAC__)
+    wxSetEnv(_T("LD_LIBRARY_PATH"), g_libDir ); 
+#endif
+
     wxString cmd = g_server_bin;
     cmd += _T(" -s ");                  // Available?
 
     wxArrayString ret_array, err_array;      
     wxExecute(cmd, ret_array, err_array );
             
+    wxLogMessage(cmd);
     wxLogMessage(_T("oeaserverd results:"));
     for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
         wxString line = ret_array[i];

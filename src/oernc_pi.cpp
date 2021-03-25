@@ -87,6 +87,7 @@ long g_serverProc;
 int g_debugLevel = 0;
 int g_admin;
 wxString g_systemOS;
+wxString g_libDir;
 
 wxString  g_deviceInfo;
 extern wxString  g_loginUser;
@@ -378,14 +379,16 @@ int oernc_pi::Init(void)
 #endif
 
     // Set environment variable for some platforms to find the required sglock dongle library
-    wxFileName fn_exe(GetOCPN_ExePath());
 
 #if !defined(__WXMSW__) && !defined(__WXMAC__)
-    // Set environment variable to find the required sglock dongle library
+    wxFileName fn_exe(GetPlugInPath(this));
     wxFileName libraryPath = fn_exe;
+    libraryPath.RemoveLastDir();
     libraryPath.RemoveLastDir();
     wxString libDir = libraryPath.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("bin");
     wxSetEnv(_T("LD_LIBRARY_PATH"), libDir ); 
+    wxLogMessage(_T("oernc_pi::LD_LIBRARY_PATH: ") + libDir);
+    g_libDir = libDir;
 #endif
       
       wxLogMessage(_T("oernc_pi::Path to serverd is: ") + g_server_bin);
