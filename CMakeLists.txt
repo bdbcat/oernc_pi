@@ -6,7 +6,7 @@
 
 
 # define minimum cmake version
-CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 # This should be 2.8.0 to have FindGTK2 module
 IF (COMMAND cmake_policy)
   CMAKE_POLICY(SET CMP0003 NEW)
@@ -64,7 +64,7 @@ SET(PREFIX_DATA share)
 SET(PREFIX_PKGDATA ${PREFIX_DATA}/${PACKAGE_NAME})
 
 IF (CMAKE_SYSTEM_PROCESSOR MATCHES "armhf")
-    set (CMAKE_PREFIX_PATH "/usr/lib/arm-linux-gnueabihf")
+    #set (CMAKE_PREFIX_PATH "/usr/lib/arm-linux-gnueabihf")
 ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "armhf")
 
 include(CheckCXXCompilerFlag)
