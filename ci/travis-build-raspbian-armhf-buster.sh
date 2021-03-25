@@ -34,7 +34,7 @@ docker exec -ti $DOCKER_CONTAINER_ID /bin/bash -c 'sudo apt-key add k2'
 docker exec -ti $DOCKER_CONTAINER_ID sudo apt update
 docker exec -ti $DOCKER_CONTAINER_ID echo "------\nEND apt-get update\n" 
 
-docker exec -ti $DOCKER_CONTAINER_ID sudo apt-get -y install git build-essential cmake gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release 
+docker exec -ti $DOCKER_CONTAINER_ID sudo apt-get -y install git build-essential gettext wx-common libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release 
 
 #Locally built CMake 3.20 included in DOCKER_IMAGE=opencpn/raspbian-buster-cmake320:plugin_build_tooling
 # Fixes bugs in compiler detection.
