@@ -2191,8 +2191,8 @@ int doLogin()
 
 #else
 
-    qDebug() << url.mb_str();
-    qDebug() << loginParms.mb_str();
+    //qDebug() << url.mb_str();
+    //qDebug() << loginParms.mb_str();
     
     wxString postresult;
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
@@ -2203,7 +2203,7 @@ int doLogin()
         wxCharBuffer buf = postresult.ToUTF8();
         std::string response(buf.data());
         
-        qDebug() << response.c_str();
+        //qDebug() << response.c_str();
         doc = new TiXmlDocument();
         doc->Parse( response.c_str());
         iResponseCode = 200;
@@ -2640,8 +2640,8 @@ int getChartList( bool bShowErrorDialogs = true){
     //wxLogMessage(tt);
 #else
      wxString postresult;
-    qDebug() << url.mb_str();
-    qDebug() << loginParms.mb_str();
+    //qDebug() << url.mb_str();
+    //qDebug() << loginParms.mb_str();
 
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
@@ -2827,7 +2827,7 @@ int doUploadXFPR(bool bDongle)
             loginParms += _T("&xfprName=") + fprName;
             loginParms += _T("&version=") + g_systemOS + g_versionString;
             
-            wxLogMessage(loginParms);
+//            wxLogMessage(loginParms);
 
             int iResponseCode = 0;
             size_t res = 0;
@@ -2933,7 +2933,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     loginParms += _T("&currentEdition=") + chart->taskCurrentEdition;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
     
-    wxLogMessage(loginParms);
+    //wxLogMessage(loginParms);
     
     int iResponseCode = 0;
     size_t res = 0;
