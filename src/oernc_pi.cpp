@@ -523,22 +523,20 @@ void oernc_pi::OnSetupOptions( void )
     sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
     m_shoppanel->FitInside();
 #else
-    if(!m_pOptionsPage){      // Already done once
-      m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeRNC Charts") );
-      if( ! m_pOptionsPage )
-      {
-        wxLogMessage( _T("Error: oernc_pi::OnSetupOptions AddOptionsPage failed!") );
-        return;
-      }
-      wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
-      m_pOptionsPage->SetSizer( sizer );
-
-      m_shoppanel = new shopPanel( m_pOptionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize );
-
-      m_pOptionsPage->InvalidateBestSize();
-      sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
-      m_shoppanel->FitInside();
+    m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeRNC Charts") );
+    if( ! m_pOptionsPage )
+    {
+      wxLogMessage( _T("Error: oernc_pi::OnSetupOptions AddOptionsPage failed!") );
+      return;
     }
+    wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
+    m_pOptionsPage->SetSizer( sizer );
+
+    m_shoppanel = new shopPanel( m_pOptionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize );
+
+    m_pOptionsPage->InvalidateBestSize();
+    sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
+    m_shoppanel->FitInside();
 
 #endif
 }
